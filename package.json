@@ -1,0 +1,24 @@
+{
+  "name": "react-image-crop",
+  "version": "0.0.1",
+  "description": "React-based Image Cropping",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/WebSeed/react-image-crop.git"
+  },
+  "keywords": [
+    "react",
+    "image",
+    "crop"
+  ],
+  "author": "Will Bamford",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/WebSeed/react-image-crop/issues"
+  },
+  "homepage": "https://github.com/WebSeed/react-image-crop"
+}
