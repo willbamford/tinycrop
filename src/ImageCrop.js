@@ -1,7 +1,12 @@
-var imageLoaded = require('image-loaded');
+var debounce = require('./debounce.js');
+var BackgroundLayer = require('./BackgroundLayer.js');
+var ImageLayer = require('./ImageLayer.js');
+var SelectionLayer = require('./SelectionLayer.js');
 
 var DEFAULT_CANVAS_WIDTH = 400;
 var DEFAULT_CANVAS_HEIGHT = 300;
+
+function noop() {};
 
 function isPercent(v) {
 	if (typeof v !== 'string')
@@ -40,41 +45,48 @@ var ImageCrop = function(opts) {
 
 	this.parent.appendChild(this.canvas);
 
-	this.bounds = {};
+	this.backgroundLayer = BackgroundLayer.create({
+		canvas: this.canvas,
+		color: '#ccc'
+	});
 
-	window.addEventListener('resize', this.resizeAndPaint.bind(this));
+	this.imageLayer = ImageLayer.create({
+		canvas: this.canvas,
+		image: opts.image || null
+	});
 
-	this.setImage(opts.image || null);
-	this.resizeAndPaint();
+	this.selectionLayer = SelectionLayer.create({
+		canvas: this.canvas
+	});
+
+	window.addEventListener('resize', debounce(this.revalidateAndPaint.bind(this), 100));
+
+	this.imageLayer.on('imageError', function(e) { console.error(e); });
+	this.imageLayer.on('imageLoad', this.revalidateAndPaint.bind(this));
+
+	this.revalidateAndPaint();
 };
 
 ImageCrop.create = function(opts) {
 	return new ImageCrop(opts);
 };
 
-ImageCrop.prototype.resizeAndPaint = function() {
-	this.resize();
+ImageCrop.prototype.revalidateAndPaint = function() {
+	this.revalidate();
 	this.paint();
 };
 
 ImageCrop.prototype.paint = function() {
-
-	var g = this.context;
-	var canvas = this.canvas;
-	var image = this.image;
-	var bounds = this.bounds;
-
-	if (image && bounds) {
-
-		g.drawImage(image, 0, 0, image.naturalWidth, image.naturalHeight, bounds.x, bounds.y, bounds.w, bounds.h);
-	}
+	this.backgroundLayer.paint();
+	this.imageLayer.paint();
+	this.selectionLayer.paint();
 };
 
-ImageCrop.prototype.resize = function() {
+ImageCrop.prototype.revalidate = function() {
 
 	var parent = this.parent;
 	var canvas = this.canvas;
-	var image = this.image;
+	var image = this.imageLayer.image;
 
 	var optWidth = this.optWidth;
 	var optHeight = this.optHeight;
@@ -99,52 +111,15 @@ ImageCrop.prototype.resize = function() {
 		canvas.height = DEFAULT_CANVAS_HEIGHT;
 	}
 
-	this.updateBounds();
-};
-
-ImageCrop.prototype.updateBounds = function() {
-
-	var bounds = this.bounds;
-	var canvas = this.canvas;
-	var image = this.image;
-
-	if (image) {
-
-		console.log('Canvas size: ' + canvas.width + ' by ' + canvas.height);
-
-		// Constrained by width (otherwise height)
-		if (image.naturalWidth / image.naturalHeight >= canvas.width / canvas.height) {
-			bounds.w = canvas.width;
-			bounds.h = Math.round(image.naturalHeight / image.naturalWidth * canvas.width);
-			bounds.x = 0;
-			bounds.y = Math.round((canvas.height - bounds.h) * 0.5);
-		} else {
-			bounds.w = Math.round(image.naturalWidth / image.naturalHeight * canvas.height);
-			bounds.h = canvas.height;
-			bounds.x = Math.round((canvas.width - bounds.w) * 0.5);
-			bounds.y = 0;
-		}
-	}
+	this.backgroundLayer.revalidate();
+	this.imageLayer.revalidate();
+	this.selectionLayer.revalidate();
 };
 
 ImageCrop.prototype.setImage = function(image) {
-
-	if (!image)
-		return;
-
-	imageLoaded(image, function(err) {
-
-		if (err) {
-			console.error(err);
-			return;
-		}
-		this.image = image;
-		this.resizeAndPaint();
-
-	}.bind(this));
+	this.imageLayer.setImage(image);
 };
 
-ImageCrop.prototype.dispose = function() {
-};
+ImageCrop.prototype.dispose = function() { /* ... */ };
 
 module.exports = ImageCrop;
