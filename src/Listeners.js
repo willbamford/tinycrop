@@ -38,4 +38,8 @@ Listeners.prototype.notify = function(type, data) {
   }
 };
 
+Listeners.prototype.clearAll = function() {
+	this.events = {};
+};
+
 module.exports = Listeners;

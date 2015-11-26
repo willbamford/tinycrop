@@ -1,6 +1,3 @@
-var Listeners = require('./Listeners.js');
-var loaded = require('./imageLoaded.js');
-
 var ImageLayer = function(opts) {
 
 	opts = opts || {};
@@ -16,37 +13,14 @@ var ImageLayer = function(opts) {
 
 	this.canvas = opts.canvas;
 	this.context = this.canvas.getContext('2d');
-
-	this.listeners = Listeners.create();
 };
 
 ImageLayer.create = function(opts) {
 	return new ImageLayer(opts);
 };
 
-ImageLayer.prototype.on = function(type, fn) {
-	this.listeners.on(type, fn);
-};
-
-ImageLayer.prototype.off = function(type, fn) {
-	this.listeners.off(type, fn);
-};
-
 ImageLayer.prototype.setImage = function(image) {
-
-	if (!image)
-		return;
-
-	loaded(image, function(err) {
-
-		if (err) {
-			this.listeners.notify('imageError', err);
-		} else {
-			this.image = image;
-			this.listeners.notify('imageLoad', this);
-		}
-
-	}.bind(this));
+	this.image = image;
 };
 
 ImageLayer.prototype.revalidate = function() {
@@ -58,13 +32,13 @@ ImageLayer.prototype.revalidate = function() {
 	if (image) {
 
 		// Constrained by width (otherwise height)
-		if (image.naturalWidth / image.naturalHeight >= canvas.width / canvas.height) {
+		if (image.width / image.height >= canvas.width / canvas.height) {
 			bounds.width = canvas.width;
-			bounds.height = Math.round(image.naturalHeight / image.naturalWidth * canvas.width);
+			bounds.height = Math.round(image.height / image.width * canvas.width);
 			bounds.x = 0;
 			bounds.y = Math.round((canvas.height - bounds.height) * 0.5);
 		} else {
-			bounds.width = Math.round(image.naturalWidth / image.naturalHeight * canvas.height);
+			bounds.width = Math.round(image.width / image.height * canvas.height);
 			bounds.height = canvas.height;
 			bounds.x = Math.round((canvas.width - bounds.width) * 0.5);
 			bounds.y = 0;
@@ -79,7 +53,7 @@ ImageLayer.prototype.paint = function() {
 	var bounds = this.bounds;
 
 	if (image) {
-		context.drawImage(image, 0, 0, image.naturalWidth, image.naturalHeight, bounds.x, bounds.y, bounds.width, bounds.height);
+		context.drawImage(image.source, 0, 0, image.width, image.height, bounds.x, bounds.y, bounds.width, bounds.height);
 	}
 };
 

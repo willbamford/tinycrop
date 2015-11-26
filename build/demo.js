@@ -19046,10 +19046,68 @@ module.exports = BackgroundLayer;
 
 
 },{}],160:[function(require,module,exports){
+var loaded = require('./imageLoaded.js');
+
+var Listeners = require('./Listeners.js');
+
+var DOMImage = window.Image;
+
+var Image = function(source) {
+
+	this.width = 0;
+	this.height = 0;
+
+	this.hasLoaded = false;
+	this.source = source;
+
+	this.listeners = Listeners.create();
+
+	if (!source)
+		return;
+
+	loaded(source, function(err) {
+
+		if (err) {
+			this.listeners.notify('error', err);
+		} else {
+			this.hasLoaded = true;
+			this.width = source.naturalWidth;
+			this.height = source.naturalHeight;
+			this.listeners.notify('load', this);
+		}
+
+	}.bind(this));
+};
+
+Image.create = function(source) {
+	return new Image(source);
+};
+
+Image.prototype.getAspect = function() {
+
+	if (!this.hasLoaded)
+		return 1;
+
+	return this.width / this.height;
+};
+
+Image.prototype.on = function(type, fn) {
+	this.listeners.on(type, fn);
+};
+
+Image.prototype.off = function(type, fn) {
+	this.listeners.off(type, fn);
+};
+
+module.exports = Image;
+
+
+},{"./Listeners.js":163,"./imageLoaded.js":168}],161:[function(require,module,exports){
 var debounce = require('./debounce.js');
 var BackgroundLayer = require('./BackgroundLayer.js');
 var ImageLayer = require('./ImageLayer.js');
 var SelectionLayer = require('./SelectionLayer.js');
+var Image = require('./Image.js');
 
 var DEFAULT_CANVAS_WIDTH = 400;
 var DEFAULT_CANVAS_HEIGHT = 300;
@@ -19088,6 +19146,8 @@ var ImageCrop = function(opts) {
 	this.canvas = document.createElement('canvas');
 	this.context = this.canvas.getContext('2d');
 
+	this.image = null;
+
 	this.optWidth = opts.width || '100%';
 	this.optHeight = opts.height || 'auto';
 
@@ -19108,9 +19168,6 @@ var ImageCrop = function(opts) {
 	});
 
 	window.addEventListener('resize', debounce(this.revalidateAndPaint.bind(this), 100));
-
-	this.imageLayer.on('imageError', function(e) { console.error(e); });
-	this.imageLayer.on('imageLoad', this.revalidateAndPaint.bind(this));
 
 	this.revalidateAndPaint();
 };
@@ -19134,7 +19191,7 @@ ImageCrop.prototype.revalidate = function() {
 
 	var parent = this.parent;
 	var canvas = this.canvas;
-	var image = this.imageLayer.image;
+	var imageLayer = this.imageLayer;
 
 	var optWidth = this.optWidth;
 	var optHeight = this.optHeight;
@@ -19153,8 +19210,8 @@ ImageCrop.prototype.revalidate = function() {
 		canvas.height = optHeight;
 	} else if (isPercent(optHeight)) {
 		canvas.height = Math.round(canvas.width * getPercent(optHeight) / 100);
-	} else if (image && isAuto(optHeight)) {
-		canvas.height = Math.floor(image.naturalHeight / image.naturalWidth * canvas.width);
+	} else if (imageLayer.hasImage() && isAuto(optHeight)) {
+		canvas.height = Math.floor(canvas.width / imageLayer.getAspect());
 	} else {
 		canvas.height = DEFAULT_CANVAS_HEIGHT;
 	}
@@ -19164,8 +19221,19 @@ ImageCrop.prototype.revalidate = function() {
 	this.selectionLayer.revalidate();
 };
 
-ImageCrop.prototype.setImage = function(image) {
+ImageCrop.prototype.setImage = function(sourceImage) {
+
+	var image = Image.create(sourceImage);
+	image.on('load', function() {
+		this.revalidateAndPaint();
+	}.bind(this));
+
+	image.on('error', function(e) {
+		console.error(e);
+	}.bind(this));
+
 	this.imageLayer.setImage(image);
+	this.image = image;
 };
 
 ImageCrop.prototype.dispose = function() { /* ... */ };
@@ -19173,10 +19241,7 @@ ImageCrop.prototype.dispose = function() { /* ... */ };
 module.exports = ImageCrop;
 
 
-},{"./BackgroundLayer.js":159,"./ImageLayer.js":161,"./SelectionLayer.js":164,"./debounce.js":165}],161:[function(require,module,exports){
-var Listeners = require('./Listeners.js');
-var loaded = require('./imageLoaded.js');
-
+},{"./BackgroundLayer.js":159,"./Image.js":160,"./ImageLayer.js":162,"./SelectionLayer.js":165,"./debounce.js":166}],162:[function(require,module,exports){
 var ImageLayer = function(opts) {
 
 	opts = opts || {};
@@ -19192,37 +19257,14 @@ var ImageLayer = function(opts) {
 
 	this.canvas = opts.canvas;
 	this.context = this.canvas.getContext('2d');
-
-	this.listeners = Listeners.create();
 };
 
 ImageLayer.create = function(opts) {
 	return new ImageLayer(opts);
 };
 
-ImageLayer.prototype.on = function(type, fn) {
-	this.listeners.on(type, fn);
-};
-
-ImageLayer.prototype.off = function(type, fn) {
-	this.listeners.off(type, fn);
-};
-
 ImageLayer.prototype.setImage = function(image) {
-
-	if (!image)
-		return;
-
-	loaded(image, function(err) {
-
-		if (err) {
-			this.listeners.notify('imageError', err);
-		} else {
-			this.image = image;
-			this.listeners.notify('imageLoad', this);
-		}
-
-	}.bind(this));
+	this.image = image;
 };
 
 ImageLayer.prototype.revalidate = function() {
@@ -19234,13 +19276,13 @@ ImageLayer.prototype.revalidate = function() {
 	if (image) {
 
 		// Constrained by width (otherwise height)
-		if (image.naturalWidth / image.naturalHeight >= canvas.width / canvas.height) {
+		if (image.width / image.height >= canvas.width / canvas.height) {
 			bounds.width = canvas.width;
-			bounds.height = Math.round(image.naturalHeight / image.naturalWidth * canvas.width);
+			bounds.height = Math.round(image.height / image.width * canvas.width);
 			bounds.x = 0;
 			bounds.y = Math.round((canvas.height - bounds.height) * 0.5);
 		} else {
-			bounds.width = Math.round(image.naturalWidth / image.naturalHeight * canvas.height);
+			bounds.width = Math.round(image.width / image.height * canvas.height);
 			bounds.height = canvas.height;
 			bounds.x = Math.round((canvas.width - bounds.width) * 0.5);
 			bounds.y = 0;
@@ -19255,14 +19297,14 @@ ImageLayer.prototype.paint = function() {
 	var bounds = this.bounds;
 
 	if (image) {
-		context.drawImage(image, 0, 0, image.naturalWidth, image.naturalHeight, bounds.x, bounds.y, bounds.width, bounds.height);
+		context.drawImage(image.source, 0, 0, image.width, image.height, bounds.x, bounds.y, bounds.width, bounds.height);
 	}
 };
 
 module.exports = ImageLayer;
 
 
-},{"./Listeners.js":162,"./imageLoaded.js":167}],162:[function(require,module,exports){
+},{}],163:[function(require,module,exports){
 var Listeners = function(opts) {
 	this.events = {};
 };
@@ -19303,10 +19345,14 @@ Listeners.prototype.notify = function(type, data) {
   }
 };
 
+Listeners.prototype.clearAll = function() {
+	this.events = {};
+};
+
 module.exports = Listeners;
 
 
-},{}],163:[function(require,module,exports){
+},{}],164:[function(require,module,exports){
 var React = require('react');
 var ImageCrop = require('./ImageCrop.js');
 
@@ -19347,7 +19393,7 @@ var ReactImageCrop = React.createClass({displayName: "ReactImageCrop",
 module.exports = ReactImageCrop;
 
 
-},{"./ImageCrop.js":160,"react":158}],164:[function(require,module,exports){
+},{"./ImageCrop.js":161,"react":158}],165:[function(require,module,exports){
 var SelectionLayer = function(opts) {
 
 	this.canvas = opts.canvas;
@@ -19372,7 +19418,7 @@ SelectionLayer.prototype.paint = function() {
 module.exports = SelectionLayer;
 
 
-},{}],165:[function(require,module,exports){
+},{}],166:[function(require,module,exports){
 // http://snippetrepo.com/snippets/basic-vanilla-javascript-throttlingdebounce
 function debounce(fn, wait, immediate) {
 	var timeout;
@@ -19390,7 +19436,7 @@ function debounce(fn, wait, immediate) {
 module.exports = debounce;
 
 
-},{}],166:[function(require,module,exports){
+},{}],167:[function(require,module,exports){
 var React = require('react');
 var ReactDOM = require('react-dom');
 var ReactImageCrop = require('./ReactImageCrop.jsx');
@@ -19401,7 +19447,7 @@ document.body.appendChild(node);
 ReactDOM.render(React.createElement(ReactImageCrop, null), node);
 
 
-},{"./ReactImageCrop.jsx":163,"react":158,"react-dom":2}],167:[function(require,module,exports){
+},{"./ReactImageCrop.jsx":164,"react":158,"react-dom":2}],168:[function(require,module,exports){
 /*
  * Modified version of http://github.com/desandro/imagesloaded v2.1.1
  * MIT License.
@@ -19435,4 +19481,4 @@ function imageLoaded(image, callback) {
 module.exports = imageLoaded;
 
 
-},{}]},{},[166]);
+},{}]},{},[167]);
