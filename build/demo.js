@@ -19091,12 +19091,6 @@ Image.prototype.getAspect = function() {
 	return this.width / this.height;
 };
 
-Image.prototype.paint = function(context, bounds) {
-
-	if (this.hasLoaded)
-		context.drawImage(this.source, 0, 0, this.width, this.height, bounds.x, bounds.y, bounds.width, bounds.height);
-}
-
 Image.prototype.on = function(type, fn) {
 	this.listeners.on(type, fn);
 	return this;
@@ -19317,8 +19311,8 @@ ImageLayer.prototype.paint = function() {
 	var image = this.image;
 	var bounds = this.bounds;
 
-	if (this.image)
-		this.image.paint(context, bounds);
+	if (image && image.hasLoaded)
+		context.drawImage(image.source, 0, 0, image.width, image.height, bounds.x, bounds.y, bounds.width, bounds.height);
 };
 
 module.exports = ImageLayer;

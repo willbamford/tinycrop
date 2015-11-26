@@ -58,8 +58,8 @@ ImageLayer.prototype.paint = function() {
 	var image = this.image;
 	var bounds = this.bounds;
 
-	if (this.image)
-		this.image.paint(context, bounds);
+	if (image && image.hasLoaded)
+		context.drawImage(image.source, 0, 0, image.width, image.height, bounds.x, bounds.y, bounds.width, bounds.height);
 };
 
 module.exports = ImageLayer;
