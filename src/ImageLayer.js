@@ -9,6 +9,11 @@ var ImageLayer = function(opts) {
 		height: 0
 	};
 
+	this.size = {
+		width: 0,
+		height: 0
+	};
+
 	this.image = opts.image || null;
 
 	this.canvas = opts.canvas;
@@ -28,6 +33,7 @@ ImageLayer.prototype.revalidate = function() {
 	var canvas = this.canvas;
 	var image = this.image;
 	var bounds = this.bounds;
+	var size = this.size;
 
 	if (image) {
 
@@ -52,9 +58,8 @@ ImageLayer.prototype.paint = function() {
 	var image = this.image;
 	var bounds = this.bounds;
 
-	if (image) {
-		context.drawImage(image.source, 0, 0, image.width, image.height, bounds.x, bounds.y, bounds.width, bounds.height);
-	}
+	if (this.image)
+		this.image.paint(context, bounds);
 };
 
 module.exports = ImageLayer;

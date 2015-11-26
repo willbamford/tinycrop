@@ -55,11 +55,12 @@ var ImageCrop = function(opts) {
 
 	this.imageLayer = ImageLayer.create({
 		canvas: this.canvas,
-		image: opts.image || null
+		image: this.image
 	});
 
 	this.selectionLayer = SelectionLayer.create({
-		canvas: this.canvas
+		canvas: this.canvas,
+		target: this.imageLayer
 	});
 
 	window.addEventListener('resize', debounce(this.revalidateAndPaint.bind(this), 100));
@@ -118,19 +119,25 @@ ImageCrop.prototype.revalidate = function() {
 
 ImageCrop.prototype.setImage = function(sourceImage) {
 
-	var image = Image.create(sourceImage);
-	image.on('load', function() {
-		this.revalidateAndPaint();
-	}.bind(this));
-
-	image.on('error', function(e) {
-		console.error(e);
-	}.bind(this));
+	var image = Image.create(sourceImage)
+		.on(
+			'load',
+			function() {
+				this.revalidateAndPaint();
+			}.bind(this)
+		)
+		.on(
+			'error',
+			function(e) {
+				alert(e);
+				console.error(e);
+			}.bind(this)
+		);
 
 	this.imageLayer.setImage(image);
 	this.image = image;
 };
 
-ImageCrop.prototype.dispose = function() { /* ... */ };
+ImageCrop.prototype.dispose = noop;
 
 module.exports = ImageCrop;

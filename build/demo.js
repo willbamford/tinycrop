@@ -19091,12 +19091,20 @@ Image.prototype.getAspect = function() {
 	return this.width / this.height;
 };
 
+Image.prototype.paint = function(context, bounds) {
+
+	if (this.hasLoaded)
+		context.drawImage(this.source, 0, 0, this.width, this.height, bounds.x, bounds.y, bounds.width, bounds.height);
+}
+
 Image.prototype.on = function(type, fn) {
 	this.listeners.on(type, fn);
+	return this;
 };
 
 Image.prototype.off = function(type, fn) {
 	this.listeners.off(type, fn);
+	return this;
 };
 
 module.exports = Image;
@@ -19160,11 +19168,12 @@ var ImageCrop = function(opts) {
 
 	this.imageLayer = ImageLayer.create({
 		canvas: this.canvas,
-		image: opts.image || null
+		image: this.image
 	});
 
 	this.selectionLayer = SelectionLayer.create({
-		canvas: this.canvas
+		canvas: this.canvas,
+		target: this.imageLayer
 	});
 
 	window.addEventListener('resize', debounce(this.revalidateAndPaint.bind(this), 100));
@@ -19223,20 +19232,26 @@ ImageCrop.prototype.revalidate = function() {
 
 ImageCrop.prototype.setImage = function(sourceImage) {
 
-	var image = Image.create(sourceImage);
-	image.on('load', function() {
-		this.revalidateAndPaint();
-	}.bind(this));
-
-	image.on('error', function(e) {
-		console.error(e);
-	}.bind(this));
+	var image = Image.create(sourceImage)
+		.on(
+			'load',
+			function() {
+				this.revalidateAndPaint();
+			}.bind(this)
+		)
+		.on(
+			'error',
+			function(e) {
+				alert(e);
+				console.error(e);
+			}.bind(this)
+		);
 
 	this.imageLayer.setImage(image);
 	this.image = image;
 };
 
-ImageCrop.prototype.dispose = function() { /* ... */ };
+ImageCrop.prototype.dispose = noop;
 
 module.exports = ImageCrop;
 
@@ -19249,6 +19264,11 @@ var ImageLayer = function(opts) {
 	this.bounds = {
 		x: 0,
 		y: 0,
+		width: 0,
+		height: 0
+	};
+
+	this.size = {
 		width: 0,
 		height: 0
 	};
@@ -19272,6 +19292,7 @@ ImageLayer.prototype.revalidate = function() {
 	var canvas = this.canvas;
 	var image = this.image;
 	var bounds = this.bounds;
+	var size = this.size;
 
 	if (image) {
 
@@ -19296,9 +19317,8 @@ ImageLayer.prototype.paint = function() {
 	var image = this.image;
 	var bounds = this.bounds;
 
-	if (image) {
-		context.drawImage(image.source, 0, 0, image.width, image.height, bounds.x, bounds.y, bounds.width, bounds.height);
-	}
+	if (this.image)
+		this.image.paint(context, bounds);
 };
 
 module.exports = ImageLayer;
@@ -19396,8 +19416,23 @@ module.exports = ReactImageCrop;
 },{"./ImageCrop.js":161,"react":158}],165:[function(require,module,exports){
 var SelectionLayer = function(opts) {
 
+	this.bounds = {
+		x: 0,
+		y: 0,
+		width: 0,
+		height: 0
+	};
+
+	this.region = {
+		x: 100,
+		y: 200,
+		width: 300,
+		height: 400
+	};
+
 	this.canvas = opts.canvas;
 	this.context = this.canvas.getContext('2d');
+	this.target = opts.target;
 };
 
 SelectionLayer.create = function(opts) {
@@ -19406,13 +19441,26 @@ SelectionLayer.create = function(opts) {
 
 SelectionLayer.prototype.revalidate = function() {
 
+	var target = this.target;
+	var region = this.region;
+	var bounds = this.bounds;
+
+	if (target.image) {
+
+		bounds.x = target.bounds.x + target.bounds.width * (region.x / target.image.width);
+		bounds.y = target.bounds.y + target.bounds.height * (region.y / target.image.height);
+		bounds.width = target.bounds.width * (region.width / target.image.width);
+		bounds.height = target.bounds.height * (region.height / target.image.height);
+	}
 };
 
 SelectionLayer.prototype.paint = function() {
 
+	var bounds = this.bounds;
+
 	var context = this.context;
-	context.fillStyle = 'green';
-	context.fillRect(0, 0, 100, 100);
+	context.fillStyle = 'rgba(255, 0, 0, 0.5)';
+	context.fillRect(bounds.x, bounds.y, bounds.width, bounds.height);
 };
 
 module.exports = SelectionLayer;
