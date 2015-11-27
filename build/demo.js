@@ -19541,9 +19541,8 @@ SelectionLayer.prototype.paint = function() {
 
 	var context = this.context;
 
-	context.fillStyle = 'rgba(0, 0, 0, 0.5)';
-
 	// Greyed-out
+	context.fillStyle = 'rgba(0, 0, 0, 0.5)';
 	context.fillRect(0, 0, canvas.width, bounds.y);
 	context.fillRect(0, bounds.y, bounds.x, bounds.height);
 	context.fillRect(bounds.x + bounds.width, bounds.y, canvas.width - bounds.x + bounds.width, bounds.height);
