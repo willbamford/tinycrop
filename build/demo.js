@@ -19543,10 +19543,32 @@ SelectionLayer.prototype.paint = function() {
 
 	context.fillStyle = 'rgba(0, 0, 0, 0.5)';
 
+	// Greyed-out
 	context.fillRect(0, 0, canvas.width, bounds.y);
 	context.fillRect(0, bounds.y, bounds.x, bounds.height);
 	context.fillRect(bounds.x + bounds.width, bounds.y, canvas.width - bounds.x + bounds.width, bounds.height);
 	context.fillRect(0, bounds.y + bounds.height, canvas.width, canvas.height - bounds.y + bounds.height);
+
+	var cornerLength = 32;
+	var cornerDepth = 3;
+
+	// Handles
+	context.fillStyle = 'rgba(255, 255, 255, 1.0)';
+	context.fillRect(bounds.x, bounds.y, cornerLength, cornerDepth);
+	context.fillRect(bounds.x, bounds.y + cornerDepth, cornerDepth, cornerLength - cornerDepth);
+	context.fillRect(bounds.x + bounds.width - cornerLength, bounds.y, cornerLength, cornerDepth);
+	context.fillRect(bounds.x + bounds.width - cornerDepth, bounds.y + cornerDepth, cornerDepth, cornerLength - cornerDepth);
+	context.fillRect(bounds.x, bounds.y + bounds.height - cornerDepth, cornerLength, cornerDepth);
+	context.fillRect(bounds.x, bounds.y + bounds.height - cornerLength, cornerDepth, cornerLength - cornerDepth);
+	context.fillRect(bounds.x + bounds.width - cornerLength, bounds.y + bounds.height - cornerDepth, cornerLength, cornerDepth);
+	context.fillRect(bounds.x + bounds.width - cornerDepth, bounds.y + bounds.height - cornerLength, cornerDepth, cornerLength - cornerDepth);
+
+	// Sides
+	context.fillStyle = 'rgba(255, 255, 255, 0.25)';
+	context.fillRect(bounds.x + cornerLength, bounds.y, bounds.width - 2 * cornerLength, cornerDepth);
+	context.fillRect(bounds.x + cornerLength, bounds.y + bounds.height - cornerDepth, bounds.width - 2 * cornerLength, cornerDepth);
+	context.fillRect(bounds.x, bounds.y + cornerLength, cornerDepth, bounds.height - 2 * cornerLength);
+	context.fillRect(bounds.x + bounds.width - cornerDepth, bounds.y + cornerLength, cornerDepth, bounds.height - 2 * cornerLength);
 };
 
 module.exports = SelectionLayer;
