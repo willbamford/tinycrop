@@ -19,8 +19,8 @@ var Input = function(domElement) {
 		var touch = source.touches.length > 0 ? source.touches[0] : source.changedTouches[0];
 		return {
 			source: source,
-			x: touch ? touch.pageX - bounds.left,
-			y: touch ? touch.pageY - bounds.top,
+			x: touch.pageX - bounds.left,
+			y: touch.pageY - bounds.top,
 			type: 'Touch'
 		};
 	}
