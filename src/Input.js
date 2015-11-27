@@ -34,6 +34,7 @@ var Input = function(domElement) {
 	}.bind(this));
 
 	domElement.addEventListener('mousemove', function(source) {
+		console.log('mousemove');
 		this.listeners.notify('move', createEventForMouse(source));
 	}.bind(this));
 
@@ -47,6 +48,14 @@ var Input = function(domElement) {
 
 	domElement.addEventListener('touchend', function(source) {
 		this.listeners.notify('up', createEventForTouch(source));
+	}.bind(this));
+
+	domElement.addEventListener('mouseout', function(source) {
+		this.listeners.notify('cancel', createEventForMouse(source));
+	}.bind(this));
+
+	domElement.addEventListener('touchcancel', function(source) {
+		this.listeners.notify('cancel', createEventForTouch(source));
 	}.bind(this));
 };
 

@@ -22,21 +22,62 @@ var SelectionLayer = function(opts) {
 
 	this.input = Input.create(this.canvas);
 
+	this.action = null;
+	this.downEvent = null;
+
 	this.input.on('down', function(e) {
 		e.source.preventDefault();
-	});
+
+		if (this.isWithinBounds(e)) {
+			this.action = 'moving';
+			this.canvas.style.cursor = 'move';
+			this.downEvent = e;
+		}
+
+	}.bind(this));
 
 	this.input.on('move', function(e) {
 		e.source.preventDefault();
-	});
+
+		if (this.action === null) {
+			if (this.isWithinBounds(e)) {
+				this.canvas.style.cursor = 'move';
+			} else {
+				this.canvas.style.cursor = 'auto';
+			}
+		} else if (this.action === 'moving') {
+			console.log('Moving..');
+		}
+	}.bind(this));
 
 	this.input.on('up', function(e) {
 		e.source.preventDefault();
-	});
+
+		this.action = null;
+		this.canvas.style.cursor = 'auto';
+		this.downEvent = null;
+	}.bind(this));
+
+	this.input.on('cancel', function(e) {
+		e.source.preventDefault();
+
+		this.action = null;
+		this.downEvent = null;
+		this.canvas.style.cursor = 'auto';
+	}.bind(this));
 };
 
 SelectionLayer.create = function(opts) {
 	return new SelectionLayer(opts);
+};
+
+SelectionLayer.prototype.isWithinBounds = function(point) {
+
+	var bounds = this.bounds;
+	return point.x >= bounds.x &&
+		point.y >= bounds.y &&
+		point.x < bounds.x + bounds.width &&
+		point.y < bounds.y + bounds.height;
 };
 
 SelectionLayer.prototype.revalidate = function() {
