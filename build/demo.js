@@ -19579,6 +19579,12 @@ var SelectionLayer = function(opts) {
 			delta.x = e.x - downEvent.x;
 			delta.y = e.y - downEvent.y;
 
+			var bounds = this.bounds;
+
+			var minLen = this.handleOpts.length * 2;
+			var minWidth = minLen;
+			var minHeight = minLen;
+
 			switch (activeRegion) {
 				case 'move':
 					this.setBounds(
@@ -19589,36 +19595,32 @@ var SelectionLayer = function(opts) {
 					);
 					break;
 				case 'nw-resize':
-					this.setBounds(
-						downBounds.x + delta.x,
-						downBounds.y + delta.y,
-						downBounds.width - delta.x,
-						downBounds.height - delta.y
-					);
+					var fx = downBounds.x + downBounds.width;
+					var fy = downBounds.y + downBounds.height;
+					var w = Math.max(minWidth, downBounds.width - delta.x);
+					var h = Math.max(minHeight, downBounds.height - delta.y);
+					this.setBounds(fx - w, fy - h, w, h);
 					break;
 				case 'ne-resize':
-					this.setBounds(
-						downBounds.x,
-						downBounds.y + delta.y,
-						downBounds.width + delta.x,
-						downBounds.height - delta.y
-					);
+					var fx = downBounds.x;
+					var fy = downBounds.y + downBounds.height;
+					var w = Math.max(minWidth, downBounds.width + delta.x);
+					var h = Math.max(minHeight, downBounds.height - delta.y);
+					this.setBounds(fx, fy - h, w, h);
 					break;
 				case 'sw-resize':
-					this.setBounds(
-						downBounds.x + delta.x,
-						downBounds.y,
-						downBounds.width - delta.x,
-						downBounds.height + delta.y
-					);
+					var fx = downBounds.x + downBounds.width;
+					var fy = downBounds.y;
+					var w = Math.max(minWidth, downBounds.width - delta.x);
+					var h = Math.max(minHeight, downBounds.height + delta.y);
+					this.setBounds(fx - w, fy, w, h);
 					break;
 				case 'se-resize':
-					this.setBounds(
-						downBounds.x,
-						downBounds.y,
-						downBounds.width + delta.x,
-						downBounds.height + delta.y
-					);
+					var fx = downBounds.x;
+					var fy = downBounds.y;
+					var w = Math.max(minWidth, downBounds.width + delta.x);
+					var h = Math.max(minHeight, downBounds.height + delta.y);
+					this.setBounds(fx, fy, w, h);
 					break;
 			}
 
@@ -19681,17 +19683,12 @@ SelectionLayer.prototype.findHitRegion = function(point) {
 		return null;
 };
 
-SelectionLayer.prototype.setBounds = function(x, y, width, height) {
-
+SelectionLayer.prototype.setBounds = function(x, y, w, h) {
 	var bounds = this.bounds;
-
-	var minWidth = this.handleOpts.length * 2;
-	var minHeight = this.handleOpts.length * 2;
-
 	bounds.x = x;
 	bounds.y = y;
-	bounds.width = Math.max(width, minWidth);
-	bounds.height = Math.max(height, minWidth);
+	bounds.width = w;
+	bounds.height = h;
 };
 
 SelectionLayer.prototype.on = function(type, fn) {
