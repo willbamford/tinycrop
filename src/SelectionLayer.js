@@ -30,7 +30,7 @@ var SelectionLayer = function(opts) {
 	handleOpts.depth = handleOpts.depth || 3;
 	handleOpts.size = handleOpts.size || handleOpts.length * 2;
 	handleOpts.color = handleOpts.color || 'rgba(255, 255, 255, 1.0)';
-	handleOpts.activeColor = handleOpts.activeColor || 'rgba(0, 127, 255, 1.0)';
+	handleOpts.activeColor = handleOpts.activeColor || 'rgba(255, 0, 160, 1.0)';
 	this.handleOpts = handleOpts;
 
 	this.listeners = Listeners.create();
@@ -85,19 +85,44 @@ var SelectionLayer = function(opts) {
 
 			switch (activeRegion) {
 				case 'move':
-					this.setBounds(downBounds.x + delta.x, downBounds.y + delta.y, downBounds.width, downBounds.height);
+					this.setBounds(
+						downBounds.x + delta.x,
+						downBounds.y + delta.y,
+						downBounds.width,
+						downBounds.height
+					);
 					break;
 				case 'nw-resize':
-					this.setBounds(downBounds.x + delta.x, downBounds.y + delta.y, downBounds.width - delta.x, downBounds.height - delta.y);
+					this.setBounds(
+						downBounds.x + delta.x,
+						downBounds.y + delta.y,
+						downBounds.width - delta.x,
+						downBounds.height - delta.y
+					);
 					break;
 				case 'ne-resize':
-					this.setBounds(downBounds.x, downBounds.y + delta.y, downBounds.width + delta.x, downBounds.height - delta.y);
+					this.setBounds(
+						downBounds.x,
+						downBounds.y + delta.y,
+						downBounds.width + delta.x,
+						downBounds.height - delta.y
+					);
 					break;
 				case 'sw-resize':
-					this.setBounds(downBounds.x + delta.x, downBounds.y, downBounds.width - delta.x, downBounds.height + delta.y);
+					this.setBounds(
+						downBounds.x + delta.x,
+						downBounds.y,
+						downBounds.width - delta.x,
+						downBounds.height + delta.y
+					);
 					break;
 				case 'se-resize':
-					this.setBounds(downBounds.x, downBounds.y, downBounds.width + delta.x, downBounds.height + delta.y);
+					this.setBounds(
+						downBounds.x,
+						downBounds.y,
+						downBounds.width + delta.x,
+						downBounds.height + delta.y
+					);
 					break;
 			}
 
@@ -163,10 +188,14 @@ SelectionLayer.prototype.findHitRegion = function(point) {
 SelectionLayer.prototype.setBounds = function(x, y, width, height) {
 
 	var bounds = this.bounds;
+
+	var minWidth = this.handleOpts.length * 2;
+	var minHeight = this.handleOpts.length * 2;
+
 	bounds.x = x;
 	bounds.y = y;
-	bounds.width = Math.max(width, this.handleOpts.length * 2);
-	bounds.height = Math.max(height, this.handleOpts.length * 2);
+	bounds.width = Math.max(width, minWidth);
+	bounds.height = Math.max(height, minWidth);
 };
 
 SelectionLayer.prototype.on = function(type, fn) {
@@ -259,49 +288,57 @@ SelectionLayer.prototype.revalidate = function() {
 
 SelectionLayer.prototype.paint = function() {
 
+	this.paintOutside();
+	this.paintInside();
+};
+
+SelectionLayer.prototype.paintOutside = function() {
 	var canvas = this.canvas;
 	var bounds = this.bounds;
 	var context = this.context;
-	var activeRegion = this.activeRegion;
 
-	// Greyed-out
 	context.fillStyle = 'rgba(0, 0, 0, 0.5)';
 	context.fillRect(0, 0, canvas.width, bounds.y);
 	context.fillRect(0, bounds.y, bounds.x, bounds.height);
 	context.fillRect(bounds.x + bounds.width, bounds.y, canvas.width - bounds.x + bounds.width, bounds.height);
 	context.fillRect(0, bounds.y + bounds.height, canvas.width, canvas.height - bounds.y + bounds.height);
+};
 
+SelectionLayer.prototype.paintInside = function() {
+
+	var context = this.context;
+	var bounds = this.bounds;
+	var activeRegion = this.activeRegion;
 	var opts = this.handleOpts;
 
-	var handleLengthWidth = Math.min(opts.length, bounds.width);
-	var handleLengthHeight = Math.min(opts.length, bounds.height);
-	var handleDepth = opts.depth;
-	var handleColor = opts.color;
-	var handleActiveColor = opts.activeColor;
+	var length = opts.length;
+	var depth = opts.depth;
+	var color = opts.color;
+	var activeColor = opts.activeColor;
 
 	// Handles
-	context.fillStyle = activeRegion === 'nw-resize' ? handleActiveColor : handleColor;
-	context.fillRect(bounds.x, bounds.y, handleLengthWidth, handleDepth);
-	context.fillRect(bounds.x, bounds.y + handleDepth, handleDepth, handleLengthHeight - handleDepth);
+	context.fillStyle = activeRegion === 'move' || activeRegion === 'nw-resize' ? activeColor : color;
+	context.fillRect(bounds.x, bounds.y, length, depth);
+	context.fillRect(bounds.x, bounds.y + depth, depth, length - depth);
 
-	context.fillStyle = activeRegion === 'ne-resize' ? handleActiveColor : handleColor;
-	context.fillRect(bounds.x + bounds.width - handleLengthWidth, bounds.y, handleLengthWidth, handleDepth);
-	context.fillRect(bounds.x + bounds.width - handleDepth, bounds.y + handleDepth, handleDepth, handleLengthHeight - handleDepth);
+	context.fillStyle = activeRegion === 'move' || activeRegion === 'ne-resize' ? activeColor : color;
+	context.fillRect(bounds.x + bounds.width - length, bounds.y, length, depth);
+	context.fillRect(bounds.x + bounds.width - depth, bounds.y + depth, depth, length - depth);
 
-	context.fillStyle = activeRegion === 'sw-resize' ? handleActiveColor : handleColor;
-	context.fillRect(bounds.x, bounds.y + bounds.height - handleDepth, handleLengthWidth, handleDepth);
-	context.fillRect(bounds.x, bounds.y + bounds.height - handleLengthHeight, handleDepth, handleLengthHeight - handleDepth);
+	context.fillStyle = activeRegion === 'move' || activeRegion === 'sw-resize' ? activeColor : color;
+	context.fillRect(bounds.x, bounds.y + bounds.height - depth, length, depth);
+	context.fillRect(bounds.x, bounds.y + bounds.height - length, depth, length - depth);
 
-	context.fillStyle = activeRegion === 'se-resize' ? handleActiveColor : handleColor;
-	context.fillRect(bounds.x + bounds.width - handleLengthWidth, bounds.y + bounds.height - handleDepth, handleLengthWidth, handleDepth);
-	context.fillRect(bounds.x + bounds.width - handleDepth, bounds.y + bounds.height - handleLengthHeight, handleDepth, handleLengthHeight - handleDepth);
+	context.fillStyle = activeRegion === 'move' || activeRegion === 'se-resize' ? activeColor : color;
+	context.fillRect(bounds.x + bounds.width - length, bounds.y + bounds.height - depth, length, depth);
+	context.fillRect(bounds.x + bounds.width - depth, bounds.y + bounds.height - length, depth, length - depth);
 
 	// Sides
-	context.fillStyle = 'rgba(255, 255, 255, 0.25)';
-	context.fillRect(bounds.x + handleLengthWidth, bounds.y, bounds.width - 2 * handleLengthWidth, handleDepth);
-	context.fillRect(bounds.x + handleLengthWidth, bounds.y + bounds.height - handleDepth, bounds.width - 2 * handleLengthWidth, handleDepth);
-	context.fillRect(bounds.x, bounds.y + handleLengthHeight, handleDepth, bounds.height - 2 * handleLengthHeight);
-	context.fillRect(bounds.x + bounds.width - handleDepth, bounds.y + handleLengthHeight, handleDepth, bounds.height - 2 * handleLengthHeight);
+	context.fillStyle = 'rgba(255, 255, 255, 0.3)';
+	context.fillRect(bounds.x + length, bounds.y, bounds.width - 2 * length, depth);
+	context.fillRect(bounds.x + length, bounds.y + bounds.height - depth, bounds.width - 2 * length, depth);
+	context.fillRect(bounds.x, bounds.y + length, depth, bounds.height - 2 * length);
+	context.fillRect(bounds.x + bounds.width - depth, bounds.y + length, depth, bounds.height - 2 * length);
 };
 
 module.exports = SelectionLayer;
