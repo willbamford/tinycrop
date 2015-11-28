@@ -43,6 +43,8 @@ var ImageCrop = function(opts) {
 
 	this.image = null;
 
+	this.backgroundColor = opts.backgroundColor || '#ccc';
+
 	this.optWidth = opts.width || '100%';
 	this.optHeight = opts.height || 'auto';
 
@@ -51,7 +53,7 @@ var ImageCrop = function(opts) {
 	this.backgroundLayer = BackgroundLayer.create({
 		parent: this,
 		context: this.context,
-		color: '#ccc'
+		color: this.backgroundColor
 	});
 
 	this.imageLayer = ImageLayer.create({
@@ -101,9 +103,11 @@ ImageCrop.prototype.paint = function() {
 	context.save();
 	context.scale(this.ratio, this.ratio);
 
-	this.backgroundLayer.paint();
-	this.imageLayer.paint();
-	this.selectionLayer.paint();
+	if (this.image && this.image.hasLoaded) {
+		this.backgroundLayer.paint();
+		this.imageLayer.paint();
+		this.selectionLayer.paint();
+	}
 
 	context.restore();
 };

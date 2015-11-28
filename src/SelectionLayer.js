@@ -76,6 +76,7 @@ var SelectionLayer = function(opts) {
 			e.source.preventDefault();
 
 			var delta = this.delta;
+			var target = this.target;
 			var bounds = this.bounds;
 			var downBounds = this.downBounds;
 			var downEvent = this.downEvent;
@@ -89,45 +90,64 @@ var SelectionLayer = function(opts) {
 			var minWidth = minLen;
 			var minHeight = minLen;
 
-			switch (activeRegion) {
-				case 'move':
-					this.setBounds(
-						downBounds.x + delta.x,
-						downBounds.y + delta.y,
-						downBounds.width,
-						downBounds.height
-					);
-					break;
-				case 'nw-resize':
-					var fx = downBounds.x + downBounds.width;
-					var fy = downBounds.y + downBounds.height;
-					var w = Math.max(minWidth, downBounds.width - delta.x);
-					var h = Math.max(minHeight, downBounds.height - delta.y);
-					this.setBounds(fx - w, fy - h, w, h);
-					break;
-				case 'ne-resize':
-					var fx = downBounds.x;
-					var fy = downBounds.y + downBounds.height;
-					var w = Math.max(minWidth, downBounds.width + delta.x);
-					var h = Math.max(minHeight, downBounds.height - delta.y);
-					this.setBounds(fx, fy - h, w, h);
-					break;
-				case 'sw-resize':
-					var fx = downBounds.x + downBounds.width;
-					var fy = downBounds.y;
-					var w = Math.max(minWidth, downBounds.width - delta.x);
-					var h = Math.max(minHeight, downBounds.height + delta.y);
-					this.setBounds(fx - w, fy, w, h);
-					break;
-				case 'se-resize':
-					var fx = downBounds.x;
-					var fy = downBounds.y;
-					var w = Math.max(minWidth, downBounds.width + delta.x);
-					var h = Math.max(minHeight, downBounds.height + delta.y);
-					this.setBounds(fx, fy, w, h);
-					break;
+			var newLeft = downBounds.x;
+			var newRight = downBounds.y;
+			var newWidth = downBounds.width;
+			var newHeight = downBounds.height;
+			var newTop = newLeft + newWidth;
+			var newBottom = newRight + newHeight;
+
+			if (activeRegion === 'move') {
+				newLeft += delta.x;
+				newTop += delta.y;
+				newLeft = Math.min(Math.max(newLeft, target.bounds.x), target.bounds.x + target.bounds.width - downWidth);
+				newTop = Math.min(Math.max(newTop, target.bounds.y), target.bounds.y + target.bounds.height - downHeight);
+			} else {
+				var dirV = activeRegion[0];
+				var dirH = activeRegion[1];
+
+				if (dirV === 'n') {
+					newTop += delta.y;
+					if (delta.y < 0) {
+						newTop = Math.max(target.bounds.y, newTop);
+						newHeight = newBottom - newTop;
+					} else {
+						newHeight = Math.max(minHeight, newBottom - newTop);
+						newTop = newBottom - newHeight;
+					}
+				} else if (dirV === 's') {
+					newBottom += delta.y;
+					if (delta.y > 0) {
+						newBottom = Math.min(target.bounds.y + target.bounds.height, newBottom);
+						newHeight = newBottom - newTop;
+					} else {
+						newHeight = Math.max(minHeight, newBottom - newTop);
+						newBottom = newTop + Math.max(minHeight, newBottom - newTop);
+					}
+				}
+
+				if (dirH === 'w') {
+					newLeft += delta.x;
+					if (delta.x < 0) {
+						newLeft = Math.max(target.bounds.x, newLeft);
+						newWidth = newRight - newLeft;
+					} else {
+						newWidth = Math.max(minWidth, newRight - newLeft);
+						newLeft = newRight - Math.max(minWidth, newRight - newLeft);
+					}
+				} else if (dirH === 'e') {
+					newRight += delta.x;
+					if (delta.x > 0) {
+						newRight = Math.min(target.bounds.x + target.bounds.width, newRight);
+						newWidth = newRight - newLeft;
+					} else {
+						newWidth = Math.max(minWidth, newRight - newLeft);
+						newRight = newLeft + Math.max(minWidth, newRight - newLeft);
+					}
+				}
 			}
 
+			this.setBounds(newLeft, newTop, newWidth, newHeight);
 			this.updateRegionAndNotifyListeners();
 		}
 
@@ -188,6 +208,7 @@ SelectionLayer.prototype.findHitRegion = function(point) {
 };
 
 SelectionLayer.prototype.setBounds = function(x, y, w, h) {
+	var target = this.target;
 	var bounds = this.bounds;
 	bounds.x = Math.round(x);
 	bounds.y = Math.round(y);
@@ -277,15 +298,16 @@ SelectionLayer.prototype.revalidate = function() {
 
 	if (target.image) {
 
-		bounds.x = Math.round(target.bounds.x + target.bounds.width * (region.x / target.image.width));
-		bounds.y = Math.round(target.bounds.y + target.bounds.height * (region.y / target.image.height));
-		bounds.width = Math.round(target.bounds.width * (region.width / target.image.width));
-		bounds.height = Math.round(target.bounds.height * (region.height / target.image.height));
+		this.setBounds(
+			target.bounds.x + target.bounds.width * (region.x / target.image.width),
+			target.bounds.y + target.bounds.height * (region.y / target.image.height),
+			target.bounds.width * (region.width / target.image.width),
+			target.bounds.height * (region.height / target.image.height)
+		);
 	}
 };
 
 SelectionLayer.prototype.paint = function() {
-
 	this.paintOutside();
 	this.paintInside();
 };
@@ -294,12 +316,27 @@ SelectionLayer.prototype.paintOutside = function() {
 	var parent = this.parent;
 	var bounds = this.bounds;
 	var context = this.context;
+	var target = this.target;
+
+	var tl = target.bounds.x;
+	var tt = target.bounds.y;
+	var tw = target.bounds.width;
+	var th = target.bounds.height;
+	var tr = tl + tw;
+	var tb = tt + th;
+
+	var bl = bounds.x;
+	var bt = bounds.y;
+	var bw = bounds.width;
+	var bh = bounds.height;
+	var br = bl + bw;
+	var bb = bt + bh;
 
 	context.fillStyle = 'rgba(0, 0, 0, 0.5)';
-	context.fillRect(0, 0, parent.width, bounds.y);
-	context.fillRect(0, bounds.y, bounds.x, bounds.height);
-	context.fillRect(bounds.x + bounds.width, bounds.y, parent.width - bounds.x + bounds.width, bounds.height);
-	context.fillRect(0, bounds.y + bounds.height, parent.width, parent.height - bounds.y + bounds.height);
+	context.fillRect(tl, tt, tw, bt - tt);
+	context.fillRect(tl, bt, bl - tl, bh);
+	context.fillRect(br, bt, tr - br, bh);
+	context.fillRect(tl, bb, tw, tb - bb);
 };
 
 SelectionLayer.prototype.paintInside = function() {

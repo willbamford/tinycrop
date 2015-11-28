@@ -2,8 +2,7 @@ var BackgroundLayer = function(opts) {
 
 	opts = opts || {};
 
-	this.color = opts.color || '#e0e0e0';
-
+	this.color = opts.color;
 	this.parent = opts.parent;
 	this.context = opts.context;
 };

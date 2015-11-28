@@ -9,11 +9,11 @@ var ReactImageCrop = React.createClass({
     this.imageCrop = ImageCrop.create({
       parent: this.refs.parent,
       width: '100%',
-      height: 'auto'
+      height: '100%'
     });
 
     var image = document.createElement('img');
-    image.src = 'images/demo-image.jpg';
+    image.src = 'images/portrait.jpg';
 
     this.imageCrop.setImage(image);
   },
