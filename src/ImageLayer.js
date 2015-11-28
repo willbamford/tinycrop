@@ -9,11 +9,6 @@ var ImageLayer = function(opts) {
 		height: 0
 	};
 
-	this.size = {
-		width: 0,
-		height: 0
-	};
-
 	this.image = opts.image || null;
 
 	this.canvas = opts.canvas;
@@ -33,7 +28,6 @@ ImageLayer.prototype.revalidate = function() {
 	var canvas = this.canvas;
 	var image = this.image;
 	var bounds = this.bounds;
-	var size = this.size;
 
 	if (image) {
 

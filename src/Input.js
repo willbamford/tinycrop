@@ -34,7 +34,6 @@ var Input = function(domElement) {
 	}.bind(this));
 
 	domElement.addEventListener('mousemove', function(source) {
-		console.log('mousemove');
 		this.listeners.notify('move', createEventForMouse(source));
 	}.bind(this));
 

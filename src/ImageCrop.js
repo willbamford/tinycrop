@@ -63,6 +63,20 @@ var ImageCrop = function(opts) {
 		target: this.imageLayer
 	});
 
+	this.selectionLayer
+		.on(
+			'regionChange',
+			function() {
+				this.paint();
+			}.bind(this)
+		)
+		.on(
+			'dirty',
+			function() {
+				this.paint();
+			}.bind(this)
+		);
+
 	window.addEventListener('resize', debounce(this.revalidateAndPaint.bind(this), 100));
 
 	this.revalidateAndPaint();
