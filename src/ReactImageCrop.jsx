@@ -19,9 +19,9 @@ var ReactImageCrop = React.createClass({
   },
 
   componentWillUnmount: function() {
-		console.log('ReactImageCrop componentWillUnmount()');
+    console.log('ReactImageCrop componentWillUnmount()');
     this.imageCrop.dispose();
-	},
+  },
 
   componentDidUpdate: function() {
     console.log('ReactImageCrop componentDidUpdate()');

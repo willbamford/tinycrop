@@ -3,377 +3,377 @@ var Listeners = require('./Listeners.js');
 
 var SelectionLayer = function(opts) {
 
-	this.bounds = {
-		x: 0,
-		y: 0,
-		width: 0,
-		height: 0
-	};
+  this.bounds = {
+    x: 0,
+    y: 0,
+    width: 0,
+    height: 0
+  };
 
-	this.region = {
-		x: 0,
-		y: 0,
-		width: 400,
-		height: 400
-	};
+  this.region = {
+    x: 0,
+    y: 0,
+    width: 400,
+    height: 400
+  };
 
-	this.parent = opts.parent;
-	this.context = opts.context;
-	this.target = opts.target;
-	this.minSize = opts.minSize || {
-		width: 10,
-		height: 10
-	};
+  this.parent = opts.parent;
+  this.context = opts.context;
+  this.target = opts.target;
+  this.minSize = opts.minSize || {
+    width: 10,
+    height: 10
+  };
 
-	var handleOpts = opts.handle || {};
-	handleOpts.length = handleOpts.length || 32;
-	handleOpts.depth = handleOpts.depth || 3;
-	handleOpts.size = handleOpts.size || handleOpts.length * 2;
-	handleOpts.color = handleOpts.color || 'rgba(255, 255, 255, 1.0)';
-	handleOpts.activeColor = handleOpts.activeColor || 'rgba(255, 0, 160, 1.0)';
-	this.handleOpts = handleOpts;
+  var handleOpts = opts.handle || {};
+  handleOpts.length = handleOpts.length || 32;
+  handleOpts.depth = handleOpts.depth || 3;
+  handleOpts.size = handleOpts.size || handleOpts.length * 2;
+  handleOpts.color = handleOpts.color || 'rgba(255, 255, 255, 1.0)';
+  handleOpts.activeColor = handleOpts.activeColor || 'rgba(255, 0, 160, 1.0)';
+  this.handleOpts = handleOpts;
 
-	this.listeners = Listeners.create();
+  this.listeners = Listeners.create();
 
-	this.input = Input.create(this.parent.canvas);
+  this.input = Input.create(this.parent.canvas);
 
-	this.activeRegion = null;
-	this.delta = {x: 0, y: 0};
-	this.downEvent = null;
-	this.downBounds = {x: 0, y: 0};
+  this.activeRegion = null;
+  this.delta = {x: 0, y: 0};
+  this.downEvent = null;
+  this.downBounds = {x: 0, y: 0};
 
-	this.input.on('down', function(e) {
+  this.input.on('down', function(e) {
 
-		var hitRegion = this.findHitRegion(e);
+    var hitRegion = this.findHitRegion(e);
 
-		if (hitRegion) {
-			this.activeRegion = hitRegion;
-			this.setCursor(hitRegion);
-			this.downEvent = e;
-			this.downBounds.x = this.bounds.x;
-			this.downBounds.y = this.bounds.y;
-			this.downBounds.width = this.bounds.width;
-			this.downBounds.height = this.bounds.height;
-			e.source.preventDefault();
-		}
+    if (hitRegion) {
+      this.activeRegion = hitRegion;
+      this.setCursor(hitRegion);
+      this.downEvent = e;
+      this.downBounds.x = this.bounds.x;
+      this.downBounds.y = this.bounds.y;
+      this.downBounds.width = this.bounds.width;
+      this.downBounds.height = this.bounds.height;
+      e.source.preventDefault();
+    }
 
-	}.bind(this));
+  }.bind(this));
 
-	this.input.on('move', function(e) {
+  this.input.on('move', function(e) {
 
-		var activeRegion = this.activeRegion;
+    var activeRegion = this.activeRegion;
 
-		if (!activeRegion) {
-			var hitRegion = this.findHitRegion(e);
-			if (hitRegion) {
-				this.setCursor(hitRegion);
-				e.source.preventDefault();
-			} else {
-				this.resetCursor();
-			}
-		} else {
+    if (!activeRegion) {
+      var hitRegion = this.findHitRegion(e);
+      if (hitRegion) {
+        this.setCursor(hitRegion);
+        e.source.preventDefault();
+      } else {
+        this.resetCursor();
+      }
+    } else {
 
-			e.source.preventDefault();
+      e.source.preventDefault();
 
-			var delta = this.delta;
-			var target = this.target;
-			var bounds = this.bounds;
-			var downBounds = this.downBounds;
-			var downEvent = this.downEvent;
+      var delta = this.delta;
+      var target = this.target;
+      var bounds = this.bounds;
+      var downBounds = this.downBounds;
+      var downEvent = this.downEvent;
 
-			delta.x = e.x - downEvent.x;
-			delta.y = e.y - downEvent.y;
+      delta.x = e.x - downEvent.x;
+      delta.y = e.y - downEvent.y;
 
-			var bounds = this.bounds;
+      var bounds = this.bounds;
 
-			var minLen = this.handleOpts.length * 2;
-			var minWidth = minLen;
-			var minHeight = minLen;
+      var minLen = this.handleOpts.length * 2;
+      var minWidth = minLen;
+      var minHeight = minLen;
 
-			var newLeft = downBounds.x;
-			var newTop = downBounds.y;
-			var newWidth = downBounds.width;
-			var newHeight = downBounds.height;
-			var newRight = newLeft + newWidth;
-			var newBottom = newTop + newHeight;
+      var newLeft = downBounds.x;
+      var newTop = downBounds.y;
+      var newWidth = downBounds.width;
+      var newHeight = downBounds.height;
+      var newRight = newLeft + newWidth;
+      var newBottom = newTop + newHeight;
 
-			if (activeRegion === 'move') {
-				newLeft += delta.x;
-				newTop += delta.y;
-				newLeft = Math.min(Math.max(newLeft, target.bounds.x), target.bounds.x + target.bounds.width - newWidth);
-				newTop = Math.min(Math.max(newTop, target.bounds.y), target.bounds.y + target.bounds.height - newHeight);
-			} else {
-				var dirV = activeRegion[0];
-				var dirH = activeRegion[1];
+      if (activeRegion === 'move') {
+        newLeft += delta.x;
+        newTop += delta.y;
+        newLeft = Math.min(Math.max(newLeft, target.bounds.x), target.bounds.x + target.bounds.width - newWidth);
+        newTop = Math.min(Math.max(newTop, target.bounds.y), target.bounds.y + target.bounds.height - newHeight);
+      } else {
+        var dirV = activeRegion[0];
+        var dirH = activeRegion[1];
 
-				if (dirV === 'n') {
-					newTop += delta.y;
-					if (delta.y < 0) {
-						newTop = Math.max(target.bounds.y, newTop);
-						newHeight = newBottom - newTop;
-					} else {
-						newHeight = Math.max(minHeight, newBottom - newTop);
-						newTop = newBottom - newHeight;
-					}
-				} else if (dirV === 's') {
-					newBottom += delta.y;
-					if (delta.y > 0) {
-						newBottom = Math.min(target.bounds.y + target.bounds.height, newBottom);
-						newHeight = newBottom - newTop;
-					} else {
-						newHeight = Math.max(minHeight, newBottom - newTop);
-						newBottom = newTop + Math.max(minHeight, newBottom - newTop);
-					}
-				}
+        if (dirV === 'n') {
+          newTop += delta.y;
+          if (delta.y < 0) {
+            newTop = Math.max(target.bounds.y, newTop);
+            newHeight = newBottom - newTop;
+          } else {
+            newHeight = Math.max(minHeight, newBottom - newTop);
+            newTop = newBottom - newHeight;
+          }
+        } else if (dirV === 's') {
+          newBottom += delta.y;
+          if (delta.y > 0) {
+            newBottom = Math.min(target.bounds.y + target.bounds.height, newBottom);
+            newHeight = newBottom - newTop;
+          } else {
+            newHeight = Math.max(minHeight, newBottom - newTop);
+            newBottom = newTop + Math.max(minHeight, newBottom - newTop);
+          }
+        }
 
-				if (dirH === 'w') {
-					newLeft += delta.x;
-					if (delta.x < 0) {
-						newLeft = Math.max(target.bounds.x, newLeft);
-						newWidth = newRight - newLeft;
-					} else {
-						newWidth = Math.max(minWidth, newRight - newLeft);
-						newLeft = newRight - Math.max(minWidth, newRight - newLeft);
-					}
-				} else if (dirH === 'e') {
-					newRight += delta.x;
-					if (delta.x > 0) {
-						newRight = Math.min(target.bounds.x + target.bounds.width, newRight);
-						newWidth = newRight - newLeft;
-					} else {
-						newWidth = Math.max(minWidth, newRight - newLeft);
-						newRight = newLeft + Math.max(minWidth, newRight - newLeft);
-					}
-				}
-			}
+        if (dirH === 'w') {
+          newLeft += delta.x;
+          if (delta.x < 0) {
+            newLeft = Math.max(target.bounds.x, newLeft);
+            newWidth = newRight - newLeft;
+          } else {
+            newWidth = Math.max(minWidth, newRight - newLeft);
+            newLeft = newRight - Math.max(minWidth, newRight - newLeft);
+          }
+        } else if (dirH === 'e') {
+          newRight += delta.x;
+          if (delta.x > 0) {
+            newRight = Math.min(target.bounds.x + target.bounds.width, newRight);
+            newWidth = newRight - newLeft;
+          } else {
+            newWidth = Math.max(minWidth, newRight - newLeft);
+            newRight = newLeft + Math.max(minWidth, newRight - newLeft);
+          }
+        }
+      }
 
-			this.setBounds(newLeft, newTop, newWidth, newHeight);
-			this.updateRegionAndNotifyListeners();
-		}
+      this.setBounds(newLeft, newTop, newWidth, newHeight);
+      this.updateRegionAndNotifyListeners();
+    }
 
-	}.bind(this));
+  }.bind(this));
 
-	function handleUpOrCancel(e) {
-		e.source.preventDefault();
-		this.activeRegion = null;
-		this.resetCursor();
-		this.downEvent = null;
-		this.listeners.notify('dirty', this);
-	}
+  function handleUpOrCancel(e) {
+    e.source.preventDefault();
+    this.activeRegion = null;
+    this.resetCursor();
+    this.downEvent = null;
+    this.listeners.notify('dirty', this);
+  }
 
-	this.input
-		.on('up', handleUpOrCancel.bind(this))
-		.on('cancel', handleUpOrCancel.bind(this));
+  this.input
+    .on('up', handleUpOrCancel.bind(this))
+    .on('cancel', handleUpOrCancel.bind(this));
 };
 
 SelectionLayer.create = function(opts) {
-	return new SelectionLayer(opts);
+  return new SelectionLayer(opts);
 };
 
 SelectionLayer.prototype.findHitRegion = function(point) {
 
-	var hitRegion = null;
-	var closest = Number.MAX_VALUE;
+  var hitRegion = null;
+  var closest = Number.MAX_VALUE;
 
-	var d = this.isWithinNorthWestHandle(point);
-	if (d !== false && d < closest) {
-		closest = d;
-		hitRegion = 'nw-resize';
-	}
+  var d = this.isWithinNorthWestHandle(point);
+  if (d !== false && d < closest) {
+    closest = d;
+    hitRegion = 'nw-resize';
+  }
 
-	d = this.isWithinNorthEastHandle(point);
-	if (d !== false && d < closest) {
-		closest = d;
-		hitRegion = 'ne-resize';
-	}
+  d = this.isWithinNorthEastHandle(point);
+  if (d !== false && d < closest) {
+    closest = d;
+    hitRegion = 'ne-resize';
+  }
 
-	d = this.isWithinSouthWestHandle(point);
-	if (d !== false && d < closest) {
-		closest = d;
-		hitRegion = 'sw-resize';
-	}
+  d = this.isWithinSouthWestHandle(point);
+  if (d !== false && d < closest) {
+    closest = d;
+    hitRegion = 'sw-resize';
+  }
 
-	d = this.isWithinSouthEastHandle(point);
-	if (d !== false && d < closest) {
-		closest = d;
-		hitRegion = 'se-resize';
-	}
+  d = this.isWithinSouthEastHandle(point);
+  if (d !== false && d < closest) {
+    closest = d;
+    hitRegion = 'se-resize';
+  }
 
-	if (hitRegion)
-		return hitRegion;
-	else if (this.isWithinBounds(point))
-		return 'move';
-	else
-		return null;
+  if (hitRegion)
+    return hitRegion;
+  else if (this.isWithinBounds(point))
+    return 'move';
+  else
+    return null;
 };
 
 SelectionLayer.prototype.setBounds = function(x, y, w, h) {
-	var target = this.target;
-	var bounds = this.bounds;
-	bounds.x = Math.round(x);
-	bounds.y = Math.round(y);
-	bounds.width = Math.round(w);
-	bounds.height = Math.round(h);
+  var target = this.target;
+  var bounds = this.bounds;
+  bounds.x = Math.round(x);
+  bounds.y = Math.round(y);
+  bounds.width = Math.round(w);
+  bounds.height = Math.round(h);
 };
 
 SelectionLayer.prototype.on = function(type, fn) {
-	this.listeners.on(type, fn);
-	return this;
+  this.listeners.on(type, fn);
+  return this;
 };
 
 SelectionLayer.prototype.off = function(type, fn) {
-	this.listeners.off(type, fn);
-	return this;
+  this.listeners.off(type, fn);
+  return this;
 };
 
 SelectionLayer.prototype.setCursor = function(type) {
-	if (this.parent.canvas.style.cursor !== type)
-		this.parent.canvas.style.cursor = type;
+  if (this.parent.canvas.style.cursor !== type)
+    this.parent.canvas.style.cursor = type;
 };
 
 SelectionLayer.prototype.resetCursor = function() {
-	this.setCursor('auto');
+  this.setCursor('auto');
 };
 
 SelectionLayer.prototype.isWithinRadius = function(ax, ay, bx, by, r) {
-	var tsq = r * r;
-	var dx = ax - bx;
-	var dy = ay - by;
-	var dsq = dx * dx + dy * dy;
-	return (dsq < tsq) ? dsq : false;
+  var tsq = r * r;
+  var dx = ax - bx;
+  var dy = ay - by;
+  var dsq = dx * dx + dy * dy;
+  return (dsq < tsq) ? dsq : false;
 };
 
 SelectionLayer.prototype.isWithinNorthWestHandle = function(point) {
-	return this.isWithinRadius(point.x, point.y, this.bounds.x, this.bounds.y, this.getHandleRadius());
+  return this.isWithinRadius(point.x, point.y, this.bounds.x, this.bounds.y, this.getHandleRadius());
 };
 
 SelectionLayer.prototype.isWithinNorthEastHandle = function(point) {
-	return this.isWithinRadius(point.x, point.y, this.bounds.x + this.bounds.width, this.bounds.y, this.getHandleRadius());
+  return this.isWithinRadius(point.x, point.y, this.bounds.x + this.bounds.width, this.bounds.y, this.getHandleRadius());
 };
 
 SelectionLayer.prototype.isWithinSouthWestHandle = function(point) {
-	return this.isWithinRadius(point.x, point.y, this.bounds.x, this.bounds.y + this.bounds.height, this.getHandleRadius());
+  return this.isWithinRadius(point.x, point.y, this.bounds.x, this.bounds.y + this.bounds.height, this.getHandleRadius());
 };
 
 SelectionLayer.prototype.isWithinSouthEastHandle = function(point) {
-	return this.isWithinRadius(point.x, point.y, this.bounds.x + this.bounds.width, this.bounds.y + this.bounds.height, this.getHandleRadius());
+  return this.isWithinRadius(point.x, point.y, this.bounds.x + this.bounds.width, this.bounds.y + this.bounds.height, this.getHandleRadius());
 };
 
 SelectionLayer.prototype.isWithinBounds = function(point) {
 
-	var bounds = this.bounds;
-	return point.x >= bounds.x &&
-		point.y >= bounds.y &&
-		point.x < bounds.x + bounds.width &&
-		point.y < bounds.y + bounds.height;
+  var bounds = this.bounds;
+  return point.x >= bounds.x &&
+    point.y >= bounds.y &&
+    point.x < bounds.x + bounds.width &&
+    point.y < bounds.y + bounds.height;
 };
 
 SelectionLayer.prototype.getHandleRadius = function() {
-	return this.handleOpts.size / 2;
+  return this.handleOpts.size / 2;
 };
 
 SelectionLayer.prototype.updateRegionAndNotifyListeners = function() {
-	this.updateRegion();
-	this.listeners.notify('regionChange', this);
+  this.updateRegion();
+  this.listeners.notify('regionChange', this);
 };
 
 SelectionLayer.prototype.updateRegion = function() {
 
-	var region = this.region;
-	var bounds = this.bounds;
-	var target = this.target;
+  var region = this.region;
+  var bounds = this.bounds;
+  var target = this.target;
 
-	region.x = target.image.width * (bounds.x - target.bounds.x) / target.bounds.width;
-	region.y = target.image.height * (bounds.y - target.bounds.y) / target.bounds.height;
+  region.x = target.image.width * (bounds.x - target.bounds.x) / target.bounds.width;
+  region.y = target.image.height * (bounds.y - target.bounds.y) / target.bounds.height;
 
-	region.width = target.image.width * (bounds.width / target.bounds.width);
-	region.height = target.image.height * (bounds.height / target.bounds.height);
+  region.width = target.image.width * (bounds.width / target.bounds.width);
+  region.height = target.image.height * (bounds.height / target.bounds.height);
 };
 
 SelectionLayer.prototype.revalidate = function() {
 
-	var target = this.target;
-	var region = this.region;
-	var bounds = this.bounds;
+  var target = this.target;
+  var region = this.region;
+  var bounds = this.bounds;
 
-	if (target.image) {
+  if (target.image) {
 
-		this.setBounds(
-			target.bounds.x + target.bounds.width * (region.x / target.image.width),
-			target.bounds.y + target.bounds.height * (region.y / target.image.height),
-			target.bounds.width * (region.width / target.image.width),
-			target.bounds.height * (region.height / target.image.height)
-		);
-	}
+    this.setBounds(
+      target.bounds.x + target.bounds.width * (region.x / target.image.width),
+      target.bounds.y + target.bounds.height * (region.y / target.image.height),
+      target.bounds.width * (region.width / target.image.width),
+      target.bounds.height * (region.height / target.image.height)
+    );
+  }
 };
 
 SelectionLayer.prototype.paint = function() {
-	this.paintOutside();
-	this.paintInside();
+  this.paintOutside();
+  this.paintInside();
 };
 
 SelectionLayer.prototype.paintOutside = function() {
-	var parent = this.parent;
-	var bounds = this.bounds;
-	var context = this.context;
-	var target = this.target;
+  var parent = this.parent;
+  var bounds = this.bounds;
+  var context = this.context;
+  var target = this.target;
 
-	var tl = target.bounds.x;
-	var tt = target.bounds.y;
-	var tw = target.bounds.width;
-	var th = target.bounds.height;
-	var tr = tl + tw;
-	var tb = tt + th;
+  var tl = target.bounds.x;
+  var tt = target.bounds.y;
+  var tw = target.bounds.width;
+  var th = target.bounds.height;
+  var tr = tl + tw;
+  var tb = tt + th;
 
-	var bl = bounds.x;
-	var bt = bounds.y;
-	var bw = bounds.width;
-	var bh = bounds.height;
-	var br = bl + bw;
-	var bb = bt + bh;
+  var bl = bounds.x;
+  var bt = bounds.y;
+  var bw = bounds.width;
+  var bh = bounds.height;
+  var br = bl + bw;
+  var bb = bt + bh;
 
-	context.fillStyle = 'rgba(0, 0, 0, 0.5)';
-	context.fillRect(tl, tt, tw, bt - tt);
-	context.fillRect(tl, bt, bl - tl, bh);
-	context.fillRect(br, bt, tr - br, bh);
-	context.fillRect(tl, bb, tw, tb - bb);
+  context.fillStyle = 'rgba(0, 0, 0, 0.5)';
+  context.fillRect(tl, tt, tw, bt - tt);
+  context.fillRect(tl, bt, bl - tl, bh);
+  context.fillRect(br, bt, tr - br, bh);
+  context.fillRect(tl, bb, tw, tb - bb);
 };
 
 SelectionLayer.prototype.paintInside = function() {
 
-	var context = this.context;
-	var bounds = this.bounds;
-	var activeRegion = this.activeRegion;
-	var opts = this.handleOpts;
+  var context = this.context;
+  var bounds = this.bounds;
+  var activeRegion = this.activeRegion;
+  var opts = this.handleOpts;
 
-	var length = opts.length;
-	var depth = opts.depth;
-	var color = opts.color;
-	var activeColor = opts.activeColor;
+  var length = opts.length;
+  var depth = opts.depth;
+  var color = opts.color;
+  var activeColor = opts.activeColor;
 
-	// Handles
-	context.fillStyle = activeRegion === 'move' || activeRegion === 'nw-resize' ? activeColor : color;
-	context.fillRect(bounds.x, bounds.y, length, depth);
-	context.fillRect(bounds.x, bounds.y + depth, depth, length - depth);
+  // Handles
+  context.fillStyle = activeRegion === 'move' || activeRegion === 'nw-resize' ? activeColor : color;
+  context.fillRect(bounds.x, bounds.y, length, depth);
+  context.fillRect(bounds.x, bounds.y + depth, depth, length - depth);
 
-	context.fillStyle = activeRegion === 'move' || activeRegion === 'ne-resize' ? activeColor : color;
-	context.fillRect(bounds.x + bounds.width - length, bounds.y, length, depth);
-	context.fillRect(bounds.x + bounds.width - depth, bounds.y + depth, depth, length - depth);
+  context.fillStyle = activeRegion === 'move' || activeRegion === 'ne-resize' ? activeColor : color;
+  context.fillRect(bounds.x + bounds.width - length, bounds.y, length, depth);
+  context.fillRect(bounds.x + bounds.width - depth, bounds.y + depth, depth, length - depth);
 
-	context.fillStyle = activeRegion === 'move' || activeRegion === 'sw-resize' ? activeColor : color;
-	context.fillRect(bounds.x, bounds.y + bounds.height - depth, length, depth);
-	context.fillRect(bounds.x, bounds.y + bounds.height - length, depth, length - depth);
+  context.fillStyle = activeRegion === 'move' || activeRegion === 'sw-resize' ? activeColor : color;
+  context.fillRect(bounds.x, bounds.y + bounds.height - depth, length, depth);
+  context.fillRect(bounds.x, bounds.y + bounds.height - length, depth, length - depth);
 
-	context.fillStyle = activeRegion === 'move' || activeRegion === 'se-resize' ? activeColor : color;
-	context.fillRect(bounds.x + bounds.width - length, bounds.y + bounds.height - depth, length, depth);
-	context.fillRect(bounds.x + bounds.width - depth, bounds.y + bounds.height - length, depth, length - depth);
+  context.fillStyle = activeRegion === 'move' || activeRegion === 'se-resize' ? activeColor : color;
+  context.fillRect(bounds.x + bounds.width - length, bounds.y + bounds.height - depth, length, depth);
+  context.fillRect(bounds.x + bounds.width - depth, bounds.y + bounds.height - length, depth, length - depth);
 
-	// Sides
-	context.fillStyle = 'rgba(255, 255, 255, 0.3)';
-	context.fillRect(bounds.x + length, bounds.y, bounds.width - 2 * length, depth);
-	context.fillRect(bounds.x + length, bounds.y + bounds.height - depth, bounds.width - 2 * length, depth);
-	context.fillRect(bounds.x, bounds.y + length, depth, bounds.height - 2 * length);
-	context.fillRect(bounds.x + bounds.width - depth, bounds.y + length, depth, bounds.height - 2 * length);
+  // Sides
+  context.fillStyle = 'rgba(255, 255, 255, 0.3)';
+  context.fillRect(bounds.x + length, bounds.y, bounds.width - 2 * length, depth);
+  context.fillRect(bounds.x + length, bounds.y + bounds.height - depth, bounds.width - 2 * length, depth);
+  context.fillRect(bounds.x, bounds.y + length, depth, bounds.height - 2 * length);
+  context.fillRect(bounds.x + bounds.width - depth, bounds.y + length, depth, bounds.height - 2 * length);
 };
 
 module.exports = SelectionLayer;

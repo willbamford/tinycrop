@@ -6,51 +6,51 @@ var DOMImage = window.Image;
 
 var Image = function(source) {
 
-	this.width = 0;
-	this.height = 0;
+  this.width = 0;
+  this.height = 0;
 
-	this.hasLoaded = false;
-	this.source = source;
+  this.hasLoaded = false;
+  this.source = source;
 
-	this.listeners = Listeners.create();
+  this.listeners = Listeners.create();
 
-	if (!source)
-		return;
+  if (!source)
+    return;
 
-	loaded(source, function(err) {
+  loaded(source, function(err) {
 
-		if (err) {
-			this.listeners.notify('error', err);
-		} else {
-			this.hasLoaded = true;
-			this.width = source.naturalWidth;
-			this.height = source.naturalHeight;
-			this.listeners.notify('load', this);
-		}
+    if (err) {
+      this.listeners.notify('error', err);
+    } else {
+      this.hasLoaded = true;
+      this.width = source.naturalWidth;
+      this.height = source.naturalHeight;
+      this.listeners.notify('load', this);
+    }
 
-	}.bind(this));
+  }.bind(this));
 };
 
 Image.create = function(source) {
-	return new Image(source);
+  return new Image(source);
 };
 
 Image.prototype.getAspect = function() {
 
-	if (!this.hasLoaded)
-		return 1;
+  if (!this.hasLoaded)
+    return 1;
 
-	return this.width / this.height;
+  return this.width / this.height;
 };
 
 Image.prototype.on = function(type, fn) {
-	this.listeners.on(type, fn);
-	return this;
+  this.listeners.on(type, fn);
+  return this;
 };
 
 Image.prototype.off = function(type, fn) {
-	this.listeners.off(type, fn);
-	return this;
+  this.listeners.off(type, fn);
+  return this;
 };
 
 module.exports = Image;
