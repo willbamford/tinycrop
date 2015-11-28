@@ -19685,10 +19685,10 @@ SelectionLayer.prototype.findHitRegion = function(point) {
 
 SelectionLayer.prototype.setBounds = function(x, y, w, h) {
 	var bounds = this.bounds;
-	bounds.x = x;
-	bounds.y = y;
-	bounds.width = w;
-	bounds.height = h;
+	bounds.x = Math.round(x);
+	bounds.y = Math.round(y);
+	bounds.width = Math.round(w);
+	bounds.height = Math.round(h);
 };
 
 SelectionLayer.prototype.on = function(type, fn) {
