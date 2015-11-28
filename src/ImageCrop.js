@@ -49,17 +49,20 @@ var ImageCrop = function(opts) {
 	this.parent.appendChild(this.canvas);
 
 	this.backgroundLayer = BackgroundLayer.create({
-		canvas: this.canvas,
+		parent: this,
+		context: this.context,
 		color: '#ccc'
 	});
 
 	this.imageLayer = ImageLayer.create({
-		canvas: this.canvas,
+		parent: this,
+		context: this.context,
 		image: this.image
 	});
 
 	this.selectionLayer = SelectionLayer.create({
-		canvas: this.canvas,
+		parent: this,
+		context: this.context,
 		target: this.imageLayer
 	});
 
@@ -92,39 +95,67 @@ ImageCrop.prototype.revalidateAndPaint = function() {
 };
 
 ImageCrop.prototype.paint = function() {
+
+	var context = this.context;
+
+	context.save();
+	context.scale(this.ratio, this.ratio);
+
 	this.backgroundLayer.paint();
 	this.imageLayer.paint();
 	this.selectionLayer.paint();
+
+	context.restore();
+};
+
+ImageCrop.prototype.resizeCanvas = function(width, height) {
+
+	var context = this.context;
+	var canvas = this.canvas;
+	this.ratio = 1;
+
+	if (!context.webkitBackingStorePixelRatio)
+		this.ratio = window.devicePixelRatio || 1;
+
+	this.width = width;
+	this.height = height;
+
+  canvas.width = this.width * this.ratio;
+  canvas.height = this.height * this.ratio;
 };
 
 ImageCrop.prototype.revalidate = function() {
 
 	var parent = this.parent;
 	var canvas = this.canvas;
-	var imageLayer = this.imageLayer;
+	var image = this.image;
 
 	var optWidth = this.optWidth;
 	var optHeight = this.optHeight;
+	var width = 0;
+	var height = 0;
 
 	var percent;
 
 	if (isInteger(optWidth)) {
-		canvas.width = optWidth;
+		width = optWidth;
 	} else if (parent && isPercent(optWidth)) {
-		canvas.width = Math.round(parent.clientWidth * getPercent(optWidth) / 100);
+		width = Math.round(parent.clientWidth * getPercent(optWidth) / 100);
 	} else {
-		canvas.width = DEFAULT_CANVAS_WIDTH;
+		width = DEFAULT_CANVAS_WIDTH;
 	}
 
 	if (isInteger(optHeight)) {
-		canvas.height = optHeight;
+		height = optHeight;
 	} else if (isPercent(optHeight)) {
-		canvas.height = Math.round(canvas.width * getPercent(optHeight) / 100);
-	} else if (imageLayer.hasImage() && isAuto(optHeight)) {
-		canvas.height = Math.floor(canvas.width / imageLayer.getAspect());
+		height = Math.round(width * getPercent(optHeight) / 100);
+	} else if (image && image.hasLoaded && isAuto(optHeight)) {
+		height = Math.floor(width / image.getAspect());
 	} else {
-		canvas.height = DEFAULT_CANVAS_HEIGHT;
+		height = DEFAULT_CANVAS_HEIGHT;
 	}
+
+	this.resizeCanvas(width, height);
 
 	this.backgroundLayer.revalidate();
 	this.imageLayer.revalidate();

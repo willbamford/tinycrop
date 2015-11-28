@@ -19023,8 +19023,8 @@ var BackgroundLayer = function(opts) {
 
 	this.color = opts.color || '#e0e0e0';
 
-	this.canvas = opts.canvas;
-	this.context = this.canvas.getContext('2d');
+	this.parent = opts.parent;
+	this.context = opts.context;
 };
 
 BackgroundLayer.create = function(opts) {
@@ -19035,11 +19035,11 @@ BackgroundLayer.prototype.revalidate = function() {};
 
 BackgroundLayer.prototype.paint = function() {
 
-	var canvas = this.canvas;
+	var parent = this.parent;
 	var context = this.context;
 
 	context.fillStyle = this.color;
-	context.fillRect(0, 0, canvas.width, canvas.height);
+	context.fillRect(0, 0, parent.width, parent.height);
 };
 
 module.exports = BackgroundLayer;
@@ -19156,17 +19156,20 @@ var ImageCrop = function(opts) {
 	this.parent.appendChild(this.canvas);
 
 	this.backgroundLayer = BackgroundLayer.create({
-		canvas: this.canvas,
+		parent: this,
+		context: this.context,
 		color: '#ccc'
 	});
 
 	this.imageLayer = ImageLayer.create({
-		canvas: this.canvas,
+		parent: this,
+		context: this.context,
 		image: this.image
 	});
 
 	this.selectionLayer = SelectionLayer.create({
-		canvas: this.canvas,
+		parent: this,
+		context: this.context,
 		target: this.imageLayer
 	});
 
@@ -19199,39 +19202,67 @@ ImageCrop.prototype.revalidateAndPaint = function() {
 };
 
 ImageCrop.prototype.paint = function() {
+
+	var context = this.context;
+
+	context.save();
+	context.scale(this.ratio, this.ratio);
+
 	this.backgroundLayer.paint();
 	this.imageLayer.paint();
 	this.selectionLayer.paint();
+
+	context.restore();
+};
+
+ImageCrop.prototype.resizeCanvas = function(width, height) {
+
+	var context = this.context;
+	var canvas = this.canvas;
+	this.ratio = 1;
+
+	if (!context.webkitBackingStorePixelRatio)
+		this.ratio = window.devicePixelRatio || 1;
+
+	this.width = width;
+	this.height = height;
+
+  canvas.width = this.width * this.ratio;
+  canvas.height = this.height * this.ratio;
 };
 
 ImageCrop.prototype.revalidate = function() {
 
 	var parent = this.parent;
 	var canvas = this.canvas;
-	var imageLayer = this.imageLayer;
+	var image = this.image;
 
 	var optWidth = this.optWidth;
 	var optHeight = this.optHeight;
+	var width = 0;
+	var height = 0;
 
 	var percent;
 
 	if (isInteger(optWidth)) {
-		canvas.width = optWidth;
+		width = optWidth;
 	} else if (parent && isPercent(optWidth)) {
-		canvas.width = Math.round(parent.clientWidth * getPercent(optWidth) / 100);
+		width = Math.round(parent.clientWidth * getPercent(optWidth) / 100);
 	} else {
-		canvas.width = DEFAULT_CANVAS_WIDTH;
+		width = DEFAULT_CANVAS_WIDTH;
 	}
 
 	if (isInteger(optHeight)) {
-		canvas.height = optHeight;
+		height = optHeight;
 	} else if (isPercent(optHeight)) {
-		canvas.height = Math.round(canvas.width * getPercent(optHeight) / 100);
-	} else if (imageLayer.hasImage() && isAuto(optHeight)) {
-		canvas.height = Math.floor(canvas.width / imageLayer.getAspect());
+		height = Math.round(width * getPercent(optHeight) / 100);
+	} else if (image && image.hasLoaded && isAuto(optHeight)) {
+		height = Math.floor(width / image.getAspect());
 	} else {
-		canvas.height = DEFAULT_CANVAS_HEIGHT;
+		height = DEFAULT_CANVAS_HEIGHT;
 	}
+
+	this.resizeCanvas(width, height);
 
 	this.backgroundLayer.revalidate();
 	this.imageLayer.revalidate();
@@ -19278,8 +19309,8 @@ var ImageLayer = function(opts) {
 
 	this.image = opts.image || null;
 
-	this.canvas = opts.canvas;
-	this.context = this.canvas.getContext('2d');
+	this.parent = opts.parent;
+	this.context = opts.context;
 };
 
 ImageLayer.create = function(opts) {
@@ -19292,22 +19323,22 @@ ImageLayer.prototype.setImage = function(image) {
 
 ImageLayer.prototype.revalidate = function() {
 
-	var canvas = this.canvas;
+	var parent = this.parent;
 	var image = this.image;
 	var bounds = this.bounds;
 
 	if (image) {
 
 		// Constrained by width (otherwise height)
-		if (image.width / image.height >= canvas.width / canvas.height) {
-			bounds.width = canvas.width;
-			bounds.height = Math.round(image.height / image.width * canvas.width);
+		if (image.width / image.height >= parent.width / parent.height) {
+			bounds.width = parent.width;
+			bounds.height = Math.round(image.height / image.width * parent.width);
 			bounds.x = 0;
-			bounds.y = Math.round((canvas.height - bounds.height) * 0.5);
+			bounds.y = Math.round((parent.height - bounds.height) * 0.5);
 		} else {
-			bounds.width = Math.round(image.width / image.height * canvas.height);
-			bounds.height = canvas.height;
-			bounds.x = Math.round((canvas.width - bounds.width) * 0.5);
+			bounds.width = Math.round(image.width / image.height * parent.height);
+			bounds.height = parent.height;
+			bounds.x = Math.round((parent.width - bounds.width) * 0.5);
 			bounds.y = 0;
 		}
 	}
@@ -19464,7 +19495,7 @@ var ReactImageCrop = React.createClass({displayName: "ReactImageCrop",
     this.imageCrop = ImageCrop.create({
       parent: this.refs.parent,
       width: '100%',
-      height: '100%'
+      height: 'auto'
     });
 
     var image = document.createElement('img');
@@ -19513,8 +19544,8 @@ var SelectionLayer = function(opts) {
 		height: 400
 	};
 
-	this.canvas = opts.canvas;
-	this.context = this.canvas.getContext('2d');
+	this.parent = opts.parent;
+	this.context = opts.context;
 	this.target = opts.target;
 	this.minSize = opts.minSize || {
 		width: 10,
@@ -19531,7 +19562,7 @@ var SelectionLayer = function(opts) {
 
 	this.listeners = Listeners.create();
 
-	this.input = Input.create(this.canvas);
+	this.input = Input.create(this.parent.canvas);
 
 	this.activeRegion = null;
 	this.delta = {x: 0, y: 0};
@@ -19702,7 +19733,8 @@ SelectionLayer.prototype.off = function(type, fn) {
 };
 
 SelectionLayer.prototype.setCursor = function(type) {
-	this.canvas.style.cursor = type;
+	if (this.parent.canvas.style.cursor !== type)
+		this.parent.canvas.style.cursor = type;
 };
 
 SelectionLayer.prototype.resetCursor = function() {
@@ -19786,15 +19818,15 @@ SelectionLayer.prototype.paint = function() {
 };
 
 SelectionLayer.prototype.paintOutside = function() {
-	var canvas = this.canvas;
+	var parent = this.parent;
 	var bounds = this.bounds;
 	var context = this.context;
 
 	context.fillStyle = 'rgba(0, 0, 0, 0.5)';
-	context.fillRect(0, 0, canvas.width, bounds.y);
+	context.fillRect(0, 0, parent.width, bounds.y);
 	context.fillRect(0, bounds.y, bounds.x, bounds.height);
-	context.fillRect(bounds.x + bounds.width, bounds.y, canvas.width - bounds.x + bounds.width, bounds.height);
-	context.fillRect(0, bounds.y + bounds.height, canvas.width, canvas.height - bounds.y + bounds.height);
+	context.fillRect(bounds.x + bounds.width, bounds.y, parent.width - bounds.x + bounds.width, bounds.height);
+	context.fillRect(0, bounds.y + bounds.height, parent.width, parent.height - bounds.y + bounds.height);
 };
 
 SelectionLayer.prototype.paintInside = function() {

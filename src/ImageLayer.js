@@ -11,8 +11,8 @@ var ImageLayer = function(opts) {
 
 	this.image = opts.image || null;
 
-	this.canvas = opts.canvas;
-	this.context = this.canvas.getContext('2d');
+	this.parent = opts.parent;
+	this.context = opts.context;
 };
 
 ImageLayer.create = function(opts) {
@@ -25,22 +25,22 @@ ImageLayer.prototype.setImage = function(image) {
 
 ImageLayer.prototype.revalidate = function() {
 
-	var canvas = this.canvas;
+	var parent = this.parent;
 	var image = this.image;
 	var bounds = this.bounds;
 
 	if (image) {
 
 		// Constrained by width (otherwise height)
-		if (image.width / image.height >= canvas.width / canvas.height) {
-			bounds.width = canvas.width;
-			bounds.height = Math.round(image.height / image.width * canvas.width);
+		if (image.width / image.height >= parent.width / parent.height) {
+			bounds.width = parent.width;
+			bounds.height = Math.round(image.height / image.width * parent.width);
 			bounds.x = 0;
-			bounds.y = Math.round((canvas.height - bounds.height) * 0.5);
+			bounds.y = Math.round((parent.height - bounds.height) * 0.5);
 		} else {
-			bounds.width = Math.round(image.width / image.height * canvas.height);
-			bounds.height = canvas.height;
-			bounds.x = Math.round((canvas.width - bounds.width) * 0.5);
+			bounds.width = Math.round(image.width / image.height * parent.height);
+			bounds.height = parent.height;
+			bounds.x = Math.round((parent.width - bounds.width) * 0.5);
 			bounds.y = 0;
 		}
 	}

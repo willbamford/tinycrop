@@ -17,8 +17,8 @@ var SelectionLayer = function(opts) {
 		height: 400
 	};
 
-	this.canvas = opts.canvas;
-	this.context = this.canvas.getContext('2d');
+	this.parent = opts.parent;
+	this.context = opts.context;
 	this.target = opts.target;
 	this.minSize = opts.minSize || {
 		width: 10,
@@ -35,7 +35,7 @@ var SelectionLayer = function(opts) {
 
 	this.listeners = Listeners.create();
 
-	this.input = Input.create(this.canvas);
+	this.input = Input.create(this.parent.canvas);
 
 	this.activeRegion = null;
 	this.delta = {x: 0, y: 0};
@@ -206,7 +206,8 @@ SelectionLayer.prototype.off = function(type, fn) {
 };
 
 SelectionLayer.prototype.setCursor = function(type) {
-	this.canvas.style.cursor = type;
+	if (this.parent.canvas.style.cursor !== type)
+		this.parent.canvas.style.cursor = type;
 };
 
 SelectionLayer.prototype.resetCursor = function() {
@@ -290,15 +291,15 @@ SelectionLayer.prototype.paint = function() {
 };
 
 SelectionLayer.prototype.paintOutside = function() {
-	var canvas = this.canvas;
+	var parent = this.parent;
 	var bounds = this.bounds;
 	var context = this.context;
 
 	context.fillStyle = 'rgba(0, 0, 0, 0.5)';
-	context.fillRect(0, 0, canvas.width, bounds.y);
+	context.fillRect(0, 0, parent.width, bounds.y);
 	context.fillRect(0, bounds.y, bounds.x, bounds.height);
-	context.fillRect(bounds.x + bounds.width, bounds.y, canvas.width - bounds.x + bounds.width, bounds.height);
-	context.fillRect(0, bounds.y + bounds.height, canvas.width, canvas.height - bounds.y + bounds.height);
+	context.fillRect(bounds.x + bounds.width, bounds.y, parent.width - bounds.x + bounds.width, bounds.height);
+	context.fillRect(0, bounds.y + bounds.height, parent.width, parent.height - bounds.y + bounds.height);
 };
 
 SelectionLayer.prototype.paintInside = function() {

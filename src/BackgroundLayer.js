@@ -4,8 +4,8 @@ var BackgroundLayer = function(opts) {
 
 	this.color = opts.color || '#e0e0e0';
 
-	this.canvas = opts.canvas;
-	this.context = this.canvas.getContext('2d');
+	this.parent = opts.parent;
+	this.context = opts.context;
 };
 
 BackgroundLayer.create = function(opts) {
@@ -16,11 +16,11 @@ BackgroundLayer.prototype.revalidate = function() {};
 
 BackgroundLayer.prototype.paint = function() {
 
-	var canvas = this.canvas;
+	var parent = this.parent;
 	var context = this.context;
 
 	context.fillStyle = this.color;
-	context.fillRect(0, 0, canvas.width, canvas.height);
+	context.fillRect(0, 0, parent.width, parent.height);
 };
 
 module.exports = BackgroundLayer;
