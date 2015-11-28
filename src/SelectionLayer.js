@@ -91,17 +91,17 @@ var SelectionLayer = function(opts) {
 			var minHeight = minLen;
 
 			var newLeft = downBounds.x;
-			var newRight = downBounds.y;
+			var newTop = downBounds.y;
 			var newWidth = downBounds.width;
 			var newHeight = downBounds.height;
-			var newTop = newLeft + newWidth;
-			var newBottom = newRight + newHeight;
+			var newRight = newLeft + newWidth;
+			var newBottom = newTop + newHeight;
 
 			if (activeRegion === 'move') {
 				newLeft += delta.x;
 				newTop += delta.y;
-				newLeft = Math.min(Math.max(newLeft, target.bounds.x), target.bounds.x + target.bounds.width - downWidth);
-				newTop = Math.min(Math.max(newTop, target.bounds.y), target.bounds.y + target.bounds.height - downHeight);
+				newLeft = Math.min(Math.max(newLeft, target.bounds.x), target.bounds.x + target.bounds.width - newWidth);
+				newTop = Math.min(Math.max(newTop, target.bounds.y), target.bounds.y + target.bounds.height - newHeight);
 			} else {
 				var dirV = activeRegion[0];
 				var dirH = activeRegion[1];
