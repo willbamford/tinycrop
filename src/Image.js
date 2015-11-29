@@ -35,7 +35,7 @@ Image.create = function(source) {
   return new Image(source);
 };
 
-Image.prototype.getAspect = function() {
+Image.prototype.getAspectRatio = function() {
 
   if (!this.hasLoaded)
     return 1;

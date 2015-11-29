@@ -19019,26 +19019,26 @@ module.exports = require('./lib/React');
 },{"./lib/React":53}],159:[function(require,module,exports){
 var BackgroundLayer = function(opts) {
 
-	opts = opts || {};
+  opts = opts || {};
 
-	this.color = opts.color;
-	this.parent = opts.parent;
-	this.context = opts.context;
+  this.color = opts.color;
+  this.parent = opts.parent;
+  this.context = opts.context;
 };
 
 BackgroundLayer.create = function(opts) {
-	return new BackgroundLayer(opts);
+  return new BackgroundLayer(opts);
 };
 
 BackgroundLayer.prototype.revalidate = function() {};
 
 BackgroundLayer.prototype.paint = function() {
 
-	var parent = this.parent;
-	var context = this.context;
+  var parent = this.parent;
+  var context = this.context;
 
-	context.fillStyle = this.color;
-	context.fillRect(0, 0, parent.width, parent.height);
+  context.fillStyle = this.color;
+  context.fillRect(0, 0, parent.width, parent.height);
 };
 
 module.exports = BackgroundLayer;
@@ -19053,51 +19053,51 @@ var DOMImage = window.Image;
 
 var Image = function(source) {
 
-	this.width = 0;
-	this.height = 0;
+  this.width = 0;
+  this.height = 0;
 
-	this.hasLoaded = false;
-	this.source = source;
+  this.hasLoaded = false;
+  this.source = source;
 
-	this.listeners = Listeners.create();
+  this.listeners = Listeners.create();
 
-	if (!source)
-		return;
+  if (!source)
+    return;
 
-	loaded(source, function(err) {
+  loaded(source, function(err) {
 
-		if (err) {
-			this.listeners.notify('error', err);
-		} else {
-			this.hasLoaded = true;
-			this.width = source.naturalWidth;
-			this.height = source.naturalHeight;
-			this.listeners.notify('load', this);
-		}
+    if (err) {
+      this.listeners.notify('error', err);
+    } else {
+      this.hasLoaded = true;
+      this.width = source.naturalWidth;
+      this.height = source.naturalHeight;
+      this.listeners.notify('load', this);
+    }
 
-	}.bind(this));
+  }.bind(this));
 };
 
 Image.create = function(source) {
-	return new Image(source);
+  return new Image(source);
 };
 
-Image.prototype.getAspect = function() {
+Image.prototype.getAspectRatio = function() {
 
-	if (!this.hasLoaded)
-		return 1;
+  if (!this.hasLoaded)
+    return 1;
 
-	return this.width / this.height;
+  return this.width / this.height;
 };
 
 Image.prototype.on = function(type, fn) {
-	this.listeners.on(type, fn);
-	return this;
+  this.listeners.on(type, fn);
+  return this;
 };
 
 Image.prototype.off = function(type, fn) {
-	this.listeners.off(type, fn);
-	return this;
+  this.listeners.off(type, fn);
+  return this;
 };
 
 module.exports = Image;
@@ -19116,119 +19116,121 @@ var DEFAULT_CANVAS_HEIGHT = 300;
 function noop() {};
 
 function isPercent(v) {
-	if (typeof v !== 'string')
-		return false;
+  if (typeof v !== 'string')
+    return false;
 
-	if (v.length < 1)
-		return false;
+  if (v.length < 1)
+    return false;
 
-	if (v[v.length - 1] === '%')
-		return true;
+  if (v[v.length - 1] === '%')
+    return true;
 }
 
 function getPercent(v) {
-	if (!isPercent(v))
-		return 0;
+  if (!isPercent(v))
+    return 0;
 
-	return v.slice(0, -1);
+  return v.slice(0, -1);
 }
 
 function isAuto(v) {
-	return v === 'auto';
+  return v === 'auto';
 }
 
 function isInteger(v) {
-	return typeof v == 'number' && Math.round(v) == v;
+  return typeof v == 'number' && Math.round(v) == v;
 }
 
 var ImageCrop = function(opts) {
 
-	this.parent = opts.parent || null;
-	this.canvas = document.createElement('canvas');
-	this.context = this.canvas.getContext('2d');
+  this.parent = opts.parent || null;
+  this.canvas = document.createElement('canvas');
+  this.context = this.canvas.getContext('2d');
+  this.aspectRatio = opts.aspectRatio || null;
 
-	this.image = null;
+  this.image = null;
 
-	this.backgroundColor = opts.backgroundColor || '#ccc';
+  this.backgroundColor = opts.backgroundColor || '#ccc';
 
-	this.optWidth = opts.width || '100%';
-	this.optHeight = opts.height || 'auto';
+  this.optWidth = opts.width || '100%';
+  this.optHeight = opts.height || 'auto';
 
-	this.parent.appendChild(this.canvas);
+  this.parent.appendChild(this.canvas);
 
-	this.backgroundLayer = BackgroundLayer.create({
-		parent: this,
-		context: this.context,
-		color: this.backgroundColor
-	});
+  this.backgroundLayer = BackgroundLayer.create({
+    parent: this,
+    context: this.context,
+    color: this.backgroundColor
+  });
 
-	this.imageLayer = ImageLayer.create({
-		parent: this,
-		context: this.context,
-		image: this.image
-	});
+  this.imageLayer = ImageLayer.create({
+    parent: this,
+    context: this.context,
+    image: this.image
+  });
 
-	this.selectionLayer = SelectionLayer.create({
-		parent: this,
-		context: this.context,
-		target: this.imageLayer
-	});
+  this.selectionLayer = SelectionLayer.create({
+    parent: this,
+    context: this.context,
+    target: this.imageLayer,
+    aspectRatio: this.aspectRatio
+  });
 
-	this.selectionLayer
-		.on(
-			'regionChange',
-			function() {
-				this.paint();
-			}.bind(this)
-		)
-		.on(
-			'dirty',
-			function() {
-				this.paint();
-			}.bind(this)
-		);
+  this.selectionLayer
+    .on(
+      'regionChange',
+      function() {
+        this.paint();
+      }.bind(this)
+    )
+    .on(
+      'dirty',
+      function() {
+        this.paint();
+      }.bind(this)
+    );
 
-	window.addEventListener('resize', debounce(this.revalidateAndPaint.bind(this), 100));
+  window.addEventListener('resize', debounce(this.revalidateAndPaint.bind(this), 100));
 
-	this.revalidateAndPaint();
+  this.revalidateAndPaint();
 };
 
 ImageCrop.create = function(opts) {
-	return new ImageCrop(opts);
+  return new ImageCrop(opts);
 };
 
 ImageCrop.prototype.revalidateAndPaint = function() {
-	this.revalidate();
-	this.paint();
+  this.revalidate();
+  this.paint();
 };
 
 ImageCrop.prototype.paint = function() {
 
-	var context = this.context;
+  var context = this.context;
 
-	context.save();
-	context.scale(this.ratio, this.ratio);
+  context.save();
+  context.scale(this.ratio, this.ratio);
 
-	if (this.image && this.image.hasLoaded) {
-		this.backgroundLayer.paint();
-		this.imageLayer.paint();
-		this.selectionLayer.paint();
-	}
+  if (this.image && this.image.hasLoaded) {
+    this.backgroundLayer.paint();
+    this.imageLayer.paint();
+    this.selectionLayer.paint();
+  }
 
-	context.restore();
+  context.restore();
 };
 
 ImageCrop.prototype.resizeCanvas = function(width, height) {
 
-	var context = this.context;
-	var canvas = this.canvas;
-	this.ratio = 1;
+  var context = this.context;
+  var canvas = this.canvas;
+  this.ratio = 1;
 
-	if (!context.webkitBackingStorePixelRatio)
-		this.ratio = window.devicePixelRatio || 1;
+  if (!context.webkitBackingStorePixelRatio)
+    this.ratio = window.devicePixelRatio || 1;
 
-	this.width = width;
-	this.height = height;
+  this.width = width;
+  this.height = height;
 
   canvas.width = this.width * this.ratio;
   canvas.height = this.height * this.ratio;
@@ -19236,61 +19238,61 @@ ImageCrop.prototype.resizeCanvas = function(width, height) {
 
 ImageCrop.prototype.revalidate = function() {
 
-	var parent = this.parent;
-	var canvas = this.canvas;
-	var image = this.image;
+  var parent = this.parent;
+  var canvas = this.canvas;
+  var image = this.image;
 
-	var optWidth = this.optWidth;
-	var optHeight = this.optHeight;
-	var width = 0;
-	var height = 0;
+  var optWidth = this.optWidth;
+  var optHeight = this.optHeight;
+  var width = 0;
+  var height = 0;
 
-	var percent;
+  var percent;
 
-	if (isInteger(optWidth)) {
-		width = optWidth;
-	} else if (parent && isPercent(optWidth)) {
-		width = Math.round(parent.clientWidth * getPercent(optWidth) / 100);
-	} else {
-		width = DEFAULT_CANVAS_WIDTH;
-	}
+  if (isInteger(optWidth)) {
+    width = optWidth;
+  } else if (parent && isPercent(optWidth)) {
+    width = Math.round(parent.clientWidth * getPercent(optWidth) / 100);
+  } else {
+    width = DEFAULT_CANVAS_WIDTH;
+  }
 
-	if (isInteger(optHeight)) {
-		height = optHeight;
-	} else if (isPercent(optHeight)) {
-		height = Math.round(width * getPercent(optHeight) / 100);
-	} else if (image && image.hasLoaded && isAuto(optHeight)) {
-		height = Math.floor(width / image.getAspect());
-	} else {
-		height = DEFAULT_CANVAS_HEIGHT;
-	}
+  if (isInteger(optHeight)) {
+    height = optHeight;
+  } else if (isPercent(optHeight)) {
+    height = Math.round(width * getPercent(optHeight) / 100);
+  } else if (image && image.hasLoaded && isAuto(optHeight)) {
+    height = Math.floor(width / image.getAspectRatio());
+  } else {
+    height = DEFAULT_CANVAS_HEIGHT;
+  }
 
-	this.resizeCanvas(width, height);
+  this.resizeCanvas(width, height);
 
-	this.backgroundLayer.revalidate();
-	this.imageLayer.revalidate();
-	this.selectionLayer.revalidate();
+  this.backgroundLayer.revalidate();
+  this.imageLayer.revalidate();
+  this.selectionLayer.revalidate();
 };
 
 ImageCrop.prototype.setImage = function(sourceImage) {
 
-	var image = Image.create(sourceImage)
-		.on(
-			'load',
-			function() {
-				this.revalidateAndPaint();
-			}.bind(this)
-		)
-		.on(
-			'error',
-			function(e) {
-				alert(e);
-				console.error(e);
-			}.bind(this)
-		);
+  var image = Image.create(sourceImage)
+    .on(
+      'load',
+      function() {
+        this.revalidateAndPaint();
+      }.bind(this)
+    )
+    .on(
+      'error',
+      function(e) {
+        alert(e);
+        console.error(e);
+      }.bind(this)
+    );
 
-	this.imageLayer.setImage(image);
-	this.image = image;
+  this.imageLayer.setImage(image);
+  this.image = image;
 };
 
 ImageCrop.prototype.dispose = noop;
@@ -19301,60 +19303,60 @@ module.exports = ImageCrop;
 },{"./BackgroundLayer.js":159,"./Image.js":160,"./ImageLayer.js":162,"./SelectionLayer.js":166,"./debounce.js":167}],162:[function(require,module,exports){
 var ImageLayer = function(opts) {
 
-	opts = opts || {};
+  opts = opts || {};
 
-	this.bounds = {
-		x: 0,
-		y: 0,
-		width: 0,
-		height: 0
-	};
+  this.bounds = {
+    x: 0,
+    y: 0,
+    width: 0,
+    height: 0
+  };
 
-	this.image = opts.image || null;
+  this.image = opts.image || null;
 
-	this.parent = opts.parent;
-	this.context = opts.context;
+  this.parent = opts.parent;
+  this.context = opts.context;
 };
 
 ImageLayer.create = function(opts) {
-	return new ImageLayer(opts);
+  return new ImageLayer(opts);
 };
 
 ImageLayer.prototype.setImage = function(image) {
-	this.image = image;
+  this.image = image;
 };
 
 ImageLayer.prototype.revalidate = function() {
 
-	var parent = this.parent;
-	var image = this.image;
-	var bounds = this.bounds;
+  var parent = this.parent;
+  var image = this.image;
+  var bounds = this.bounds;
 
-	if (image) {
+  if (image) {
 
-		// Constrained by width (otherwise height)
-		if (image.width / image.height >= parent.width / parent.height) {
-			bounds.width = parent.width;
-			bounds.height = Math.round(image.height / image.width * parent.width);
-			bounds.x = 0;
-			bounds.y = Math.round((parent.height - bounds.height) * 0.5);
-		} else {
-			bounds.width = Math.round(image.width / image.height * parent.height);
-			bounds.height = parent.height;
-			bounds.x = Math.round((parent.width - bounds.width) * 0.5);
-			bounds.y = 0;
-		}
-	}
+    // Constrained by width (otherwise height)
+    if (image.width / image.height >= parent.width / parent.height) {
+      bounds.width = parent.width;
+      bounds.height = Math.round(image.height / image.width * parent.width);
+      bounds.x = 0;
+      bounds.y = Math.round((parent.height - bounds.height) * 0.5);
+    } else {
+      bounds.width = Math.round(image.width / image.height * parent.height);
+      bounds.height = parent.height;
+      bounds.x = Math.round((parent.width - bounds.width) * 0.5);
+      bounds.y = 0;
+    }
+  }
 };
 
 ImageLayer.prototype.paint = function() {
 
-	var context = this.context;
-	var image = this.image;
-	var bounds = this.bounds;
+  var context = this.context;
+  var image = this.image;
+  var bounds = this.bounds;
 
-	if (image && image.hasLoaded)
-		context.drawImage(image.source, 0, 0, image.width, image.height, bounds.x, bounds.y, bounds.width, bounds.height);
+  if (image && image.hasLoaded)
+    context.drawImage(image.source, 0, 0, image.width, image.height, bounds.x, bounds.y, bounds.width, bounds.height);
 };
 
 module.exports = ImageLayer;
@@ -19365,74 +19367,74 @@ var Listeners = require('./Listeners.js');
 
 var Input = function(domElement) {
 
-	this.domElement = domElement;
-	this.listeners = Listeners.create();
+  this.domElement = domElement;
+  this.listeners = Listeners.create();
 
-	function createEventForMouse(source) {
-		return {
-			source: source,
-			x: source.offsetX,
-			y: source.offsetY,
-			type: 'Mouse'
-		};
-	}
+  function createEventForMouse(source) {
+    return {
+      source: source,
+      x: source.offsetX,
+      y: source.offsetY,
+      type: 'Mouse'
+    };
+  }
 
-	function createEventForTouch(source) {
-		var bounds = source.target.getBoundingClientRect();
-		var touch = source.touches.length > 0 ? source.touches[0] : source.changedTouches[0];
-		return {
-			source: source,
-			x: touch.pageX - bounds.left,
-			y: touch.pageY - bounds.top,
-			type: 'Touch'
-		};
-	}
+  function createEventForTouch(source) {
+    var bounds = source.target.getBoundingClientRect();
+    var touch = source.touches.length > 0 ? source.touches[0] : source.changedTouches[0];
+    return {
+      source: source,
+      x: touch.pageX - bounds.left,
+      y: touch.pageY - bounds.top,
+      type: 'Touch'
+    };
+  }
 
-	domElement.addEventListener('mousedown', function(source) {
-		this.listeners.notify('down', createEventForMouse(source));
-	}.bind(this));
+  domElement.addEventListener('mousedown', function(source) {
+    this.listeners.notify('down', createEventForMouse(source));
+  }.bind(this));
 
-	domElement.addEventListener('touchstart', function(source) {
-		this.listeners.notify('down', createEventForTouch(source));
-	}.bind(this));
+  domElement.addEventListener('touchstart', function(source) {
+    this.listeners.notify('down', createEventForTouch(source));
+  }.bind(this));
 
-	domElement.addEventListener('mousemove', function(source) {
-		this.listeners.notify('move', createEventForMouse(source));
-	}.bind(this));
+  domElement.addEventListener('mousemove', function(source) {
+    this.listeners.notify('move', createEventForMouse(source));
+  }.bind(this));
 
-	domElement.addEventListener('touchmove', function(source) {
-		this.listeners.notify('move', createEventForTouch(source));
-	}.bind(this));
+  domElement.addEventListener('touchmove', function(source) {
+    this.listeners.notify('move', createEventForTouch(source));
+  }.bind(this));
 
-	domElement.addEventListener('mouseup', function(source) {
-		this.listeners.notify('up', createEventForMouse(source));
-	}.bind(this));
+  domElement.addEventListener('mouseup', function(source) {
+    this.listeners.notify('up', createEventForMouse(source));
+  }.bind(this));
 
-	domElement.addEventListener('touchend', function(source) {
-		this.listeners.notify('up', createEventForTouch(source));
-	}.bind(this));
+  domElement.addEventListener('touchend', function(source) {
+    this.listeners.notify('up', createEventForTouch(source));
+  }.bind(this));
 
-	domElement.addEventListener('mouseout', function(source) {
-		this.listeners.notify('cancel', createEventForMouse(source));
-	}.bind(this));
+  domElement.addEventListener('mouseout', function(source) {
+    this.listeners.notify('cancel', createEventForMouse(source));
+  }.bind(this));
 
-	domElement.addEventListener('touchcancel', function(source) {
-		this.listeners.notify('cancel', createEventForTouch(source));
-	}.bind(this));
+  domElement.addEventListener('touchcancel', function(source) {
+    this.listeners.notify('cancel', createEventForTouch(source));
+  }.bind(this));
 };
 
 Input.create = function(domElement) {
-	return new Input(domElement);
+  return new Input(domElement);
 };
 
 Input.prototype.on = function(type, fn) {
-	this.listeners.on(type, fn);
-	return this;
+  this.listeners.on(type, fn);
+  return this;
 };
 
 Input.prototype.off = function(type, fn) {
-	this.listeners.off(type, fn);
-	return this;
+  this.listeners.off(type, fn);
+  return this;
 };
 
 module.exports = Input;
@@ -19440,17 +19442,17 @@ module.exports = Input;
 
 },{"./Listeners.js":164}],164:[function(require,module,exports){
 var Listeners = function(opts) {
-	this.events = {};
+  this.events = {};
 };
 
 Listeners.create = function(opts) {
-	return new Listeners(opts);
+  return new Listeners(opts);
 };
 
 Listeners.prototype.on = function(type, fn) {
 
-	if (!this.events[type])
-		this.events[type] = [];
+  if (!this.events[type])
+    this.events[type] = [];
 
   if (this.events[type].indexOf(fn) === -1)
       this.events[type].push(fn);
@@ -19464,7 +19466,7 @@ Listeners.prototype.off = function(type, fn) {
 
     var i = this.events[type].indexOf(fn);
     if (i !== -1)
-			this.events[type].splice(i, 1);
+      this.events[type].splice(i, 1);
   }
 
   return this;
@@ -19480,7 +19482,7 @@ Listeners.prototype.notify = function(type, data) {
 };
 
 Listeners.prototype.clearAll = function() {
-	this.events = {};
+  this.events = {};
 };
 
 module.exports = Listeners;
@@ -19498,7 +19500,8 @@ var ReactImageCrop = React.createClass({displayName: "ReactImageCrop",
     this.imageCrop = ImageCrop.create({
       parent: this.refs.parent,
       width: '100%',
-      height: '100%'
+      height: 'auto',
+      aspectRatio: 3 / 4
     });
 
     var image = document.createElement('img');
@@ -19508,9 +19511,9 @@ var ReactImageCrop = React.createClass({displayName: "ReactImageCrop",
   },
 
   componentWillUnmount: function() {
-		console.log('ReactImageCrop componentWillUnmount()');
+    console.log('ReactImageCrop componentWillUnmount()');
     this.imageCrop.dispose();
-	},
+  },
 
   componentDidUpdate: function() {
     console.log('ReactImageCrop componentDidUpdate()');
@@ -19533,377 +19536,393 @@ var Listeners = require('./Listeners.js');
 
 var SelectionLayer = function(opts) {
 
-	this.bounds = {
-		x: 0,
-		y: 0,
-		width: 0,
-		height: 0
-	};
+  this.bounds = {
+    x: 0,
+    y: 0,
+    width: 0,
+    height: 0
+  };
 
-	this.region = {
-		x: 0,
-		y: 0,
-		width: 400,
-		height: 400
-	};
+  this.region = {
+    x: 0,
+    y: 0,
+    width: 400,
+    height: 400
+  };
 
-	this.parent = opts.parent;
-	this.context = opts.context;
-	this.target = opts.target;
-	this.minSize = opts.minSize || {
-		width: 10,
-		height: 10
-	};
+  this.parent = opts.parent;
+  this.context = opts.context;
+  this.target = opts.target;
+  this.minSize = opts.minSize || {
+    width: 10,
+    height: 10
+  };
+  this.aspectRatio = opts.aspectRatio;
 
-	var handleOpts = opts.handle || {};
-	handleOpts.length = handleOpts.length || 32;
-	handleOpts.depth = handleOpts.depth || 3;
-	handleOpts.size = handleOpts.size || handleOpts.length * 2;
-	handleOpts.color = handleOpts.color || 'rgba(255, 255, 255, 1.0)';
-	handleOpts.activeColor = handleOpts.activeColor || 'rgba(255, 0, 160, 1.0)';
-	this.handleOpts = handleOpts;
+  var handleOpts = opts.handle || {};
+  handleOpts.length = handleOpts.length || 32;
+  handleOpts.depth = handleOpts.depth || 3;
+  handleOpts.size = handleOpts.size || handleOpts.length * 2;
+  handleOpts.color = handleOpts.color || 'rgba(255, 255, 255, 1.0)';
+  handleOpts.activeColor = handleOpts.activeColor || 'rgba(255, 0, 160, 1.0)';
+  this.handleOpts = handleOpts;
 
-	this.listeners = Listeners.create();
+  this.listeners = Listeners.create();
 
-	this.input = Input.create(this.parent.canvas);
+  this.input = Input.create(this.parent.canvas);
 
-	this.activeRegion = null;
-	this.delta = {x: 0, y: 0};
-	this.downEvent = null;
-	this.downBounds = {x: 0, y: 0};
+  this.activeRegion = null;
+  this.delta = {x: 0, y: 0};
+  this.downEvent = null;
+  this.downBounds = {x: 0, y: 0};
 
-	this.input.on('down', function(e) {
+  this.input.on('down', function(e) {
 
-		var hitRegion = this.findHitRegion(e);
+    var hitRegion = this.findHitRegion(e);
 
-		if (hitRegion) {
-			this.activeRegion = hitRegion;
-			this.setCursor(hitRegion);
-			this.downEvent = e;
-			this.downBounds.x = this.bounds.x;
-			this.downBounds.y = this.bounds.y;
-			this.downBounds.width = this.bounds.width;
-			this.downBounds.height = this.bounds.height;
-			e.source.preventDefault();
-		}
+    if (hitRegion) {
+      this.activeRegion = hitRegion;
+      this.setCursor(hitRegion);
+      this.downEvent = e;
+      this.downBounds.x = this.bounds.x;
+      this.downBounds.y = this.bounds.y;
+      this.downBounds.width = this.bounds.width;
+      this.downBounds.height = this.bounds.height;
+      e.source.preventDefault();
+    }
 
-	}.bind(this));
+  }.bind(this));
 
-	this.input.on('move', function(e) {
+  this.input.on('move', function(e) {
 
-		var activeRegion = this.activeRegion;
+    var activeRegion = this.activeRegion;
 
-		if (!activeRegion) {
-			var hitRegion = this.findHitRegion(e);
-			if (hitRegion) {
-				this.setCursor(hitRegion);
-				e.source.preventDefault();
-			} else {
-				this.resetCursor();
-			}
-		} else {
+    if (!activeRegion) {
+      var hitRegion = this.findHitRegion(e);
+      if (hitRegion) {
+        this.setCursor(hitRegion);
+        e.source.preventDefault();
+      } else {
+        this.resetCursor();
+      }
+    } else {
 
-			e.source.preventDefault();
+      e.source.preventDefault();
 
-			var delta = this.delta;
-			var target = this.target;
-			var bounds = this.bounds;
-			var downBounds = this.downBounds;
-			var downEvent = this.downEvent;
+      var delta = this.delta;
+      var target = this.target;
+      var bounds = this.bounds;
+      var downBounds = this.downBounds;
+      var downEvent = this.downEvent;
 
-			delta.x = e.x - downEvent.x;
-			delta.y = e.y - downEvent.y;
+      delta.x = e.x - downEvent.x;
+      delta.y = e.y - downEvent.y;
 
-			var bounds = this.bounds;
+      var bounds = this.bounds;
 
-			var minLen = this.handleOpts.length * 2;
-			var minWidth = minLen;
-			var minHeight = minLen;
+      var minLen = this.handleOpts.length * 2;
+      var minWidth = minLen;
+      var minHeight = minLen;
 
-			var newLeft = downBounds.x;
-			var newTop = downBounds.y;
-			var newWidth = downBounds.width;
-			var newHeight = downBounds.height;
-			var newRight = newLeft + newWidth;
-			var newBottom = newTop + newHeight;
+      var moveLeft = downBounds.x;
+      var moveTop = downBounds.y;
+      var moveWidth = downBounds.width;
+      var moveHeight = downBounds.height;
+      var moveRight = moveLeft + moveWidth;
+      var moveBottom = moveTop + moveHeight;
+      var moveAspectRatio;
 
-			if (activeRegion === 'move') {
-				newLeft += delta.x;
-				newTop += delta.y;
-				newLeft = Math.min(Math.max(newLeft, target.bounds.x), target.bounds.x + target.bounds.width - newWidth);
-				newTop = Math.min(Math.max(newTop, target.bounds.y), target.bounds.y + target.bounds.height - newHeight);
-			} else {
-				var dirV = activeRegion[0];
-				var dirH = activeRegion[1];
+      if (activeRegion === 'move') {
+        moveLeft += delta.x;
+        moveTop += delta.y;
+        moveLeft = Math.min(Math.max(moveLeft, target.bounds.x), target.bounds.x + target.bounds.width - moveWidth);
+        moveTop = Math.min(Math.max(moveTop, target.bounds.y), target.bounds.y + target.bounds.height - moveHeight);
+      } else {
+        var dirV = activeRegion[0];
+        var dirH = activeRegion[1];
 
-				if (dirV === 'n') {
-					newTop += delta.y;
-					if (delta.y < 0) {
-						newTop = Math.max(target.bounds.y, newTop);
-						newHeight = newBottom - newTop;
-					} else {
-						newHeight = Math.max(minHeight, newBottom - newTop);
-						newTop = newBottom - newHeight;
-					}
-				} else if (dirV === 's') {
-					newBottom += delta.y;
-					if (delta.y > 0) {
-						newBottom = Math.min(target.bounds.y + target.bounds.height, newBottom);
-						newHeight = newBottom - newTop;
-					} else {
-						newHeight = Math.max(minHeight, newBottom - newTop);
-						newBottom = newTop + Math.max(minHeight, newBottom - newTop);
-					}
-				}
+        if (dirV === 'n') {
+          moveTop += delta.y;
+          if (delta.y < 0) {
+            moveTop = Math.max(target.bounds.y, moveTop);
+            moveHeight = moveBottom - moveTop;
+          } else {
+            moveHeight = Math.max(minHeight, moveBottom - moveTop);
+            moveTop = moveBottom - moveHeight;
+          }
+        } else if (dirV === 's') {
+          moveBottom += delta.y;
+          if (delta.y > 0) {
+            moveBottom = Math.min(target.bounds.y + target.bounds.height, moveBottom);
+            moveHeight = moveBottom - moveTop;
+          } else {
+            moveHeight = Math.max(minHeight, moveBottom - moveTop);
+            moveBottom = moveTop + Math.max(minHeight, moveBottom - moveTop);
+          }
+        }
 
-				if (dirH === 'w') {
-					newLeft += delta.x;
-					if (delta.x < 0) {
-						newLeft = Math.max(target.bounds.x, newLeft);
-						newWidth = newRight - newLeft;
-					} else {
-						newWidth = Math.max(minWidth, newRight - newLeft);
-						newLeft = newRight - Math.max(minWidth, newRight - newLeft);
-					}
-				} else if (dirH === 'e') {
-					newRight += delta.x;
-					if (delta.x > 0) {
-						newRight = Math.min(target.bounds.x + target.bounds.width, newRight);
-						newWidth = newRight - newLeft;
-					} else {
-						newWidth = Math.max(minWidth, newRight - newLeft);
-						newRight = newLeft + Math.max(minWidth, newRight - newLeft);
-					}
-				}
-			}
+        if (dirH === 'w') {
+          moveLeft += delta.x;
+          if (delta.x < 0) {
+            moveLeft = Math.max(target.bounds.x, moveLeft);
+            moveWidth = moveRight - moveLeft;
+          } else {
+            moveWidth = Math.max(minWidth, moveRight - moveLeft);
+            moveLeft = moveRight - Math.max(minWidth, moveRight - moveLeft);
+          }
+        } else if (dirH === 'e') {
+          moveRight += delta.x;
+          if (delta.x > 0) {
+            moveRight = Math.min(target.bounds.x + target.bounds.width, moveRight);
+            moveWidth = moveRight - moveLeft;
+          } else {
+            moveWidth = Math.max(minWidth, moveRight - moveLeft);
+            moveRight = moveLeft + Math.max(minWidth, moveRight - moveLeft);
+          }
+        }
+      }
 
-			this.setBounds(newLeft, newTop, newWidth, newHeight);
-			this.updateRegionAndNotifyListeners();
-		}
+      this.setBounds(moveLeft, moveTop, moveWidth, moveHeight);
+      this.updateRegion();
+      this.listeners.notify('regionChange', this);
+    }
 
-	}.bind(this));
+  }.bind(this));
 
-	function handleUpOrCancel(e) {
-		e.source.preventDefault();
-		this.activeRegion = null;
-		this.resetCursor();
-		this.downEvent = null;
-		this.listeners.notify('dirty', this);
-	}
+  function handleUpOrCancel(e) {
+    e.source.preventDefault();
+    this.activeRegion = null;
+    this.resetCursor();
+    this.downEvent = null;
+    this.listeners.notify('dirty', this);
+  }
 
-	this.input
-		.on('up', handleUpOrCancel.bind(this))
-		.on('cancel', handleUpOrCancel.bind(this));
+  this.input
+    .on('up', handleUpOrCancel.bind(this))
+    .on('cancel', handleUpOrCancel.bind(this));
 };
 
 SelectionLayer.create = function(opts) {
-	return new SelectionLayer(opts);
+  return new SelectionLayer(opts);
 };
 
 SelectionLayer.prototype.findHitRegion = function(point) {
 
-	var hitRegion = null;
-	var closest = Number.MAX_VALUE;
+  var hitRegion = null;
+  var closest = Number.MAX_VALUE;
 
-	var d = this.isWithinNorthWestHandle(point);
-	if (d !== false && d < closest) {
-		closest = d;
-		hitRegion = 'nw-resize';
-	}
+  var d = this.isWithinNorthWestHandle(point);
+  if (d !== false && d < closest) {
+    closest = d;
+    hitRegion = 'nw-resize';
+  }
 
-	d = this.isWithinNorthEastHandle(point);
-	if (d !== false && d < closest) {
-		closest = d;
-		hitRegion = 'ne-resize';
-	}
+  d = this.isWithinNorthEastHandle(point);
+  if (d !== false && d < closest) {
+    closest = d;
+    hitRegion = 'ne-resize';
+  }
 
-	d = this.isWithinSouthWestHandle(point);
-	if (d !== false && d < closest) {
-		closest = d;
-		hitRegion = 'sw-resize';
-	}
+  d = this.isWithinSouthWestHandle(point);
+  if (d !== false && d < closest) {
+    closest = d;
+    hitRegion = 'sw-resize';
+  }
 
-	d = this.isWithinSouthEastHandle(point);
-	if (d !== false && d < closest) {
-		closest = d;
-		hitRegion = 'se-resize';
-	}
+  d = this.isWithinSouthEastHandle(point);
+  if (d !== false && d < closest) {
+    closest = d;
+    hitRegion = 'se-resize';
+  }
 
-	if (hitRegion)
-		return hitRegion;
-	else if (this.isWithinBounds(point))
-		return 'move';
-	else
-		return null;
+  if (hitRegion)
+    return hitRegion;
+  else if (this.isWithinBounds(point))
+    return 'move';
+  else
+    return null;
 };
 
 SelectionLayer.prototype.setBounds = function(x, y, w, h) {
-	var target = this.target;
-	var bounds = this.bounds;
-	bounds.x = Math.round(x);
-	bounds.y = Math.round(y);
-	bounds.width = Math.round(w);
-	bounds.height = Math.round(h);
+  var target = this.target;
+  var bounds = this.bounds;
+
+  var constraintRatio = this.aspectRatio;
+  if (constraintRatio) {
+    if ((w / h) > constraintRatio)
+      w = h * constraintRatio;
+    else
+      h = w / constraintRatio;
+  }
+
+  bounds.x = Math.round(x);
+  bounds.y = Math.round(y);
+  bounds.width = Math.round(w);
+  bounds.height = Math.round(h);
 };
 
 SelectionLayer.prototype.on = function(type, fn) {
-	this.listeners.on(type, fn);
-	return this;
+  this.listeners.on(type, fn);
+  return this;
 };
 
 SelectionLayer.prototype.off = function(type, fn) {
-	this.listeners.off(type, fn);
-	return this;
+  this.listeners.off(type, fn);
+  return this;
 };
 
 SelectionLayer.prototype.setCursor = function(type) {
-	if (this.parent.canvas.style.cursor !== type)
-		this.parent.canvas.style.cursor = type;
+  if (this.parent.canvas.style.cursor !== type)
+    this.parent.canvas.style.cursor = type;
 };
 
 SelectionLayer.prototype.resetCursor = function() {
-	this.setCursor('auto');
+  this.setCursor('auto');
 };
 
 SelectionLayer.prototype.isWithinRadius = function(ax, ay, bx, by, r) {
-	var tsq = r * r;
-	var dx = ax - bx;
-	var dy = ay - by;
-	var dsq = dx * dx + dy * dy;
-	return (dsq < tsq) ? dsq : false;
+  var tsq = r * r;
+  var dx = ax - bx;
+  var dy = ay - by;
+  var dsq = dx * dx + dy * dy;
+  return (dsq < tsq) ? dsq : false;
 };
 
 SelectionLayer.prototype.isWithinNorthWestHandle = function(point) {
-	return this.isWithinRadius(point.x, point.y, this.bounds.x, this.bounds.y, this.getHandleRadius());
+  return this.isWithinRadius(point.x, point.y, this.bounds.x, this.bounds.y, this.getHandleRadius());
 };
 
 SelectionLayer.prototype.isWithinNorthEastHandle = function(point) {
-	return this.isWithinRadius(point.x, point.y, this.bounds.x + this.bounds.width, this.bounds.y, this.getHandleRadius());
+  return this.isWithinRadius(point.x, point.y, this.bounds.x + this.bounds.width, this.bounds.y, this.getHandleRadius());
 };
 
 SelectionLayer.prototype.isWithinSouthWestHandle = function(point) {
-	return this.isWithinRadius(point.x, point.y, this.bounds.x, this.bounds.y + this.bounds.height, this.getHandleRadius());
+  return this.isWithinRadius(point.x, point.y, this.bounds.x, this.bounds.y + this.bounds.height, this.getHandleRadius());
 };
 
 SelectionLayer.prototype.isWithinSouthEastHandle = function(point) {
-	return this.isWithinRadius(point.x, point.y, this.bounds.x + this.bounds.width, this.bounds.y + this.bounds.height, this.getHandleRadius());
+  return this.isWithinRadius(point.x, point.y, this.bounds.x + this.bounds.width, this.bounds.y + this.bounds.height, this.getHandleRadius());
 };
 
 SelectionLayer.prototype.isWithinBounds = function(point) {
 
-	var bounds = this.bounds;
-	return point.x >= bounds.x &&
-		point.y >= bounds.y &&
-		point.x < bounds.x + bounds.width &&
-		point.y < bounds.y + bounds.height;
+  var bounds = this.bounds;
+  return point.x >= bounds.x &&
+    point.y >= bounds.y &&
+    point.x < bounds.x + bounds.width &&
+    point.y < bounds.y + bounds.height;
 };
 
 SelectionLayer.prototype.getHandleRadius = function() {
-	return this.handleOpts.size / 2;
-};
-
-SelectionLayer.prototype.updateRegionAndNotifyListeners = function() {
-	this.updateRegion();
-	this.listeners.notify('regionChange', this);
+  return this.handleOpts.size / 2;
 };
 
 SelectionLayer.prototype.updateRegion = function() {
 
-	var region = this.region;
-	var bounds = this.bounds;
-	var target = this.target;
+  var region = this.region;
+  var bounds = this.bounds;
+  var target = this.target;
 
-	region.x = target.image.width * (bounds.x - target.bounds.x) / target.bounds.width;
-	region.y = target.image.height * (bounds.y - target.bounds.y) / target.bounds.height;
+  region.x = target.image.width * (bounds.x - target.bounds.x) / target.bounds.width;
+  region.y = target.image.height * (bounds.y - target.bounds.y) / target.bounds.height;
 
-	region.width = target.image.width * (bounds.width / target.bounds.width);
-	region.height = target.image.height * (bounds.height / target.bounds.height);
+  region.width = target.image.width * (bounds.width / target.bounds.width);
+  region.height = target.image.height * (bounds.height / target.bounds.height);
+
+  var constraintRatio = this.aspectRatio;
+  if (constraintRatio) {
+    if ((region.width / region.height) > constraintRatio)
+      region.width = region.height * constraintRatio;
+    else
+      region.height = region.width / constraintRatio;
+  }
 };
 
 SelectionLayer.prototype.revalidate = function() {
 
-	var target = this.target;
-	var region = this.region;
-	var bounds = this.bounds;
+  var target = this.target;
+  var region = this.region;
+  var bounds = this.bounds;
 
-	if (target.image) {
+  if (target.image) {
 
-		this.setBounds(
-			target.bounds.x + target.bounds.width * (region.x / target.image.width),
-			target.bounds.y + target.bounds.height * (region.y / target.image.height),
-			target.bounds.width * (region.width / target.image.width),
-			target.bounds.height * (region.height / target.image.height)
-		);
-	}
+    this.setBounds(
+      target.bounds.x + target.bounds.width * (region.x / target.image.width),
+      target.bounds.y + target.bounds.height * (region.y / target.image.height),
+      target.bounds.width * (region.width / target.image.width),
+      target.bounds.height * (region.height / target.image.height)
+    );
+  }
 };
 
 SelectionLayer.prototype.paint = function() {
-	this.paintOutside();
-	this.paintInside();
+  this.paintOutside();
+  this.paintInside();
 };
 
 SelectionLayer.prototype.paintOutside = function() {
-	var parent = this.parent;
-	var bounds = this.bounds;
-	var context = this.context;
-	var target = this.target;
+  var parent = this.parent;
+  var bounds = this.bounds;
+  var g = this.context;
+  var target = this.target;
 
-	var tl = target.bounds.x;
-	var tt = target.bounds.y;
-	var tw = target.bounds.width;
-	var th = target.bounds.height;
-	var tr = tl + tw;
-	var tb = tt + th;
+  var tl = target.bounds.x;
+  var tt = target.bounds.y;
+  var tw = target.bounds.width;
+  var th = target.bounds.height;
+  var tr = tl + tw;
+  var tb = tt + th;
 
-	var bl = bounds.x;
-	var bt = bounds.y;
-	var bw = bounds.width;
-	var bh = bounds.height;
-	var br = bl + bw;
-	var bb = bt + bh;
+  var bl = bounds.x;
+  var bt = bounds.y;
+  var bw = bounds.width;
+  var bh = bounds.height;
+  var br = bl + bw;
+  var bb = bt + bh;
 
-	context.fillStyle = 'rgba(0, 0, 0, 0.5)';
-	context.fillRect(tl, tt, tw, bt - tt);
-	context.fillRect(tl, bt, bl - tl, bh);
-	context.fillRect(br, bt, tr - br, bh);
-	context.fillRect(tl, bb, tw, tb - bb);
+  g.fillStyle = 'rgba(0, 0, 0, 0.5)';
+  g.fillRect(tl, tt, tw, bt - tt);
+  g.fillRect(tl, bt, bl - tl, bh);
+  g.fillRect(br, bt, tr - br, bh);
+  g.fillRect(tl, bb, tw, tb - bb);
 };
 
 SelectionLayer.prototype.paintInside = function() {
 
-	var context = this.context;
-	var bounds = this.bounds;
-	var activeRegion = this.activeRegion;
-	var opts = this.handleOpts;
+  var g = this.context;
+  var bounds = this.bounds;
+  var activeRegion = this.activeRegion;
+  var opts = this.handleOpts;
 
-	var length = opts.length;
-	var depth = opts.depth;
-	var color = opts.color;
-	var activeColor = opts.activeColor;
+  var lengthWidth = Math.min(opts.length, bounds.width * 0.5);
+  var lengthHeight = Math.min(opts.length, bounds.height * 0.5);
+  var depth = opts.depth;
+  var color = opts.color;
+  var activeColor = opts.activeColor;
 
-	// Handles
-	context.fillStyle = activeRegion === 'move' || activeRegion === 'nw-resize' ? activeColor : color;
-	context.fillRect(bounds.x, bounds.y, length, depth);
-	context.fillRect(bounds.x, bounds.y + depth, depth, length - depth);
+  // Handles
+  g.fillStyle = activeRegion === 'move' || activeRegion === 'nw-resize' ? activeColor : color;
+  g.fillRect(bounds.x, bounds.y, lengthWidth, depth);
+  g.fillRect(bounds.x, bounds.y + depth, depth, lengthHeight - depth);
 
-	context.fillStyle = activeRegion === 'move' || activeRegion === 'ne-resize' ? activeColor : color;
-	context.fillRect(bounds.x + bounds.width - length, bounds.y, length, depth);
-	context.fillRect(bounds.x + bounds.width - depth, bounds.y + depth, depth, length - depth);
+  g.fillStyle = activeRegion === 'move' || activeRegion === 'ne-resize' ? activeColor : color;
+  g.fillRect(bounds.x + bounds.width - lengthWidth, bounds.y, lengthWidth, depth);
+  g.fillRect(bounds.x + bounds.width - depth, bounds.y + depth, depth, lengthHeight - depth);
 
-	context.fillStyle = activeRegion === 'move' || activeRegion === 'sw-resize' ? activeColor : color;
-	context.fillRect(bounds.x, bounds.y + bounds.height - depth, length, depth);
-	context.fillRect(bounds.x, bounds.y + bounds.height - length, depth, length - depth);
+  g.fillStyle = activeRegion === 'move' || activeRegion === 'sw-resize' ? activeColor : color;
+  g.fillRect(bounds.x, bounds.y + bounds.height - depth, lengthWidth, depth);
+  g.fillRect(bounds.x, bounds.y + bounds.height - lengthHeight, depth, lengthHeight - depth);
 
-	context.fillStyle = activeRegion === 'move' || activeRegion === 'se-resize' ? activeColor : color;
-	context.fillRect(bounds.x + bounds.width - length, bounds.y + bounds.height - depth, length, depth);
-	context.fillRect(bounds.x + bounds.width - depth, bounds.y + bounds.height - length, depth, length - depth);
+  g.fillStyle = activeRegion === 'move' || activeRegion === 'se-resize' ? activeColor : color;
+  g.fillRect(bounds.x + bounds.width - lengthWidth, bounds.y + bounds.height - depth, lengthWidth, depth);
+  g.fillRect(bounds.x + bounds.width - depth, bounds.y + bounds.height - lengthHeight, depth, lengthHeight - depth);
 
-	// Sides
-	context.fillStyle = 'rgba(255, 255, 255, 0.3)';
-	context.fillRect(bounds.x + length, bounds.y, bounds.width - 2 * length, depth);
-	context.fillRect(bounds.x + length, bounds.y + bounds.height - depth, bounds.width - 2 * length, depth);
-	context.fillRect(bounds.x, bounds.y + length, depth, bounds.height - 2 * length);
-	context.fillRect(bounds.x + bounds.width - depth, bounds.y + length, depth, bounds.height - 2 * length);
+  // Sides
+  g.fillStyle = 'rgba(255, 255, 255, 0.3)';
+  g.fillRect(bounds.x + length, bounds.y, bounds.width - 2 * length, depth);
+  g.fillRect(bounds.x + length, bounds.y + bounds.height - depth, bounds.width - 2 * length, depth);
+  g.fillRect(bounds.x, bounds.y + length, depth, bounds.height - 2 * length);
+  g.fillRect(bounds.x + bounds.width - depth, bounds.y + length, depth, bounds.height - 2 * length);
 };
 
 module.exports = SelectionLayer;
@@ -19912,16 +19931,16 @@ module.exports = SelectionLayer;
 },{"./Input.js":163,"./Listeners.js":164}],167:[function(require,module,exports){
 // http://snippetrepo.com/snippets/basic-vanilla-javascript-throttlingdebounce
 function debounce(fn, wait, immediate) {
-	var timeout;
-	return function() {
-		var context = this, args = arguments;
-		clearTimeout(timeout);
-		timeout = setTimeout(function() {
-			timeout = null;
-			if (!immediate) fn.apply(context, args);
-		}, wait);
-		if (immediate && !timeout) fn.apply(context, args);
-	};
+  var timeout;
+  return function() {
+    var context = this, args = arguments;
+    clearTimeout(timeout);
+    timeout = setTimeout(function() {
+      timeout = null;
+      if (!immediate) fn.apply(context, args);
+    }, wait);
+    if (immediate && !timeout) fn.apply(context, args);
+  };
 };
 
 module.exports = debounce;
@@ -19948,25 +19967,25 @@ var BLANK = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAO
 
 function imageLoaded(image, callback) {
 
-	if (!image.nodeName || image.nodeName.toLowerCase() !== 'img')
-		return callback(new Error('First argument must an image element'));
+  if (!image.nodeName || image.nodeName.toLowerCase() !== 'img')
+    return callback(new Error('First argument must an image element'));
 
   if (image.src && image.complete && image.naturalWidth !== undefined)
-		return callback(null, true);
+    return callback(null, true);
 
-	image.addEventListener('load', function() {
-		callback(null, false);
-	}.bind(this));
+  image.addEventListener('load', function() {
+    callback(null, false);
+  }.bind(this));
 
-	image.addEventListener('error', function(e) {
-		callback(new Error('Failed to load image \'' + (image.src || '') + '\''));
-	}.bind(this));
+  image.addEventListener('error', function(e) {
+    callback(new Error('Failed to load image \'' + (image.src || '') + '\''));
+  }.bind(this));
 
-	if (image.complete) {
-		src = image.src;
-		image.src = BLANK;
-		image.src = src;
-	}
+  if (image.complete) {
+    src = image.src;
+    image.src = BLANK;
+    image.src = src;
+  }
 }
 
 module.exports = imageLoaded;

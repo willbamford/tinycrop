@@ -40,6 +40,7 @@ var ImageCrop = function(opts) {
   this.parent = opts.parent || null;
   this.canvas = document.createElement('canvas');
   this.context = this.canvas.getContext('2d');
+  this.aspectRatio = opts.aspectRatio || null;
 
   this.image = null;
 
@@ -65,7 +66,8 @@ var ImageCrop = function(opts) {
   this.selectionLayer = SelectionLayer.create({
     parent: this,
     context: this.context,
-    target: this.imageLayer
+    target: this.imageLayer,
+    aspectRatio: this.aspectRatio
   });
 
   this.selectionLayer
@@ -154,7 +156,7 @@ ImageCrop.prototype.revalidate = function() {
   } else if (isPercent(optHeight)) {
     height = Math.round(width * getPercent(optHeight) / 100);
   } else if (image && image.hasLoaded && isAuto(optHeight)) {
-    height = Math.floor(width / image.getAspect());
+    height = Math.floor(width / image.getAspectRatio());
   } else {
     height = DEFAULT_CANVAS_HEIGHT;
   }

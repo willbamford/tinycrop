@@ -24,6 +24,7 @@ var SelectionLayer = function(opts) {
     width: 10,
     height: 10
   };
+  this.aspectRatio = opts.aspectRatio;
 
   var handleOpts = opts.handle || {};
   handleOpts.length = handleOpts.length || 32;
@@ -90,65 +91,67 @@ var SelectionLayer = function(opts) {
       var minWidth = minLen;
       var minHeight = minLen;
 
-      var newLeft = downBounds.x;
-      var newTop = downBounds.y;
-      var newWidth = downBounds.width;
-      var newHeight = downBounds.height;
-      var newRight = newLeft + newWidth;
-      var newBottom = newTop + newHeight;
+      var moveLeft = downBounds.x;
+      var moveTop = downBounds.y;
+      var moveWidth = downBounds.width;
+      var moveHeight = downBounds.height;
+      var moveRight = moveLeft + moveWidth;
+      var moveBottom = moveTop + moveHeight;
+      var moveAspectRatio;
 
       if (activeRegion === 'move') {
-        newLeft += delta.x;
-        newTop += delta.y;
-        newLeft = Math.min(Math.max(newLeft, target.bounds.x), target.bounds.x + target.bounds.width - newWidth);
-        newTop = Math.min(Math.max(newTop, target.bounds.y), target.bounds.y + target.bounds.height - newHeight);
+        moveLeft += delta.x;
+        moveTop += delta.y;
+        moveLeft = Math.min(Math.max(moveLeft, target.bounds.x), target.bounds.x + target.bounds.width - moveWidth);
+        moveTop = Math.min(Math.max(moveTop, target.bounds.y), target.bounds.y + target.bounds.height - moveHeight);
       } else {
         var dirV = activeRegion[0];
         var dirH = activeRegion[1];
 
         if (dirV === 'n') {
-          newTop += delta.y;
+          moveTop += delta.y;
           if (delta.y < 0) {
-            newTop = Math.max(target.bounds.y, newTop);
-            newHeight = newBottom - newTop;
+            moveTop = Math.max(target.bounds.y, moveTop);
+            moveHeight = moveBottom - moveTop;
           } else {
-            newHeight = Math.max(minHeight, newBottom - newTop);
-            newTop = newBottom - newHeight;
+            moveHeight = Math.max(minHeight, moveBottom - moveTop);
+            moveTop = moveBottom - moveHeight;
           }
         } else if (dirV === 's') {
-          newBottom += delta.y;
+          moveBottom += delta.y;
           if (delta.y > 0) {
-            newBottom = Math.min(target.bounds.y + target.bounds.height, newBottom);
-            newHeight = newBottom - newTop;
+            moveBottom = Math.min(target.bounds.y + target.bounds.height, moveBottom);
+            moveHeight = moveBottom - moveTop;
           } else {
-            newHeight = Math.max(minHeight, newBottom - newTop);
-            newBottom = newTop + Math.max(minHeight, newBottom - newTop);
+            moveHeight = Math.max(minHeight, moveBottom - moveTop);
+            moveBottom = moveTop + Math.max(minHeight, moveBottom - moveTop);
           }
         }
 
         if (dirH === 'w') {
-          newLeft += delta.x;
+          moveLeft += delta.x;
           if (delta.x < 0) {
-            newLeft = Math.max(target.bounds.x, newLeft);
-            newWidth = newRight - newLeft;
+            moveLeft = Math.max(target.bounds.x, moveLeft);
+            moveWidth = moveRight - moveLeft;
           } else {
-            newWidth = Math.max(minWidth, newRight - newLeft);
-            newLeft = newRight - Math.max(minWidth, newRight - newLeft);
+            moveWidth = Math.max(minWidth, moveRight - moveLeft);
+            moveLeft = moveRight - Math.max(minWidth, moveRight - moveLeft);
           }
         } else if (dirH === 'e') {
-          newRight += delta.x;
+          moveRight += delta.x;
           if (delta.x > 0) {
-            newRight = Math.min(target.bounds.x + target.bounds.width, newRight);
-            newWidth = newRight - newLeft;
+            moveRight = Math.min(target.bounds.x + target.bounds.width, moveRight);
+            moveWidth = moveRight - moveLeft;
           } else {
-            newWidth = Math.max(minWidth, newRight - newLeft);
-            newRight = newLeft + Math.max(minWidth, newRight - newLeft);
+            moveWidth = Math.max(minWidth, moveRight - moveLeft);
+            moveRight = moveLeft + Math.max(minWidth, moveRight - moveLeft);
           }
         }
       }
 
-      this.setBounds(newLeft, newTop, newWidth, newHeight);
-      this.updateRegionAndNotifyListeners();
+      this.setBounds(moveLeft, moveTop, moveWidth, moveHeight);
+      this.updateRegion();
+      this.listeners.notify('regionChange', this);
     }
 
   }.bind(this));
@@ -210,6 +213,15 @@ SelectionLayer.prototype.findHitRegion = function(point) {
 SelectionLayer.prototype.setBounds = function(x, y, w, h) {
   var target = this.target;
   var bounds = this.bounds;
+
+  var constraintRatio = this.aspectRatio;
+  if (constraintRatio) {
+    if ((w / h) > constraintRatio)
+      w = h * constraintRatio;
+    else
+      h = w / constraintRatio;
+  }
+
   bounds.x = Math.round(x);
   bounds.y = Math.round(y);
   bounds.width = Math.round(w);
@@ -272,11 +284,6 @@ SelectionLayer.prototype.getHandleRadius = function() {
   return this.handleOpts.size / 2;
 };
 
-SelectionLayer.prototype.updateRegionAndNotifyListeners = function() {
-  this.updateRegion();
-  this.listeners.notify('regionChange', this);
-};
-
 SelectionLayer.prototype.updateRegion = function() {
 
   var region = this.region;
@@ -288,6 +295,14 @@ SelectionLayer.prototype.updateRegion = function() {
 
   region.width = target.image.width * (bounds.width / target.bounds.width);
   region.height = target.image.height * (bounds.height / target.bounds.height);
+
+  var constraintRatio = this.aspectRatio;
+  if (constraintRatio) {
+    if ((region.width / region.height) > constraintRatio)
+      region.width = region.height * constraintRatio;
+    else
+      region.height = region.width / constraintRatio;
+  }
 };
 
 SelectionLayer.prototype.revalidate = function() {
@@ -315,7 +330,7 @@ SelectionLayer.prototype.paint = function() {
 SelectionLayer.prototype.paintOutside = function() {
   var parent = this.parent;
   var bounds = this.bounds;
-  var context = this.context;
+  var g = this.context;
   var target = this.target;
 
   var tl = target.bounds.x;
@@ -332,48 +347,49 @@ SelectionLayer.prototype.paintOutside = function() {
   var br = bl + bw;
   var bb = bt + bh;
 
-  context.fillStyle = 'rgba(0, 0, 0, 0.5)';
-  context.fillRect(tl, tt, tw, bt - tt);
-  context.fillRect(tl, bt, bl - tl, bh);
-  context.fillRect(br, bt, tr - br, bh);
-  context.fillRect(tl, bb, tw, tb - bb);
+  g.fillStyle = 'rgba(0, 0, 0, 0.5)';
+  g.fillRect(tl, tt, tw, bt - tt);
+  g.fillRect(tl, bt, bl - tl, bh);
+  g.fillRect(br, bt, tr - br, bh);
+  g.fillRect(tl, bb, tw, tb - bb);
 };
 
 SelectionLayer.prototype.paintInside = function() {
 
-  var context = this.context;
+  var g = this.context;
   var bounds = this.bounds;
   var activeRegion = this.activeRegion;
   var opts = this.handleOpts;
 
-  var length = opts.length;
+  var lengthWidth = Math.min(opts.length, bounds.width * 0.5);
+  var lengthHeight = Math.min(opts.length, bounds.height * 0.5);
   var depth = opts.depth;
   var color = opts.color;
   var activeColor = opts.activeColor;
 
   // Handles
-  context.fillStyle = activeRegion === 'move' || activeRegion === 'nw-resize' ? activeColor : color;
-  context.fillRect(bounds.x, bounds.y, length, depth);
-  context.fillRect(bounds.x, bounds.y + depth, depth, length - depth);
+  g.fillStyle = activeRegion === 'move' || activeRegion === 'nw-resize' ? activeColor : color;
+  g.fillRect(bounds.x, bounds.y, lengthWidth, depth);
+  g.fillRect(bounds.x, bounds.y + depth, depth, lengthHeight - depth);
 
-  context.fillStyle = activeRegion === 'move' || activeRegion === 'ne-resize' ? activeColor : color;
-  context.fillRect(bounds.x + bounds.width - length, bounds.y, length, depth);
-  context.fillRect(bounds.x + bounds.width - depth, bounds.y + depth, depth, length - depth);
+  g.fillStyle = activeRegion === 'move' || activeRegion === 'ne-resize' ? activeColor : color;
+  g.fillRect(bounds.x + bounds.width - lengthWidth, bounds.y, lengthWidth, depth);
+  g.fillRect(bounds.x + bounds.width - depth, bounds.y + depth, depth, lengthHeight - depth);
 
-  context.fillStyle = activeRegion === 'move' || activeRegion === 'sw-resize' ? activeColor : color;
-  context.fillRect(bounds.x, bounds.y + bounds.height - depth, length, depth);
-  context.fillRect(bounds.x, bounds.y + bounds.height - length, depth, length - depth);
+  g.fillStyle = activeRegion === 'move' || activeRegion === 'sw-resize' ? activeColor : color;
+  g.fillRect(bounds.x, bounds.y + bounds.height - depth, lengthWidth, depth);
+  g.fillRect(bounds.x, bounds.y + bounds.height - lengthHeight, depth, lengthHeight - depth);
 
-  context.fillStyle = activeRegion === 'move' || activeRegion === 'se-resize' ? activeColor : color;
-  context.fillRect(bounds.x + bounds.width - length, bounds.y + bounds.height - depth, length, depth);
-  context.fillRect(bounds.x + bounds.width - depth, bounds.y + bounds.height - length, depth, length - depth);
+  g.fillStyle = activeRegion === 'move' || activeRegion === 'se-resize' ? activeColor : color;
+  g.fillRect(bounds.x + bounds.width - lengthWidth, bounds.y + bounds.height - depth, lengthWidth, depth);
+  g.fillRect(bounds.x + bounds.width - depth, bounds.y + bounds.height - lengthHeight, depth, lengthHeight - depth);
 
   // Sides
-  context.fillStyle = 'rgba(255, 255, 255, 0.3)';
-  context.fillRect(bounds.x + length, bounds.y, bounds.width - 2 * length, depth);
-  context.fillRect(bounds.x + length, bounds.y + bounds.height - depth, bounds.width - 2 * length, depth);
-  context.fillRect(bounds.x, bounds.y + length, depth, bounds.height - 2 * length);
-  context.fillRect(bounds.x + bounds.width - depth, bounds.y + length, depth, bounds.height - 2 * length);
+  g.fillStyle = 'rgba(255, 255, 255, 0.3)';
+  g.fillRect(bounds.x + length, bounds.y, bounds.width - 2 * length, depth);
+  g.fillRect(bounds.x + length, bounds.y + bounds.height - depth, bounds.width - 2 * length, depth);
+  g.fillRect(bounds.x, bounds.y + length, depth, bounds.height - 2 * length);
+  g.fillRect(bounds.x + bounds.width - depth, bounds.y + length, depth, bounds.height - 2 * length);
 };
 
 module.exports = SelectionLayer;
