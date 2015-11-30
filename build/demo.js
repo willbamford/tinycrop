@@ -19714,10 +19714,6 @@ var Listeners = require('./Listeners.js');
 var Selection = require('./Selection.js');
 var Rectangle = require('./Rectangle.js');
 
-Math.sign = Math.sign || function(x) {
-  return x > 0 ? 1 : -1;
-}
-
 var SelectionLayer = function(opts) {
 
   this.selection = Selection.create({
