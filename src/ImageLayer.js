@@ -1,13 +1,10 @@
+var Rectangle = require('./Rectangle.js');
+
 var ImageLayer = function(opts) {
 
   opts = opts || {};
 
-  this.bounds = {
-    x: 0,
-    y: 0,
-    width: 0,
-    height: 0
-  };
+  this.bounds = Rectangle.create(0, 0, 0, 0);
 
   this.image = opts.image || null;
 

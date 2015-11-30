@@ -2,14 +2,21 @@ var Listeners = require('./Listeners.js');
 
 var Input = function(domElement) {
 
-  this.domElement = domElement;
-  this.listeners = Listeners.create();
+  var listeners = Listeners.create();
+  var downEvent = null;
+  this.listeners = listeners;
 
   function createEventForMouse(source) {
+
+    var x = source.offsetX;
+    var y = source.offsetY;
+
     return {
       source: source,
-      x: source.offsetX,
-      y: source.offsetY,
+      x: x,
+      y: y,
+      dx: downEvent ? x - downEvent.x : 0,
+      dy: downEvent ? y - downEvent.y : 0,
       type: 'Mouse'
     };
   }
@@ -17,44 +24,55 @@ var Input = function(domElement) {
   function createEventForTouch(source) {
     var bounds = source.target.getBoundingClientRect();
     var touch = source.touches.length > 0 ? source.touches[0] : source.changedTouches[0];
+
+    var x = touch.pageX - bounds.left;
+    var y = touch.pageY - bounds.top;
+
     return {
       source: source,
-      x: touch.pageX - bounds.left,
-      y: touch.pageY - bounds.top,
+      x: x,
+      y: y,
+      dx: downEvent ? x - downEvent.x : 0,
+      dy: downEvent ? y - downEvent.y : 0,
       type: 'Touch'
     };
   }
 
   domElement.addEventListener('mousedown', function(source) {
-    this.listeners.notify('down', createEventForMouse(source));
+    downEvent = createEventForMouse(source);
+    listeners.notify('down', downEvent);
   }.bind(this));
 
   domElement.addEventListener('touchstart', function(source) {
-    this.listeners.notify('down', createEventForTouch(source));
+    downEvent = createEventForTouch(source);
+    listeners.notify('down', downEvent);
   }.bind(this));
 
   domElement.addEventListener('mousemove', function(source) {
-    this.listeners.notify('move', createEventForMouse(source));
+    listeners.notify('move', createEventForMouse(source));
   }.bind(this));
 
   domElement.addEventListener('touchmove', function(source) {
-    this.listeners.notify('move', createEventForTouch(source));
+    listeners.notify('move', createEventForTouch(source));
   }.bind(this));
 
   domElement.addEventListener('mouseup', function(source) {
-    this.listeners.notify('up', createEventForMouse(source));
+    listeners.notify('up', createEventForMouse(source));
   }.bind(this));
 
   domElement.addEventListener('touchend', function(source) {
-    this.listeners.notify('up', createEventForTouch(source));
+    listeners.notify('up', createEventForTouch(source));
+    downEvent = null;
   }.bind(this));
 
   domElement.addEventListener('mouseout', function(source) {
-    this.listeners.notify('cancel', createEventForMouse(source));
+    listeners.notify('cancel', createEventForMouse(source));
+    downEvent = null;
   }.bind(this));
 
   domElement.addEventListener('touchcancel', function(source) {
-    this.listeners.notify('cancel', createEventForTouch(source));
+    listeners.notify('cancel', createEventForTouch(source));
+    downEvent = null;
   }.bind(this));
 };
 
