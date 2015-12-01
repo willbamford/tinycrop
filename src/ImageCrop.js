@@ -17,7 +17,7 @@ var ImageCrop = function(opts) {
   this.image = null;
 
   this.backgroundColor = opts.backgroundColor || '#fff';
-  this.foregroundColor = opts.foregroundColor || '#eee';
+  this.foregroundColor = opts.foregroundColor || '#f7f7f7';
 
   this.optWidth = opts.width || '100%';
   this.optHeight = opts.height || 'auto';
@@ -145,31 +145,23 @@ ImageCrop.prototype.revalidate = function() {
 
 ImageCrop.prototype.setImage = function(sourceImage) {
 
-  // this.revalidateAndPaint();
+  var image = Image.create(sourceImage)
+    .on(
+      'load',
+      function() {
+        this.revalidateAndPaint();
+      }.bind(this)
+    )
+    .on(
+      'error',
+      function(e) {
+        alert(e);
+        console.error(e);
+      }.bind(this)
+    );
 
-  // setTimeout(function() {
-
-    var image = Image.create(sourceImage)
-      .on(
-        'load',
-        function() {
-          this.revalidateAndPaint();
-        }.bind(this)
-      )
-      .on(
-        'error',
-        function(e) {
-          alert(e);
-          console.error(e);
-        }.bind(this)
-      );
-
-    this.imageLayer.setImage(image);
-    this.image = image;
-
-
-
-  // }.bind(this), 2000);
+  this.imageLayer.setImage(image);
+  this.image = image;
 };
 
 ImageCrop.prototype.dispose = noop;

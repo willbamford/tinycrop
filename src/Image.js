@@ -20,12 +20,12 @@ var Image = function(source) {
   loaded(source, function(err) {
 
     if (err) {
-      this.listeners.notify('error', err);
+      this.notify('error', err);
     } else {
       this.hasLoaded = true;
       this.width = source.naturalWidth;
       this.height = source.naturalHeight;
-      this.listeners.notify('load', this);
+      this.notify('load', this);
     }
 
   }.bind(this));
@@ -41,6 +41,13 @@ Image.prototype.getAspectRatio = function() {
     return 1;
 
   return this.width / this.height;
+};
+
+Image.prototype.notify = function(type, data) {
+  var listeners = this.listeners;
+  setTimeout(function() {
+    listeners.notify(type, data);
+  }, 0);
 };
 
 Image.prototype.on = function(type, fn) {

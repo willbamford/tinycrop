@@ -14,6 +14,7 @@ function imageLoaded(image, callback) {
     return callback(null, true);
 
   image.addEventListener('load', function() {
+    console.log('d');
     callback(null, false);
   }.bind(this));
 

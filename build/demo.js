@@ -19085,12 +19085,12 @@ var Image = function(source) {
   loaded(source, function(err) {
 
     if (err) {
-      this.listeners.notify('error', err);
+      this.notify('error', err);
     } else {
       this.hasLoaded = true;
       this.width = source.naturalWidth;
       this.height = source.naturalHeight;
-      this.listeners.notify('load', this);
+      this.notify('load', this);
     }
 
   }.bind(this));
@@ -19106,6 +19106,13 @@ Image.prototype.getAspectRatio = function() {
     return 1;
 
   return this.width / this.height;
+};
+
+Image.prototype.notify = function(type, data) {
+  var listeners = this.listeners;
+  setTimeout(function() {
+    listeners.notify(type, data);
+  }, 0);
 };
 
 Image.prototype.on = function(type, fn) {
@@ -19141,7 +19148,7 @@ var ImageCrop = function(opts) {
   this.image = null;
 
   this.backgroundColor = opts.backgroundColor || '#fff';
-  this.foregroundColor = opts.foregroundColor || '#eee';
+  this.foregroundColor = opts.foregroundColor || '#f7f7f7';
 
   this.optWidth = opts.width || '100%';
   this.optHeight = opts.height || 'auto';
@@ -19269,31 +19276,23 @@ ImageCrop.prototype.revalidate = function() {
 
 ImageCrop.prototype.setImage = function(sourceImage) {
 
-  // this.revalidateAndPaint();
+  var image = Image.create(sourceImage)
+    .on(
+      'load',
+      function() {
+        this.revalidateAndPaint();
+      }.bind(this)
+    )
+    .on(
+      'error',
+      function(e) {
+        alert(e);
+        console.error(e);
+      }.bind(this)
+    );
 
-  // setTimeout(function() {
-
-    var image = Image.create(sourceImage)
-      .on(
-        'load',
-        function() {
-          this.revalidateAndPaint();
-        }.bind(this)
-      )
-      .on(
-        'error',
-        function(e) {
-          alert(e);
-          console.error(e);
-        }.bind(this)
-      );
-
-    this.imageLayer.setImage(image);
-    this.image = image;
-
-
-
-  // }.bind(this), 2000);
+  this.imageLayer.setImage(image);
+  this.image = image;
 };
 
 ImageCrop.prototype.dispose = noop;
@@ -19335,11 +19334,8 @@ var Rectangle = require('./Rectangle.js');
 var ImageLayer = function(opts) {
 
   opts = opts || {};
-
   this.bounds = Rectangle.create(0, 0, 0, 0);
-
   this.image = opts.image || null;
-
   this.parent = opts.parent;
   this.context = opts.context;
 };
@@ -19360,16 +19356,19 @@ ImageLayer.prototype.revalidate = function() {
 
   if (image) {
 
+    var w;
+    var h;
+
     // Constrained by width (otherwise height)
     if (image.width / image.height >= parent.width / parent.height) {
       bounds.width = parent.width;
-      bounds.height = Math.round(image.height / image.width * parent.width);
+      bounds.height = Math.ceil(image.height / image.width * parent.width);
       bounds.x = 0;
-      bounds.y = Math.round((parent.height - bounds.height) * 0.5);
+      bounds.y = Math.floor((parent.height - bounds.height) * 0.5);
     } else {
-      bounds.width = Math.round(image.width / image.height * parent.height);
+      bounds.width = Math.ceil(image.width / image.height * parent.height);
       bounds.height = parent.height;
-      bounds.x = Math.round((parent.width - bounds.width) * 0.5);
+      bounds.x = Math.floor((parent.width - bounds.width) * 0.5);
       bounds.y = 0;
     }
   }
@@ -20139,6 +20138,7 @@ function imageLoaded(image, callback) {
     return callback(null, true);
 
   image.addEventListener('load', function() {
+    console.log('d');
     callback(null, false);
   }.bind(this));
 

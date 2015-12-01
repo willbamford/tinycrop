@@ -3,11 +3,8 @@ var Rectangle = require('./Rectangle.js');
 var ImageLayer = function(opts) {
 
   opts = opts || {};
-
   this.bounds = Rectangle.create(0, 0, 0, 0);
-
   this.image = opts.image || null;
-
   this.parent = opts.parent;
   this.context = opts.context;
 };
@@ -31,13 +28,13 @@ ImageLayer.prototype.revalidate = function() {
     // Constrained by width (otherwise height)
     if (image.width / image.height >= parent.width / parent.height) {
       bounds.width = parent.width;
-      bounds.height = Math.round(image.height / image.width * parent.width);
+      bounds.height = Math.ceil(image.height / image.width * parent.width);
       bounds.x = 0;
-      bounds.y = Math.round((parent.height - bounds.height) * 0.5);
+      bounds.y = Math.floor((parent.height - bounds.height) * 0.5);
     } else {
-      bounds.width = Math.round(image.width / image.height * parent.height);
+      bounds.width = Math.ceil(image.width / image.height * parent.height);
       bounds.height = parent.height;
-      bounds.x = Math.round((parent.width - bounds.width) * 0.5);
+      bounds.x = Math.floor((parent.width - bounds.width) * 0.5);
       bounds.y = 0;
     }
   }
