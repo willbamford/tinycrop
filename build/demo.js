@@ -19356,9 +19356,6 @@ ImageLayer.prototype.revalidate = function() {
 
   if (image) {
 
-    var w;
-    var h;
-
     // Constrained by width (otherwise height)
     if (image.width / image.height >= parent.width / parent.height) {
       bounds.width = parent.width;
