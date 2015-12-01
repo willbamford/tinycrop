@@ -19646,10 +19646,8 @@ var Selection = function(opts) {
   this.boundsPx = Rectangle.create(0, 0, 0, 0);
   this.region = Rectangle.create(0, 0, 400, 400);
   this.aspectRatio = opts.aspectRatio;
-
-  // TODO: change!
-  this.minHeight = 100;
-  this.minWidth = 100;
+  this.minHeight = opts.minWidth !== undefined ? opts.minWidth : 100;
+  this.minWidth = opts.minHeight !== undefined ? opts.minHeight : 100;
 
   this._delta = {x: 0, h: 0};
 };
@@ -19709,7 +19707,7 @@ Selection.prototype.resizeBy = function(dx, dy, p) {
   var minHeight = this.minHeight;
   var target = this.target;
 
-  function updateDelta(x, y) {
+  function calculateDelta(x, y) {
     delta.width = bounds.width + x;
     delta.height = bounds.height + y;
 
@@ -19723,6 +19721,8 @@ Selection.prototype.resizeBy = function(dx, dy, p) {
 
     delta.width -= bounds.width;
     delta.height -= bounds.height;
+
+    return delta;
   }
 
   if (p[0] === 'n')
@@ -19735,7 +19735,7 @@ Selection.prototype.resizeBy = function(dx, dy, p) {
   else if (p[1] === 'e')
     dx = Math.min(dx, target.bounds.right - this.right);
 
-  updateDelta(dx, dy);
+  delta = calculateDelta(dx, dy);
 
   switch (p) {
     case 'nw':
@@ -19756,6 +19756,34 @@ Selection.prototype.resizeBy = function(dx, dy, p) {
       break;
   }
 
+  this.updateRegionFromBounds();
+};
+
+Selection.prototype.updateRegionFromBounds = function() {
+
+  var target = this.target;
+  var region = this.region;
+  var bounds = this.bounds;
+
+  region.x = target.image.width * (bounds.x - target.bounds.x) / target.bounds.width;
+  region.y = target.image.height * (bounds.y - target.bounds.y) / target.bounds.height;
+
+  region.width = target.image.width * (bounds.width / target.bounds.width);
+  region.height = target.image.height * (bounds.height / target.bounds.height);
+};
+
+Selection.prototype.updateBoundsFromRegion = function() {
+
+  var target = this.target;
+  var region = this.region;
+  var bounds = this.bounds;
+
+  if (target.image) {
+    bounds.x = target.bounds.x + target.bounds.width * (region.x / target.image.width);
+    bounds.y = target.bounds.y + target.bounds.height * (region.y / target.image.height);
+    bounds.width = target.bounds.width * (region.width / target.image.width);
+    bounds.height = target.bounds.height * (region.height / target.image.height);
+  }
 };
 
 Selection.prototype.isInside = function(point) {
@@ -19779,19 +19807,14 @@ var SelectionLayer = function(opts) {
 
   this.selection = Selection.create({
     target: opts.target,
-    aspectRatio: opts.aspectRatio
+    aspectRatio: opts.aspectRatio || undefined,
+    minWidth: opts.minWidth || undefined,
+    minHeight: opts.minHeight || undefined
   });
 
   this.parent = opts.parent;
   this.context = opts.context;
   this.target = opts.target;
-  this.minSize = opts.minSize || {
-    width: 10,
-    height: 10
-  };
-  this.aspectRatio = opts.aspectRatio;
-
-  this.applyAspectRatio(this.aspectRatio, this.selection.region);
 
   var handleOpts = opts.handle || {};
   handleOpts.length = handleOpts.length || 32;
@@ -19850,20 +19873,16 @@ SelectionLayer.prototype.onInputMove = function(e) {
     var selection = this.selection;
     selection.bounds.copy(this.downBounds);
 
-    var minLen = this.handleOpts.length * 2;
-    var minWidth = minLen;
-    var minHeight = minLen;
-
     if (activeRegion === 'move') {
       selection.moveBy(e.dx, e.dy);
     } else {
+      // Resize
       var dir = activeRegion.substring(0, 2);
       var dx = dir[1] === 'w' ? -e.dx : e.dx;
       var dy = dir[0] === 'n' ? -e.dy : e.dy;
       selection.resizeBy(dx, dy, dir);
     }
 
-    this.updateRegion();
     this.listeners.notify('regionChange', this);
   }
 };
@@ -19963,41 +19982,9 @@ SelectionLayer.prototype.getHandleRadius = function() {
   return this.handleOpts.size / 2;
 };
 
-SelectionLayer.prototype.updateRegion = function() {
-
-  var region = this.selection.region;
-  var bounds = this.selection.bounds;
-  var target = this.target;
-
-  region.x = target.image.width * (bounds.x - target.bounds.x) / target.bounds.width;
-  region.y = target.image.height * (bounds.y - target.bounds.y) / target.bounds.height;
-
-  region.width = target.image.width * (bounds.width / target.bounds.width);
-  region.height = target.image.height * (bounds.height / target.bounds.height);
-
-  if (this.aspectRatio)
-    this.applyAspectRatio(this.aspectRatio, region);
-};
-
-SelectionLayer.prototype.applyAspectRatio = function(aspectRatio, target) {
-  if ((target.width / target.height) > aspectRatio)
-    target.width = target.height * aspectRatio;
-  else
-    target.height = target.width / aspectRatio;
-};
-
 SelectionLayer.prototype.revalidate = function() {
 
-  var target = this.target;
-  var region = this.selection.region;
-  var bounds = this.selection.bounds;
-
-  if (target.image) {
-    bounds.x = target.bounds.x + target.bounds.width * (region.x / target.image.width);
-    bounds.y = target.bounds.y + target.bounds.height * (region.y / target.image.height);
-    bounds.width = target.bounds.width * (region.width / target.image.width);
-    bounds.height = target.bounds.height * (region.height / target.image.height);
-  }
+  this.selection.updateBoundsFromRegion();
 };
 
 SelectionLayer.prototype.paint = function() {
