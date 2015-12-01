@@ -15,10 +15,14 @@ Rectangle.prototype.copy = function(copy) {
 };
 
 Rectangle.prototype.round = function() {
-  this._x = Math.round(this._x);
-  this._y = Math.round(this._y);
-  this._width = Math.round(this._width);
-  this._height = Math.round(this._height);
+  var dx = this._x;
+  var dy = this._y;
+  this._x = Math.round(dx);
+  this._y = Math.round(dy);
+  dx -= this._x;
+  dy -= this._y;
+  this._width = Math.round(this._width + dx);
+  this._height = Math.round(this._height + dy);
   return this;
 };
 

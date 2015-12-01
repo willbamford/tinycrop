@@ -6,7 +6,8 @@ var Rectangle = require('./Rectangle.js');
 var SelectionLayer = function(opts) {
 
   this.selection = Selection.create({
-    target: opts.target
+    target: opts.target,
+    aspectRatio: opts.aspectRatio
   });
 
   this.parent = opts.parent;
@@ -82,23 +83,12 @@ SelectionLayer.prototype.onInputMove = function(e) {
     var minHeight = minLen;
 
     if (activeRegion === 'move') {
-
-      selection.x += e.dx;
-      selection.y += e.dy;
-
+      selection.moveBy(e.dx, e.dy);
     } else {
-      var dirV = activeRegion[0];
-      var dirH = activeRegion[1];
-
-      if (dirV === 'n')
-        selection.top += e.dy;
-      else if (dirV === 's')
-        selection.bottom += e.dy;
-
-      if (dirH === 'w')
-        selection.left += e.dx;
-      else if (dirH === 'e')
-        selection.right += e.dx;
+      var dir = activeRegion.substring(0, 2);
+      var dx = dir[1] === 'w' ? -e.dx : e.dx;
+      var dy = dir[0] === 'n' ? -e.dy : e.dy;
+      selection.resizeBy(dx, dy, dir);
     }
 
     this.updateRegion();
@@ -178,19 +168,19 @@ SelectionLayer.prototype.isWithinRadius = function(ax, ay, bx, by, r) {
 };
 
 SelectionLayer.prototype.isWithinNorthWestHandle = function(point) {
-  return this.isWithinRadius(point.x, point.y, this.selection.x, this.selection.y, this.getHandleRadius());
+  return this.isWithinRadius(point.x, point.y, this.selection.left, this.selection.top, this.getHandleRadius());
 };
 
 SelectionLayer.prototype.isWithinNorthEastHandle = function(point) {
-  return this.isWithinRadius(point.x, point.y, this.selection.x + this.selection.width, this.selection.y, this.getHandleRadius());
+  return this.isWithinRadius(point.x, point.y, this.selection.right, this.selection.top, this.getHandleRadius());
 };
 
 SelectionLayer.prototype.isWithinSouthWestHandle = function(point) {
-  return this.isWithinRadius(point.x, point.y, this.selection.x, this.selection.y + this.selection.height, this.getHandleRadius());
+  return this.isWithinRadius(point.x, point.y, this.selection.left, this.selection.bottom, this.getHandleRadius());
 };
 
 SelectionLayer.prototype.isWithinSouthEastHandle = function(point) {
-  return this.isWithinRadius(point.x, point.y, this.selection.x + this.selection.width, this.selection.y + this.selection.height, this.getHandleRadius());
+  return this.isWithinRadius(point.x, point.y, this.selection.right, this.selection.bottom, this.getHandleRadius());
 };
 
 SelectionLayer.prototype.isWithinBounds = function(point) {
