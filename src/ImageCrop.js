@@ -7,34 +7,6 @@ var Image = require('./Image.js');
 var DEFAULT_CANVAS_WIDTH = 400;
 var DEFAULT_CANVAS_HEIGHT = 300;
 
-function noop() {};
-
-function isPercent(v) {
-  if (typeof v !== 'string')
-    return false;
-
-  if (v.length < 1)
-    return false;
-
-  if (v[v.length - 1] === '%')
-    return true;
-}
-
-function getPercent(v) {
-  if (!isPercent(v))
-    return 0;
-
-  return v.slice(0, -1);
-}
-
-function isAuto(v) {
-  return v === 'auto';
-}
-
-function isInteger(v) {
-  return typeof v == 'number' && Math.round(v) == v;
-}
-
 var ImageCrop = function(opts) {
 
   this.parent = opts.parent || null;
@@ -44,7 +16,8 @@ var ImageCrop = function(opts) {
 
   this.image = null;
 
-  this.backgroundColor = opts.backgroundColor || '#ccc';
+  this.backgroundColor = opts.backgroundColor || '#fff';
+  this.foregroundColor = opts.foregroundColor || '#eee';
 
   this.optWidth = opts.width || '100%';
   this.optHeight = opts.height || 'auto';
@@ -54,7 +27,8 @@ var ImageCrop = function(opts) {
   this.backgroundLayer = BackgroundLayer.create({
     parent: this,
     context: this.context,
-    color: this.backgroundColor
+    backgroundColor: this.backgroundColor,
+    foregroundColor: this.foregroundColor
   });
 
   this.imageLayer = ImageLayer.create({
@@ -105,8 +79,9 @@ ImageCrop.prototype.paint = function() {
   context.save();
   context.scale(this.ratio, this.ratio);
 
+  this.backgroundLayer.paint();
+
   if (this.image && this.image.hasLoaded) {
-    this.backgroundLayer.paint();
     this.imageLayer.paint();
     this.selectionLayer.paint();
   }
@@ -170,25 +145,61 @@ ImageCrop.prototype.revalidate = function() {
 
 ImageCrop.prototype.setImage = function(sourceImage) {
 
-  var image = Image.create(sourceImage)
-    .on(
-      'load',
-      function() {
-        this.revalidateAndPaint();
-      }.bind(this)
-    )
-    .on(
-      'error',
-      function(e) {
-        alert(e);
-        console.error(e);
-      }.bind(this)
-    );
+  // this.revalidateAndPaint();
 
-  this.imageLayer.setImage(image);
-  this.image = image;
+  // setTimeout(function() {
+
+    var image = Image.create(sourceImage)
+      .on(
+        'load',
+        function() {
+          this.revalidateAndPaint();
+        }.bind(this)
+      )
+      .on(
+        'error',
+        function(e) {
+          alert(e);
+          console.error(e);
+        }.bind(this)
+      );
+
+    this.imageLayer.setImage(image);
+    this.image = image;
+
+
+
+  // }.bind(this), 2000);
 };
 
 ImageCrop.prototype.dispose = noop;
+
+function noop() {};
+
+function isPercent(v) {
+  if (typeof v !== 'string')
+    return false;
+
+  if (v.length < 1)
+    return false;
+
+  if (v[v.length - 1] === '%')
+    return true;
+}
+
+function getPercent(v) {
+  if (!isPercent(v))
+    return 0;
+
+  return v.slice(0, -1);
+}
+
+function isAuto(v) {
+  return v === 'auto';
+}
+
+function isInteger(v) {
+  return typeof v == 'number' && Math.round(v) == v;
+}
 
 module.exports = ImageCrop;

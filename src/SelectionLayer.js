@@ -76,7 +76,7 @@ SelectionLayer.prototype.onInputMove = function(e) {
     if (activeRegion === 'move') {
       selection.moveBy(e.dx, e.dy);
     } else {
-      // Resize
+
       var dir = activeRegion.substring(0, 2);
       var dx = dir[1] === 'w' ? -e.dx : e.dx;
       var dy = dir[0] === 'n' ? -e.dy : e.dy;

@@ -14,8 +14,7 @@ var ReactImageCrop = React.createClass({
     });
 
     var image = document.createElement('img');
-    image.src = 'images/portrait.jpg';
-
+    image.src = 'images/landscape.jpg';
     this.imageCrop.setImage(image);
   },
 
