@@ -1,7 +1,5 @@
 var Rectangle = require('./Rectangle.js');
 
-var DEFAULT_PAD = 0;
-
 var Selection = function(opts) {
 
   this.target = opts.target || null;
