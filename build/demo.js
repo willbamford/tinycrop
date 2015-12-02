@@ -19181,7 +19181,11 @@ var ImageCrop = function(opts) {
     target: this.imageLayer,
     aspectRatio: this.selectionOpts.aspectRatio,
     minWidth: this.selectionOpts.minWidth,
-    minHeight: this.selectionOpts.minHeight
+    minHeight: this.selectionOpts.minHeight,
+    x: this.selectionOpts.x,
+    y: this.selectionOpts.y,
+    width: this.selectionOpts.width,
+    height: this.selectionOpts.height
   });
 
   this.selectionLayer
@@ -19294,7 +19298,7 @@ ImageCrop.prototype.setImage = function(sourceImage) {
     .on(
       'load',
       function() {
-        this.selectionLayer.autoSizeRegion();
+        this.selectionLayer.onImageLoad();
         this.revalidateAndPaint();
       }.bind(this)
     )
@@ -19556,17 +19560,21 @@ var ReactImageCrop = React.createClass({displayName: "ReactImageCrop",
       parent: this.refs.parent,
       bounds: {
         width: '100%',
-        height: '100%'
+        height: 'auto'
       },
       selection: {
-        // aspectRatio: 3 / 4,
+        aspectRatio: 3 / 4,
         minWidth: 200,
         minHeight: 300
+        // width: 400,
+        // height: 500,
+        // x: 100,
+        // y: 500
       }
     });
 
     var image = document.createElement('img');
-    image.src = 'images/portrait.jpg';
+    image.src = 'images/landscape.jpg';
     this.imageCrop.setImage(image);
   },
 
@@ -19699,7 +19707,18 @@ var Selection = function(opts) {
   this.target = opts.target || null;
   this.bounds = Rectangle.create(0, 0, 0, 0);
   this.boundsPx = Rectangle.create(0, 0, 0, 0);
-  this.region = Rectangle.create(0, 0, 400, 400);
+
+  this.region = Rectangle.create(0, 0, 0, 0);
+
+  this.initialOpts = {
+    x: opts.x,
+    y: opts.y,
+    width: opts.width,
+    height: opts.height
+  };
+
+  this.hasInitialRegion = this.region.width !== 0 || this.region.height !== 0;
+
   this.aspectRatio = opts.aspectRatio;
   this.minWidth = opts.minWidth !== undefined ? opts.minWidth : 100;
   this.minHeight = opts.minHeight !== undefined ? opts.minHeight : 100;
@@ -19823,19 +19842,19 @@ Selection.prototype.resizeBy = function(dx, dy, p) {
   this.updateRegionFromBounds();
 };
 
-Selection.prototype.autoSizeRegion = function() {
+Selection.prototype.onImageLoad = function() {
 
   var target = this.target;
   var region = this.region;
   var bounds = this.bounds;
   var aspectRatio = this.aspectRatio;
-  var pad = DEFAULT_PAD;
+  var initialOpts = this.initialOpts;
 
-  region.x = pad;
-  region.y = pad;
+  region.x = initialOpts.x !== undefined ? initialOpts.x : 0;
+  region.y = initialOpts.y !== undefined ? initialOpts.y : 0;
 
-  region.width = target.image.width - pad * 2;
-  region.height = target.image.height - pad * 2;
+  region.width = initialOpts.width !== undefined ? initialOpts.width : target.image.width;
+  region.height = initialOpts.height !== undefined ? initialOpts.height : target.image.height;
 
   if (aspectRatio) {
     if (region.width / region.height > aspectRatio)
@@ -19844,12 +19863,15 @@ Selection.prototype.autoSizeRegion = function() {
       region.height = region.width / aspectRatio;
   }
 
-  region.centerX = target.image.width * 0.5;
-  region.centerY = target.image.height * 0.5;
+  if (initialOpts.x === undefined)
+    region.centerX = target.image.width * 0.5;
+
+  if (initialOpts.y === undefined)
+    region.centerY = target.image.height * 0.5;
 
   region.round();
+
   this.updateBoundsFromRegion();
-  console.log(region);
 };
 
 Selection.prototype.updateRegionFromBounds = function() {
@@ -19904,12 +19926,9 @@ var Rectangle = require('./Rectangle.js');
 
 var SelectionLayer = function(opts) {
 
-  this.selection = Selection.create({
-    target: opts.target,
-    aspectRatio: opts.aspectRatio || undefined,
-    minWidth: opts.minWidth || undefined,
-    minHeight: opts.minHeight || undefined
-  });
+  opts = opts || {};
+
+  this.selection = Selection.create(opts);
 
   this.parent = opts.parent;
   this.context = opts.context;
@@ -20081,8 +20100,8 @@ SelectionLayer.prototype.getHandleRadius = function() {
   return this.handleOpts.size / 2;
 };
 
-SelectionLayer.prototype.autoSizeRegion = function() {
-  this.selection.autoSizeRegion();
+SelectionLayer.prototype.onImageLoad = function() {
+  this.selection.onImageLoad();
 };
 
 SelectionLayer.prototype.revalidate = function() {

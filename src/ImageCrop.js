@@ -42,7 +42,11 @@ var ImageCrop = function(opts) {
     target: this.imageLayer,
     aspectRatio: this.selectionOpts.aspectRatio,
     minWidth: this.selectionOpts.minWidth,
-    minHeight: this.selectionOpts.minHeight
+    minHeight: this.selectionOpts.minHeight,
+    x: this.selectionOpts.x,
+    y: this.selectionOpts.y,
+    width: this.selectionOpts.width,
+    height: this.selectionOpts.height
   });
 
   this.selectionLayer
@@ -155,7 +159,7 @@ ImageCrop.prototype.setImage = function(sourceImage) {
     .on(
       'load',
       function() {
-        this.selectionLayer.autoSizeRegion();
+        this.selectionLayer.onImageLoad();
         this.revalidateAndPaint();
       }.bind(this)
     )

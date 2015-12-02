@@ -5,12 +5,9 @@ var Rectangle = require('./Rectangle.js');
 
 var SelectionLayer = function(opts) {
 
-  this.selection = Selection.create({
-    target: opts.target,
-    aspectRatio: opts.aspectRatio || undefined,
-    minWidth: opts.minWidth || undefined,
-    minHeight: opts.minHeight || undefined
-  });
+  opts = opts || {};
+
+  this.selection = Selection.create(opts);
 
   this.parent = opts.parent;
   this.context = opts.context;
@@ -182,8 +179,8 @@ SelectionLayer.prototype.getHandleRadius = function() {
   return this.handleOpts.size / 2;
 };
 
-SelectionLayer.prototype.autoSizeRegion = function() {
-  this.selection.autoSizeRegion();
+SelectionLayer.prototype.onImageLoad = function() {
+  this.selection.onImageLoad();
 };
 
 SelectionLayer.prototype.revalidate = function() {
