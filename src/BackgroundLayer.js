@@ -6,37 +6,45 @@ var BackgroundLayer = function(opts) {
   this.foregroundColor = opts.foregroundColor;
   this.parent = opts.parent;
   this.context = opts.context;
+  this.isDirty = true;
 };
 
 BackgroundLayer.create = function(opts) {
   return new BackgroundLayer(opts);
 };
 
-BackgroundLayer.prototype.revalidate = function() {};
+BackgroundLayer.prototype.revalidate = function() {
+  this.isDirty = true;
+};
 
 BackgroundLayer.prototype.paint = function() {
 
-  var parent = this.parent;
-  var context = this.context;
+  if (this.isDirty) {
 
-  context.fillStyle = this.backgroundColor;
-  context.fillRect(0, 0, parent.width, parent.height);
+    var parent = this.parent;
+    var context = this.context;
 
-  var w = parent.width;
-  var h = parent.height;
+    context.fillStyle = this.backgroundColor;
+    context.fillRect(0, 0, parent.width, parent.height);
 
-  var cols = 16;
-  var size = parent.width / cols;
-  var rows = Math.ceil(h / size);
+    var w = parent.width;
+    var h = parent.height;
 
-  context.fillStyle = this.foregroundColor;
-  var count = 0;
-  for (var i = 0; i < cols; i += 1) {
-    for (var j = 0; j < rows; j += 1) {
-      if ((i + j) % 2 === 0)
-        context.fillRect(i * size, j * size, size, size);
-      count += 1;
+    var cols = 16;
+    var size = parent.width / cols;
+    var rows = Math.ceil(h / size);
+
+    context.fillStyle = this.foregroundColor;
+    var count = 0;
+    for (var i = 0; i < cols; i += 1) {
+      for (var j = 0; j < rows; j += 1) {
+        if ((i + j) % 2 === 0)
+          context.fillRect(i * size, j * size, size, size);
+        count += 1;
+      }
     }
+
+    this.isDirty = false;
   }
 };
 

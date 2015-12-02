@@ -182,8 +182,11 @@ SelectionLayer.prototype.getHandleRadius = function() {
   return this.handleOpts.size / 2;
 };
 
-SelectionLayer.prototype.revalidate = function() {
+SelectionLayer.prototype.autoSizeRegion = function() {
+  this.selection.autoSizeRegion();
+};
 
+SelectionLayer.prototype.revalidate = function() {
   this.selection.updateBoundsFromRegion();
 };
 
@@ -260,6 +263,23 @@ SelectionLayer.prototype.paintInside = function() {
   g.fillStyle = isMoveRegion || activeRegion === 'se-resize' ? activeColor : color;
   g.fillRect(bounds.right - lengthWidth, bounds.bottom - depth, lengthWidth, depth);
   g.fillRect(bounds.right - depth, bounds.bottom - lengthHeight, depth, lengthHeight - depth);
+
+  // Guides
+  g.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+  g.lineWidth = 1;
+  g.beginPath();
+  var bw3 = bounds.width / 3;
+  var bh3 = bounds.height / 3;
+  g.moveTo(bounds.x + bw3, bounds.y);
+  g.lineTo(bounds.x + bw3, bounds.y + bounds.height);
+  g.moveTo(bounds.x + 2 * bw3, bounds.y);
+  g.lineTo(bounds.x + 2 * bw3, bounds.y + bounds.height);
+  g.moveTo(bounds.x, bounds.y + bh3);
+  g.lineTo(bounds.x + bounds.width, bounds.y + bh3);
+  g.moveTo(bounds.x, bounds.y + 2 * bh3);
+  g.lineTo(bounds.x + bounds.width, bounds.y + 2 * bh3);
+  g.stroke();
+  g.closePath();
 };
 
 module.exports = SelectionLayer;

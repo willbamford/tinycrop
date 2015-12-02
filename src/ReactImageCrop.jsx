@@ -8,13 +8,19 @@ var ReactImageCrop = React.createClass({
     console.log('ReactImageCrop componentDidMount()');
     this.imageCrop = ImageCrop.create({
       parent: this.refs.parent,
-      width: '100%',
-      height: '100%',
-      aspectRatio: 3 / 4
+      bounds: {
+        width: '100%',
+        height: '100%'
+      },
+      selection: {
+        // aspectRatio: 3 / 4,
+        minWidth: 200,
+        minHeight: 300
+      }
     });
 
     var image = document.createElement('img');
-    image.src = 'images/landscape.jpg';
+    image.src = 'images/portrait.jpg';
     this.imageCrop.setImage(image);
   },
 

@@ -42,6 +42,14 @@ Object.defineProperties(Rectangle.prototype, {
     get: function() { return this._y; },
     set: function(v) { this._y = v; }
   },
+  centerX: {
+    get: function() { return this._x + this._width * 0.5; },
+    set: function(v) { this._x = v - this._width * 0.5; }
+  },
+  centerY: {
+    get: function() { return this._y + this._height * 0.5; },
+    set: function(v) { this._y = v - this._height * 0.5; }
+  },
   width: {
     get: function() { return this._width; },
     set: function(v) { this._width = v; }

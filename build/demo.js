@@ -19025,37 +19025,45 @@ var BackgroundLayer = function(opts) {
   this.foregroundColor = opts.foregroundColor;
   this.parent = opts.parent;
   this.context = opts.context;
+  this.isDirty = true;
 };
 
 BackgroundLayer.create = function(opts) {
   return new BackgroundLayer(opts);
 };
 
-BackgroundLayer.prototype.revalidate = function() {};
+BackgroundLayer.prototype.revalidate = function() {
+  this.isDirty = true;
+};
 
 BackgroundLayer.prototype.paint = function() {
 
-  var parent = this.parent;
-  var context = this.context;
+  if (this.isDirty) {
 
-  context.fillStyle = this.backgroundColor;
-  context.fillRect(0, 0, parent.width, parent.height);
+    var parent = this.parent;
+    var context = this.context;
 
-  var w = parent.width;
-  var h = parent.height;
+    context.fillStyle = this.backgroundColor;
+    context.fillRect(0, 0, parent.width, parent.height);
 
-  var cols = 16;
-  var size = parent.width / cols;
-  var rows = Math.ceil(h / size);
+    var w = parent.width;
+    var h = parent.height;
 
-  context.fillStyle = this.foregroundColor;
-  var count = 0;
-  for (var i = 0; i < cols; i += 1) {
-    for (var j = 0; j < rows; j += 1) {
-      if ((i + j) % 2 === 0)
-        context.fillRect(i * size, j * size, size, size);
-      count += 1;
+    var cols = 16;
+    var size = parent.width / cols;
+    var rows = Math.ceil(h / size);
+
+    context.fillStyle = this.foregroundColor;
+    var count = 0;
+    for (var i = 0; i < cols; i += 1) {
+      for (var j = 0; j < rows; j += 1) {
+        if ((i + j) % 2 === 0)
+          context.fillRect(i * size, j * size, size, size);
+        count += 1;
+      }
     }
+
+    this.isDirty = false;
   }
 };
 
@@ -19143,15 +19151,14 @@ var ImageCrop = function(opts) {
   this.parent = opts.parent || null;
   this.canvas = document.createElement('canvas');
   this.context = this.canvas.getContext('2d');
-  this.aspectRatio = opts.aspectRatio || null;
 
-  this.image = null;
-
+  this.boundsOpts = opts.bounds || {width: '100%', height: 'auto'};
+  this.selectionOpts = opts.selection || {};
   this.backgroundColor = opts.backgroundColor || '#fff';
   this.foregroundColor = opts.foregroundColor || '#f7f7f7';
+  this.debounceResize = opts.debounceResize !== undefined ? opts.debounceResize : true;
 
-  this.optWidth = opts.width || '100%';
-  this.optHeight = opts.height || 'auto';
+  this.image = null;
 
   this.parent.appendChild(this.canvas);
 
@@ -19172,7 +19179,9 @@ var ImageCrop = function(opts) {
     parent: this,
     context: this.context,
     target: this.imageLayer,
-    aspectRatio: this.aspectRatio
+    aspectRatio: this.selectionOpts.aspectRatio,
+    minWidth: this.selectionOpts.minWidth,
+    minHeight: this.selectionOpts.minHeight
   });
 
   this.selectionLayer
@@ -19189,7 +19198,12 @@ var ImageCrop = function(opts) {
       }.bind(this)
     );
 
-  window.addEventListener('resize', debounce(this.revalidateAndPaint.bind(this), 100));
+  window.addEventListener(
+    'resize',
+    this.debounceResize ?
+      debounce(this.revalidateAndPaint.bind(this), 100) :
+      this.revalidateAndPaint.bind(this)
+  );
 
   this.revalidateAndPaint();
 };
@@ -19201,6 +19215,44 @@ ImageCrop.create = function(opts) {
 ImageCrop.prototype.revalidateAndPaint = function() {
   this.revalidate();
   this.paint();
+};
+
+ImageCrop.prototype.revalidate = function() {
+
+  var parent = this.parent;
+  var canvas = this.canvas;
+  var image = this.image;
+
+  var boundsWidth = this.boundsOpts.width;
+  var boundsHeight = this.boundsOpts.height;
+  var width = 0;
+  var height = 0;
+
+  var percent;
+
+  if (isInteger(boundsWidth)) {
+    width = boundsWidth;
+  } else if (parent && isPercent(boundsWidth)) {
+    width = Math.round(parent.clientWidth * getPercent(boundsWidth) / 100);
+  } else {
+    width = DEFAULT_CANVAS_WIDTH;
+  }
+
+  if (isInteger(boundsHeight)) {
+    height = boundsHeight;
+  } else if (isPercent(boundsHeight)) {
+    height = Math.round(width * getPercent(boundsHeight) / 100);
+  } else if (image && image.hasLoaded && isAuto(boundsHeight)) {
+    height = Math.floor(width / image.getAspectRatio());
+  } else {
+    height = DEFAULT_CANVAS_HEIGHT;
+  }
+
+  this.resizeCanvas(width, height);
+
+  this.backgroundLayer.revalidate();
+  this.imageLayer.revalidate();
+  this.selectionLayer.revalidate();
 };
 
 ImageCrop.prototype.paint = function() {
@@ -19236,50 +19288,13 @@ ImageCrop.prototype.resizeCanvas = function(width, height) {
   canvas.height = this.height * this.ratio;
 };
 
-ImageCrop.prototype.revalidate = function() {
-
-  var parent = this.parent;
-  var canvas = this.canvas;
-  var image = this.image;
-
-  var optWidth = this.optWidth;
-  var optHeight = this.optHeight;
-  var width = 0;
-  var height = 0;
-
-  var percent;
-
-  if (isInteger(optWidth)) {
-    width = optWidth;
-  } else if (parent && isPercent(optWidth)) {
-    width = Math.round(parent.clientWidth * getPercent(optWidth) / 100);
-  } else {
-    width = DEFAULT_CANVAS_WIDTH;
-  }
-
-  if (isInteger(optHeight)) {
-    height = optHeight;
-  } else if (isPercent(optHeight)) {
-    height = Math.round(width * getPercent(optHeight) / 100);
-  } else if (image && image.hasLoaded && isAuto(optHeight)) {
-    height = Math.floor(width / image.getAspectRatio());
-  } else {
-    height = DEFAULT_CANVAS_HEIGHT;
-  }
-
-  this.resizeCanvas(width, height);
-
-  this.backgroundLayer.revalidate();
-  this.imageLayer.revalidate();
-  this.selectionLayer.revalidate();
-};
-
 ImageCrop.prototype.setImage = function(sourceImage) {
 
   var image = Image.create(sourceImage)
     .on(
       'load',
       function() {
+        this.selectionLayer.autoSizeRegion();
         this.revalidateAndPaint();
       }.bind(this)
     )
@@ -19539,13 +19554,19 @@ var ReactImageCrop = React.createClass({displayName: "ReactImageCrop",
     console.log('ReactImageCrop componentDidMount()');
     this.imageCrop = ImageCrop.create({
       parent: this.refs.parent,
-      width: '100%',
-      height: '100%',
-      aspectRatio: 3 / 4
+      bounds: {
+        width: '100%',
+        height: '100%'
+      },
+      selection: {
+        // aspectRatio: 3 / 4,
+        minWidth: 200,
+        minHeight: 300
+      }
     });
 
     var image = document.createElement('img');
-    image.src = 'images/landscape.jpg';
+    image.src = 'images/portrait.jpg';
     this.imageCrop.setImage(image);
   },
 
@@ -19614,6 +19635,14 @@ Object.defineProperties(Rectangle.prototype, {
     get: function() { return this._y; },
     set: function(v) { this._y = v; }
   },
+  centerX: {
+    get: function() { return this._x + this._width * 0.5; },
+    set: function(v) { this._x = v - this._width * 0.5; }
+  },
+  centerY: {
+    get: function() { return this._y + this._height * 0.5; },
+    set: function(v) { this._y = v - this._height * 0.5; }
+  },
   width: {
     get: function() { return this._width; },
     set: function(v) { this._width = v; }
@@ -19663,6 +19692,8 @@ module.exports = Rectangle;
 },{}],167:[function(require,module,exports){
 var Rectangle = require('./Rectangle.js');
 
+var DEFAULT_PAD = 0;
+
 var Selection = function(opts) {
 
   this.target = opts.target || null;
@@ -19670,8 +19701,11 @@ var Selection = function(opts) {
   this.boundsPx = Rectangle.create(0, 0, 0, 0);
   this.region = Rectangle.create(0, 0, 400, 400);
   this.aspectRatio = opts.aspectRatio;
-  this.minHeight = opts.minWidth !== undefined ? opts.minWidth : 100;
-  this.minWidth = opts.minHeight !== undefined ? opts.minHeight : 100;
+  this.minWidth = opts.minWidth !== undefined ? opts.minWidth : 100;
+  this.minHeight = opts.minHeight !== undefined ? opts.minHeight : 100;
+
+  this.boundsMinWidth = 0;
+  this.boundsMinHeight = 0;
 
   this._delta = {x: 0, h: 0};
 };
@@ -19713,6 +19747,10 @@ Object.defineProperties(Selection.prototype, {
   }
 });
 
+Selection.prototype.getBoundsLengthForRegion = function(regionLen) {
+  return regionLen / this.region.width * this.width;
+};
+
 Selection.prototype.moveBy = function(dx, dy) {
 
   var bounds = this.bounds;
@@ -19727,21 +19765,23 @@ Selection.prototype.resizeBy = function(dx, dy, p) {
   var delta = this._delta;
   var aspectRatio = this.aspectRatio;
   var bounds = this.bounds;
-  var minWidth = this.minWidth;
-  var minHeight = this.minHeight;
+  var boundsMinWidth = this.boundsMinWidth;
+  var boundsMinHeight = this.boundsMinHeight;
   var target = this.target;
 
   function calculateDelta(x, y) {
     delta.width = bounds.width + x;
     delta.height = bounds.height + y;
 
-    delta.width = Math.max(minWidth, delta.width);
-    delta.height = Math.max(minHeight, delta.height);
+    delta.width = Math.max(boundsMinWidth, delta.width);
+    delta.height = Math.max(boundsMinHeight, delta.height);
 
-    if (delta.width / delta.height > aspectRatio)
-      delta.width = delta.height * aspectRatio;
-    else
-      delta.height = delta.width / aspectRatio;
+    if (aspectRatio) {
+      if (delta.width / delta.height > aspectRatio)
+        delta.width = delta.height * aspectRatio;
+      else
+        delta.height = delta.width / aspectRatio;
+    }
 
     delta.width -= bounds.width;
     delta.height -= bounds.height;
@@ -19783,6 +19823,35 @@ Selection.prototype.resizeBy = function(dx, dy, p) {
   this.updateRegionFromBounds();
 };
 
+Selection.prototype.autoSizeRegion = function() {
+
+  var target = this.target;
+  var region = this.region;
+  var bounds = this.bounds;
+  var aspectRatio = this.aspectRatio;
+  var pad = DEFAULT_PAD;
+
+  region.x = pad;
+  region.y = pad;
+
+  region.width = target.image.width - pad * 2;
+  region.height = target.image.height - pad * 2;
+
+  if (aspectRatio) {
+    if (region.width / region.height > aspectRatio)
+      region.width = region.height * aspectRatio;
+    else
+      region.height = region.width / aspectRatio;
+  }
+
+  region.centerX = target.image.width * 0.5;
+  region.centerY = target.image.height * 0.5;
+
+  region.round();
+  this.updateBoundsFromRegion();
+  console.log(region);
+};
+
 Selection.prototype.updateRegionFromBounds = function() {
 
   var target = this.target;
@@ -19794,6 +19863,9 @@ Selection.prototype.updateRegionFromBounds = function() {
 
   region.width = target.image.width * (bounds.width / target.bounds.width);
   region.height = target.image.height * (bounds.height / target.bounds.height);
+
+  region.round();
+  console.log(region);
 };
 
 Selection.prototype.updateBoundsFromRegion = function() {
@@ -19808,6 +19880,9 @@ Selection.prototype.updateBoundsFromRegion = function() {
     bounds.width = target.bounds.width * (region.width / target.image.width);
     bounds.height = target.bounds.height * (region.height / target.image.height);
   }
+
+  this.boundsMinWidth = this.getBoundsLengthForRegion(this.minWidth);
+  this.boundsMinHeight = this.getBoundsLengthForRegion(this.minHeight);
 };
 
 Selection.prototype.isInside = function(point) {
@@ -20006,8 +20081,11 @@ SelectionLayer.prototype.getHandleRadius = function() {
   return this.handleOpts.size / 2;
 };
 
-SelectionLayer.prototype.revalidate = function() {
+SelectionLayer.prototype.autoSizeRegion = function() {
+  this.selection.autoSizeRegion();
+};
 
+SelectionLayer.prototype.revalidate = function() {
   this.selection.updateBoundsFromRegion();
 };
 
@@ -20084,6 +20162,23 @@ SelectionLayer.prototype.paintInside = function() {
   g.fillStyle = isMoveRegion || activeRegion === 'se-resize' ? activeColor : color;
   g.fillRect(bounds.right - lengthWidth, bounds.bottom - depth, lengthWidth, depth);
   g.fillRect(bounds.right - depth, bounds.bottom - lengthHeight, depth, lengthHeight - depth);
+
+  // Guides
+  g.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+  g.lineWidth = 1;
+  g.beginPath();
+  var bw3 = bounds.width / 3;
+  var bh3 = bounds.height / 3;
+  g.moveTo(bounds.x + bw3, bounds.y);
+  g.lineTo(bounds.x + bw3, bounds.y + bounds.height);
+  g.moveTo(bounds.x + 2 * bw3, bounds.y);
+  g.lineTo(bounds.x + 2 * bw3, bounds.y + bounds.height);
+  g.moveTo(bounds.x, bounds.y + bh3);
+  g.lineTo(bounds.x + bounds.width, bounds.y + bh3);
+  g.moveTo(bounds.x, bounds.y + 2 * bh3);
+  g.lineTo(bounds.x + bounds.width, bounds.y + 2 * bh3);
+  g.stroke();
+  g.closePath();
 };
 
 module.exports = SelectionLayer;
@@ -20135,7 +20230,6 @@ function imageLoaded(image, callback) {
     return callback(null, true);
 
   image.addEventListener('load', function() {
-    console.log('d');
     callback(null, false);
   }.bind(this));
 
