@@ -90,9 +90,11 @@ SelectionLayer.prototype.onInputMove = function(e) {
 
 SelectionLayer.prototype.onInputUpOrCancel = function(e) {
   e.source.preventDefault();
-  this.activeRegion = null;
-  this.resetCursor();
-  this.listeners.notify('end', this.selection.region);
+  if (this.activeRegion) {
+    this.activeRegion = null;
+    this.resetCursor();
+    this.listeners.notify('end', this.selection.region);
+  }
 };
 
 SelectionLayer.prototype.findHitRegion = function(point) {
