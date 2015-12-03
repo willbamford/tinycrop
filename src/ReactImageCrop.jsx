@@ -33,8 +33,8 @@ var ReactImageCrop = React.createClass({
         // color: 'red',
         // activeColor: 'blue',
         // aspectRatio: 3 / 4,
-        minWidth: 200,
-        minHeight: 300
+        // minWidth: 200,
+        // minHeight: 300
         // width: 400,
         // height: 500,
         // x: 100,
@@ -59,9 +59,11 @@ var ReactImageCrop = React.createClass({
         console.log('Selection has ended', region);
       });
 
-    var image = document.createElement('img');
-    image.src = 'images/portrait.jpg';
-    this.imageCrop.setImage(image);
+    // var image = document.createElement('img');
+    // // image.src = 'images/landscape.jpg';
+    // image.src = 'http://joombig.com/demo-extensions1/images/gallery_slider/Swan_large.jpg';
+    // this.imageCrop.setImage(image);
+    this.imageCrop.setImage('http://joombig.com/demo-extensions1/images/gallery_slider/Swan_large.jpg');
   },
 
   componentWillUnmount: function() {

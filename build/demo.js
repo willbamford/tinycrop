@@ -19083,12 +19083,19 @@ var Image = function(source) {
   this.height = 0;
 
   this.hasLoaded = false;
-  this.source = source;
 
   this.listeners = Listeners.create();
 
   if (!source)
     return;
+
+  if (typeof source === 'string') {
+    var img = document.createElement('img');
+    img.src = source;
+    source = img;
+  }
+
+  this.source = source;
 
   loaded(source, function(err) {
 
@@ -19157,7 +19164,6 @@ var ImageCrop = function(opts) {
   this.backgroundColor = opts.backgroundColor || '#fff';
   this.foregroundColor = opts.foregroundColor || '#f7f7f7';
   this.debounceResize = opts.debounceResize !== undefined ? opts.debounceResize : true;
-  this.image = null;
   this.listeners = Listeners.create();
 
   this.parent.appendChild(this.canvas);
@@ -19236,6 +19242,8 @@ var ImageCrop = function(opts) {
       debounce(this.revalidateAndPaint.bind(this), 100) :
       this.revalidateAndPaint.bind(this)
   );
+
+  this.setImage(opts.image);
 
   this.revalidateAndPaint();
 };
@@ -19330,9 +19338,9 @@ ImageCrop.prototype.resizeCanvas = function(width, height) {
   canvas.height = this.height * this.ratio;
 };
 
-ImageCrop.prototype.setImage = function(sourceImage) {
+ImageCrop.prototype.setImage = function(source) {
 
-  var image = Image.create(sourceImage)
+  var image = Image.create(source)
     .on(
       'load',
       function() {
@@ -19621,8 +19629,8 @@ var ReactImageCrop = React.createClass({displayName: "ReactImageCrop",
         // color: 'red',
         // activeColor: 'blue',
         // aspectRatio: 3 / 4,
-        minWidth: 200,
-        minHeight: 300
+        // minWidth: 200,
+        // minHeight: 300
         // width: 400,
         // height: 500,
         // x: 100,
@@ -19647,9 +19655,11 @@ var ReactImageCrop = React.createClass({displayName: "ReactImageCrop",
         console.log('Selection has ended', region);
       });
 
-    var image = document.createElement('img');
-    image.src = 'images/portrait.jpg';
-    this.imageCrop.setImage(image);
+    // var image = document.createElement('img');
+    // // image.src = 'images/landscape.jpg';
+    // image.src = 'http://joombig.com/demo-extensions1/images/gallery_slider/Swan_large.jpg';
+    // this.imageCrop.setImage(image);
+    this.imageCrop.setImage('http://joombig.com/demo-extensions1/images/gallery_slider/Swan_large.jpg');
   },
 
   componentWillUnmount: function() {
@@ -20085,9 +20095,11 @@ SelectionLayer.prototype.onInputMove = function(e) {
 
 SelectionLayer.prototype.onInputUpOrCancel = function(e) {
   e.source.preventDefault();
-  this.activeRegion = null;
-  this.resetCursor();
-  this.listeners.notify('end', this.selection.region);
+  if (this.activeRegion) {
+    this.activeRegion = null;
+    this.resetCursor();
+    this.listeners.notify('end', this.selection.region);
+  }
 };
 
 SelectionLayer.prototype.findHitRegion = function(point) {
