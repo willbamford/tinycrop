@@ -73,7 +73,7 @@ Selection.prototype.moveBy = function(dx, dy) {
   bounds.x = Math.min(Math.max(bounds.x + dx, target.bounds.x), target.bounds.x + target.bounds.width - bounds.width);
   bounds.y = Math.min(Math.max(bounds.y + dy, target.bounds.y), target.bounds.y + target.bounds.height - bounds.height);
 
-  this.updateRegionFromBounds();
+  return this.updateRegionFromBounds();
 };
 
 Selection.prototype.resizeBy = function(dx, dy, p) {
@@ -136,7 +136,7 @@ Selection.prototype.resizeBy = function(dx, dy, p) {
       break;
   }
 
-  this.updateRegionFromBounds();
+  return this.updateRegionFromBounds();
 };
 
 Selection.prototype.onImageLoad = function() {
@@ -176,6 +176,11 @@ Selection.prototype.updateRegionFromBounds = function() {
   var target = this.target;
   var region = this.region;
   var bounds = this.bounds;
+  var hasChanged = false;
+  var beforeX = region.x;
+  var beforeY = region.y;
+  var beforeWidth = region.width;
+  var beforeHeight = region.height;
 
   region.x = target.image.width * (bounds.x - target.bounds.x) / target.bounds.width;
   region.y = target.image.height * (bounds.y - target.bounds.y) / target.bounds.height;
@@ -184,6 +189,11 @@ Selection.prototype.updateRegionFromBounds = function() {
   region.height = target.image.height * (bounds.height / target.bounds.height);
 
   region.round();
+
+  return region.x !== beforeX ||
+    region.y !== beforeY ||
+    region.width !== beforeWidth ||
+    region.height !== beforeHeight;
 };
 
 Selection.prototype.updateBoundsFromRegion = function() {

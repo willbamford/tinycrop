@@ -19621,6 +19621,7 @@ var ReactImageCrop = React.createClass({displayName: "ReactImageCrop",
 
     this.imageCrop = ImageCrop.create({
       parent: this.refs.parent,
+      image: 'http://www.hdwallpapers.in/walls/russell_boy_in_pixars_up-normal.jpg',
       bounds: {
         width: '100%',
         height: '50%'
@@ -19628,7 +19629,7 @@ var ReactImageCrop = React.createClass({displayName: "ReactImageCrop",
       selection: {
         // color: 'red',
         // activeColor: 'blue',
-        // aspectRatio: 3 / 4,
+        aspectRatio: 4 / 3,
         // minWidth: 200,
         // minHeight: 300
         // width: 400,
@@ -19659,7 +19660,7 @@ var ReactImageCrop = React.createClass({displayName: "ReactImageCrop",
     // // image.src = 'images/landscape.jpg';
     // image.src = 'http://joombig.com/demo-extensions1/images/gallery_slider/Swan_large.jpg';
     // this.imageCrop.setImage(image);
-    this.imageCrop.setImage('http://joombig.com/demo-extensions1/images/gallery_slider/Swan_large.jpg');
+    // this.imageCrop.setImage('http://joombig.com/demo-extensions1/images/gallery_slider/Swan_large.jpg');
   },
 
   componentWillUnmount: function() {
@@ -19861,7 +19862,7 @@ Selection.prototype.moveBy = function(dx, dy) {
   bounds.x = Math.min(Math.max(bounds.x + dx, target.bounds.x), target.bounds.x + target.bounds.width - bounds.width);
   bounds.y = Math.min(Math.max(bounds.y + dy, target.bounds.y), target.bounds.y + target.bounds.height - bounds.height);
 
-  this.updateRegionFromBounds();
+  return this.updateRegionFromBounds();
 };
 
 Selection.prototype.resizeBy = function(dx, dy, p) {
@@ -19924,7 +19925,7 @@ Selection.prototype.resizeBy = function(dx, dy, p) {
       break;
   }
 
-  this.updateRegionFromBounds();
+  return this.updateRegionFromBounds();
 };
 
 Selection.prototype.onImageLoad = function() {
@@ -19964,6 +19965,11 @@ Selection.prototype.updateRegionFromBounds = function() {
   var target = this.target;
   var region = this.region;
   var bounds = this.bounds;
+  var hasChanged = false;
+  var beforeX = region.x;
+  var beforeY = region.y;
+  var beforeWidth = region.width;
+  var beforeHeight = region.height;
 
   region.x = target.image.width * (bounds.x - target.bounds.x) / target.bounds.width;
   region.y = target.image.height * (bounds.y - target.bounds.y) / target.bounds.height;
@@ -19972,6 +19978,11 @@ Selection.prototype.updateRegionFromBounds = function() {
   region.height = target.image.height * (bounds.height / target.bounds.height);
 
   region.round();
+
+  return region.x !== beforeX ||
+    region.y !== beforeY ||
+    region.width !== beforeWidth ||
+    region.height !== beforeHeight;
 };
 
 Selection.prototype.updateBoundsFromRegion = function() {
@@ -20075,21 +20086,25 @@ SelectionLayer.prototype.onInputMove = function(e) {
     e.source.preventDefault();
 
     var selection = this.selection;
+    var hasChanged = false;
     selection.bounds.copy(this.downBounds);
 
     if (activeRegion === 'move') {
-      selection.moveBy(e.dx, e.dy);
-      this.listeners.notify('move', this.selection.region);
+      hasChanged = selection.moveBy(e.dx, e.dy);
+      if (hasChanged)
+        this.listeners.notify('move', this.selection.region);
     } else {
 
       var dir = activeRegion.substring(0, 2);
       var dx = dir[1] === 'w' ? -e.dx : e.dx;
       var dy = dir[0] === 'n' ? -e.dy : e.dy;
-      selection.resizeBy(dx, dy, dir);
-      this.listeners.notify('resize', this.selection.region);
+      hasChanged = selection.resizeBy(dx, dy, dir);
+      if (hasChanged)
+        this.listeners.notify('resize', this.selection.region);
     }
 
-    this.listeners.notify('change', this.selection.region);
+    if (hasChanged)
+      this.listeners.notify('change', this.selection.region);
   }
 };
 

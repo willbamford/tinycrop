@@ -25,6 +25,7 @@ var ReactImageCrop = React.createClass({
 
     this.imageCrop = ImageCrop.create({
       parent: this.refs.parent,
+      image: 'http://www.hdwallpapers.in/walls/russell_boy_in_pixars_up-normal.jpg',
       bounds: {
         width: '100%',
         height: '50%'
@@ -32,7 +33,7 @@ var ReactImageCrop = React.createClass({
       selection: {
         // color: 'red',
         // activeColor: 'blue',
-        // aspectRatio: 3 / 4,
+        aspectRatio: 4 / 3,
         // minWidth: 200,
         // minHeight: 300
         // width: 400,
@@ -63,7 +64,7 @@ var ReactImageCrop = React.createClass({
     // // image.src = 'images/landscape.jpg';
     // image.src = 'http://joombig.com/demo-extensions1/images/gallery_slider/Swan_large.jpg';
     // this.imageCrop.setImage(image);
-    this.imageCrop.setImage('http://joombig.com/demo-extensions1/images/gallery_slider/Swan_large.jpg');
+    // this.imageCrop.setImage('http://joombig.com/demo-extensions1/images/gallery_slider/Swan_large.jpg');
   },
 
   componentWillUnmount: function() {

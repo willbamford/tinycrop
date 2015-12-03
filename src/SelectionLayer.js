@@ -70,21 +70,25 @@ SelectionLayer.prototype.onInputMove = function(e) {
     e.source.preventDefault();
 
     var selection = this.selection;
+    var hasChanged = false;
     selection.bounds.copy(this.downBounds);
 
     if (activeRegion === 'move') {
-      selection.moveBy(e.dx, e.dy);
-      this.listeners.notify('move', this.selection.region);
+      hasChanged = selection.moveBy(e.dx, e.dy);
+      if (hasChanged)
+        this.listeners.notify('move', this.selection.region);
     } else {
 
       var dir = activeRegion.substring(0, 2);
       var dx = dir[1] === 'w' ? -e.dx : e.dx;
       var dy = dir[0] === 'n' ? -e.dy : e.dy;
-      selection.resizeBy(dx, dy, dir);
-      this.listeners.notify('resize', this.selection.region);
+      hasChanged = selection.resizeBy(dx, dy, dir);
+      if (hasChanged)
+        this.listeners.notify('resize', this.selection.region);
     }
 
-    this.listeners.notify('change', this.selection.region);
+    if (hasChanged)
+      this.listeners.notify('change', this.selection.region);
   }
 };
 
