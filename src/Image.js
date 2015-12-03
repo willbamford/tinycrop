@@ -10,12 +10,19 @@ var Image = function(source) {
   this.height = 0;
 
   this.hasLoaded = false;
-  this.source = source;
 
   this.listeners = Listeners.create();
 
   if (!source)
     return;
+
+  if (typeof source === 'string') {
+    var img = document.createElement('img');
+    img.src = source;
+    source = img;
+  }
+
+  this.source = source;
 
   loaded(source, function(err) {
 
