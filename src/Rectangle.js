@@ -14,6 +14,10 @@ Rectangle.prototype.copy = function(copy) {
   return this;
 };
 
+Rectangle.prototype.clone = function() {
+  return Rectangle.create(this._x, this._y, this._width, this._height);
+};
+
 Rectangle.prototype.round = function() {
   var dx = this._x;
   var dy = this._y;

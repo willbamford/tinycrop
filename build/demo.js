@@ -19142,6 +19142,7 @@ var BackgroundLayer = require('./BackgroundLayer.js');
 var ImageLayer = require('./ImageLayer.js');
 var SelectionLayer = require('./SelectionLayer.js');
 var Image = require('./Image.js');
+var Listeners = require('./Listeners.js');
 
 var DEFAULT_CANVAS_WIDTH = 400;
 var DEFAULT_CANVAS_HEIGHT = 300;
@@ -19151,14 +19152,13 @@ var ImageCrop = function(opts) {
   this.parent = opts.parent || null;
   this.canvas = document.createElement('canvas');
   this.context = this.canvas.getContext('2d');
-
   this.boundsOpts = opts.bounds || {width: '100%', height: 'auto'};
-  this.selectionOpts = opts.selection || {};
+  opts.selection = opts.selection || {};
   this.backgroundColor = opts.backgroundColor || '#fff';
   this.foregroundColor = opts.foregroundColor || '#f7f7f7';
   this.debounceResize = opts.debounceResize !== undefined ? opts.debounceResize : true;
-
   this.image = null;
+  this.listeners = Listeners.create();
 
   this.parent.appendChild(this.canvas);
 
@@ -19179,27 +19179,55 @@ var ImageCrop = function(opts) {
     parent: this,
     context: this.context,
     target: this.imageLayer,
-    aspectRatio: this.selectionOpts.aspectRatio,
-    minWidth: this.selectionOpts.minWidth,
-    minHeight: this.selectionOpts.minHeight,
-    x: this.selectionOpts.x,
-    y: this.selectionOpts.y,
-    width: this.selectionOpts.width,
-    height: this.selectionOpts.height
+    aspectRatio: opts.selection.aspectRatio,
+    minWidth: opts.selection.minWidth,
+    minHeight: opts.selection.minHeight,
+    x: opts.selection.x,
+    y: opts.selection.y,
+    width: opts.selection.width,
+    height: opts.selection.height,
+    handle: {
+      color: opts.selection.color,
+      activeColor: opts.selection.activeColor
+    }
   });
+
+  var listeners = this.listeners;
+  var paint = this.paint.bind(this);
 
   this.selectionLayer
     .on(
-      'regionChange',
-      function() {
-        this.paint();
-      }.bind(this)
+      'start',
+      function(region) {
+        paint();
+        listeners.notify('start', region);
+      }
     )
     .on(
-      'dirty',
-      function() {
-        this.paint();
-      }.bind(this)
+      'move',
+      function(region) {
+        listeners.notify('move', region);
+      }
+    )
+    .on(
+      'resize',
+      function(region) {
+        listeners.notify('resize', region);
+      }
+    )
+    .on(
+      'change',
+      function(region) {
+        paint();
+        listeners.notify('change', region);
+      }
+    )
+    .on(
+      'end',
+      function(region) {
+        paint();
+        listeners.notify('end', region);
+      }
     );
 
   window.addEventListener(
@@ -19214,6 +19242,16 @@ var ImageCrop = function(opts) {
 
 ImageCrop.create = function(opts) {
   return new ImageCrop(opts);
+};
+
+ImageCrop.prototype.on = function(type, fn) {
+  this.listeners.on(type, fn);
+  return this;
+};
+
+ImageCrop.prototype.off = function(type, fn) {
+  this.listeners.off(type, fn);
+  return this;
 };
 
 ImageCrop.prototype.revalidateAndPaint = function() {
@@ -19347,7 +19385,7 @@ function isInteger(v) {
 module.exports = ImageCrop;
 
 
-},{"./BackgroundLayer.js":159,"./Image.js":160,"./ImageLayer.js":162,"./SelectionLayer.js":168,"./debounce.js":169}],162:[function(require,module,exports){
+},{"./BackgroundLayer.js":159,"./Image.js":160,"./ImageLayer.js":162,"./Listeners.js":164,"./SelectionLayer.js":168,"./debounce.js":169}],162:[function(require,module,exports){
 var Rectangle = require('./Rectangle.js');
 
 var ImageLayer = function(opts) {
@@ -19556,14 +19594,33 @@ var ReactImageCrop = React.createClass({displayName: "ReactImageCrop",
   componentDidMount: function() {
 
     console.log('ReactImageCrop componentDidMount()');
+    // this.imageCrop = ImageCrop.create({
+    //   parent: this.refs.parent,
+    //   bounds: {
+    //     width: '100%',
+    //     height: 'auto'
+    //   },
+    //   selection: {
+    //     aspectRatio: 3 / 4,
+    //     minWidth: 200,
+    //     minHeight: 300
+    //     // width: 400,
+    //     // height: 500,
+    //     // x: 100,
+    //     // y: 500
+    //   }
+    // });
+
     this.imageCrop = ImageCrop.create({
       parent: this.refs.parent,
       bounds: {
         width: '100%',
-        height: 'auto'
+        height: '50%'
       },
       selection: {
-        aspectRatio: 3 / 4,
+        // color: 'red',
+        // activeColor: 'blue',
+        // aspectRatio: 3 / 4,
         minWidth: 200,
         minHeight: 300
         // width: 400,
@@ -19573,8 +19630,25 @@ var ReactImageCrop = React.createClass({displayName: "ReactImageCrop",
       }
     });
 
+    this.imageCrop
+      .on('start', function(region) {
+        console.log('Selection has started', region);
+      })
+      .on('move', function(region) {
+        console.log('Selection has moved', region);
+      })
+      .on('resize', function(region) {
+        console.log('Selection has resized', region);
+      })
+      .on('change', function(region) {
+        console.log('Selection has changed', region);
+      })
+      .on('end', function(region) {
+        console.log('Selection has ended', region);
+      });
+
     var image = document.createElement('img');
-    image.src = 'images/landscape.jpg';
+    image.src = 'images/portrait.jpg';
     this.imageCrop.setImage(image);
   },
 
@@ -19613,6 +19687,10 @@ Rectangle.prototype.copy = function(copy) {
   this._width = copy.width;
   this._height = copy.height;
   return this;
+};
+
+Rectangle.prototype.clone = function() {
+  return Rectangle.create(this._x, this._y, this._width, this._height);
 };
 
 Rectangle.prototype.round = function() {
@@ -19700,14 +19778,11 @@ module.exports = Rectangle;
 },{}],167:[function(require,module,exports){
 var Rectangle = require('./Rectangle.js');
 
-var DEFAULT_PAD = 0;
-
 var Selection = function(opts) {
 
   this.target = opts.target || null;
   this.bounds = Rectangle.create(0, 0, 0, 0);
   this.boundsPx = Rectangle.create(0, 0, 0, 0);
-
   this.region = Rectangle.create(0, 0, 0, 0);
 
   this.initialOpts = {
@@ -19716,8 +19791,6 @@ var Selection = function(opts) {
     width: opts.width,
     height: opts.height
   };
-
-  this.hasInitialRegion = this.region.width !== 0 || this.region.height !== 0;
 
   this.aspectRatio = opts.aspectRatio;
   this.minWidth = opts.minWidth !== undefined ? opts.minWidth : 100;
@@ -19777,6 +19850,8 @@ Selection.prototype.moveBy = function(dx, dy) {
 
   bounds.x = Math.min(Math.max(bounds.x + dx, target.bounds.x), target.bounds.x + target.bounds.width - bounds.width);
   bounds.y = Math.min(Math.max(bounds.y + dy, target.bounds.y), target.bounds.y + target.bounds.height - bounds.height);
+
+  this.updateRegionFromBounds();
 };
 
 Selection.prototype.resizeBy = function(dx, dy, p) {
@@ -19887,7 +19962,6 @@ Selection.prototype.updateRegionFromBounds = function() {
   region.height = target.image.height * (bounds.height / target.bounds.height);
 
   region.round();
-  console.log(region);
 };
 
 Selection.prototype.updateBoundsFromRegion = function() {
@@ -19932,10 +20006,11 @@ var SelectionLayer = function(opts) {
 
   this.parent = opts.parent;
   this.context = opts.context;
+  this.context.setLineDash = this.context.setLineDash || function() {};
   this.target = opts.target;
 
   var handleOpts = opts.handle || {};
-  handleOpts.length = handleOpts.length || 32;
+  handleOpts.length = handleOpts.handleLength || 32;
   handleOpts.depth = handleOpts.depth || 3;
   handleOpts.size = handleOpts.size || handleOpts.length * 2;
   handleOpts.color = handleOpts.color || 'rgba(255, 255, 255, 1.0)';
@@ -19969,6 +20044,7 @@ SelectionLayer.prototype.onInputDown = function(e) {
     this.activeRegion = hitRegion;
     this.setCursor(hitRegion);
     this.downBounds.copy(this.selection.bounds);
+    this.listeners.notify('start', this.selection.region);
   }
 };
 
@@ -19993,15 +20069,17 @@ SelectionLayer.prototype.onInputMove = function(e) {
 
     if (activeRegion === 'move') {
       selection.moveBy(e.dx, e.dy);
+      this.listeners.notify('move', this.selection.region);
     } else {
 
       var dir = activeRegion.substring(0, 2);
       var dx = dir[1] === 'w' ? -e.dx : e.dx;
       var dy = dir[0] === 'n' ? -e.dy : e.dy;
       selection.resizeBy(dx, dy, dir);
+      this.listeners.notify('resize', this.selection.region);
     }
 
-    this.listeners.notify('regionChange', this);
+    this.listeners.notify('change', this.selection.region);
   }
 };
 
@@ -20009,7 +20087,7 @@ SelectionLayer.prototype.onInputUpOrCancel = function(e) {
   e.source.preventDefault();
   this.activeRegion = null;
   this.resetCursor();
-  this.listeners.notify('dirty', this);
+  this.listeners.notify('end', this.selection.region);
 };
 
 SelectionLayer.prototype.findHitRegion = function(point) {
@@ -20183,7 +20261,8 @@ SelectionLayer.prototype.paintInside = function() {
   g.fillRect(bounds.right - depth, bounds.bottom - lengthHeight, depth, lengthHeight - depth);
 
   // Guides
-  g.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+  g.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+  g.setLineDash([2,3]);
   g.lineWidth = 1;
   g.beginPath();
   var bw3 = bounds.width / 3;

@@ -3,6 +3,7 @@ var BackgroundLayer = require('./BackgroundLayer.js');
 var ImageLayer = require('./ImageLayer.js');
 var SelectionLayer = require('./SelectionLayer.js');
 var Image = require('./Image.js');
+var Listeners = require('./Listeners.js');
 
 var DEFAULT_CANVAS_WIDTH = 400;
 var DEFAULT_CANVAS_HEIGHT = 300;
@@ -12,14 +13,13 @@ var ImageCrop = function(opts) {
   this.parent = opts.parent || null;
   this.canvas = document.createElement('canvas');
   this.context = this.canvas.getContext('2d');
-
   this.boundsOpts = opts.bounds || {width: '100%', height: 'auto'};
-  this.selectionOpts = opts.selection || {};
+  opts.selection = opts.selection || {};
   this.backgroundColor = opts.backgroundColor || '#fff';
   this.foregroundColor = opts.foregroundColor || '#f7f7f7';
   this.debounceResize = opts.debounceResize !== undefined ? opts.debounceResize : true;
-
   this.image = null;
+  this.listeners = Listeners.create();
 
   this.parent.appendChild(this.canvas);
 
@@ -40,27 +40,55 @@ var ImageCrop = function(opts) {
     parent: this,
     context: this.context,
     target: this.imageLayer,
-    aspectRatio: this.selectionOpts.aspectRatio,
-    minWidth: this.selectionOpts.minWidth,
-    minHeight: this.selectionOpts.minHeight,
-    x: this.selectionOpts.x,
-    y: this.selectionOpts.y,
-    width: this.selectionOpts.width,
-    height: this.selectionOpts.height
+    aspectRatio: opts.selection.aspectRatio,
+    minWidth: opts.selection.minWidth,
+    minHeight: opts.selection.minHeight,
+    x: opts.selection.x,
+    y: opts.selection.y,
+    width: opts.selection.width,
+    height: opts.selection.height,
+    handle: {
+      color: opts.selection.color,
+      activeColor: opts.selection.activeColor
+    }
   });
+
+  var listeners = this.listeners;
+  var paint = this.paint.bind(this);
 
   this.selectionLayer
     .on(
-      'regionChange',
-      function() {
-        this.paint();
-      }.bind(this)
+      'start',
+      function(region) {
+        paint();
+        listeners.notify('start', region);
+      }
     )
     .on(
-      'dirty',
-      function() {
-        this.paint();
-      }.bind(this)
+      'move',
+      function(region) {
+        listeners.notify('move', region);
+      }
+    )
+    .on(
+      'resize',
+      function(region) {
+        listeners.notify('resize', region);
+      }
+    )
+    .on(
+      'change',
+      function(region) {
+        paint();
+        listeners.notify('change', region);
+      }
+    )
+    .on(
+      'end',
+      function(region) {
+        paint();
+        listeners.notify('end', region);
+      }
     );
 
   window.addEventListener(
@@ -75,6 +103,16 @@ var ImageCrop = function(opts) {
 
 ImageCrop.create = function(opts) {
   return new ImageCrop(opts);
+};
+
+ImageCrop.prototype.on = function(type, fn) {
+  this.listeners.on(type, fn);
+  return this;
+};
+
+ImageCrop.prototype.off = function(type, fn) {
+  this.listeners.off(type, fn);
+  return this;
 };
 
 ImageCrop.prototype.revalidateAndPaint = function() {

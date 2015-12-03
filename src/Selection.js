@@ -5,7 +5,6 @@ var Selection = function(opts) {
   this.target = opts.target || null;
   this.bounds = Rectangle.create(0, 0, 0, 0);
   this.boundsPx = Rectangle.create(0, 0, 0, 0);
-
   this.region = Rectangle.create(0, 0, 0, 0);
 
   this.initialOpts = {
@@ -73,6 +72,8 @@ Selection.prototype.moveBy = function(dx, dy) {
 
   bounds.x = Math.min(Math.max(bounds.x + dx, target.bounds.x), target.bounds.x + target.bounds.width - bounds.width);
   bounds.y = Math.min(Math.max(bounds.y + dy, target.bounds.y), target.bounds.y + target.bounds.height - bounds.height);
+
+  this.updateRegionFromBounds();
 };
 
 Selection.prototype.resizeBy = function(dx, dy, p) {
@@ -183,7 +184,6 @@ Selection.prototype.updateRegionFromBounds = function() {
   region.height = target.image.height * (bounds.height / target.bounds.height);
 
   region.round();
-  console.log(region);
 };
 
 Selection.prototype.updateBoundsFromRegion = function() {

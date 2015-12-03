@@ -6,14 +6,33 @@ var ReactImageCrop = React.createClass({
   componentDidMount: function() {
 
     console.log('ReactImageCrop componentDidMount()');
+    // this.imageCrop = ImageCrop.create({
+    //   parent: this.refs.parent,
+    //   bounds: {
+    //     width: '100%',
+    //     height: 'auto'
+    //   },
+    //   selection: {
+    //     aspectRatio: 3 / 4,
+    //     minWidth: 200,
+    //     minHeight: 300
+    //     // width: 400,
+    //     // height: 500,
+    //     // x: 100,
+    //     // y: 500
+    //   }
+    // });
+
     this.imageCrop = ImageCrop.create({
       parent: this.refs.parent,
       bounds: {
         width: '100%',
-        height: 'auto'
+        height: '50%'
       },
       selection: {
-        aspectRatio: 3 / 4,
+        // color: 'red',
+        // activeColor: 'blue',
+        // aspectRatio: 3 / 4,
         minWidth: 200,
         minHeight: 300
         // width: 400,
@@ -23,8 +42,25 @@ var ReactImageCrop = React.createClass({
       }
     });
 
+    this.imageCrop
+      .on('start', function(region) {
+        console.log('Selection has started', region);
+      })
+      .on('move', function(region) {
+        console.log('Selection has moved', region);
+      })
+      .on('resize', function(region) {
+        console.log('Selection has resized', region);
+      })
+      .on('change', function(region) {
+        console.log('Selection has changed', region);
+      })
+      .on('end', function(region) {
+        console.log('Selection has ended', region);
+      });
+
     var image = document.createElement('img');
-    image.src = 'images/landscape.jpg';
+    image.src = 'images/portrait.jpg';
     this.imageCrop.setImage(image);
   },
 

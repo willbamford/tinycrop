@@ -11,10 +11,11 @@ var SelectionLayer = function(opts) {
 
   this.parent = opts.parent;
   this.context = opts.context;
+  this.context.setLineDash = this.context.setLineDash || function() {};
   this.target = opts.target;
 
   var handleOpts = opts.handle || {};
-  handleOpts.length = handleOpts.length || 32;
+  handleOpts.length = handleOpts.handleLength || 32;
   handleOpts.depth = handleOpts.depth || 3;
   handleOpts.size = handleOpts.size || handleOpts.length * 2;
   handleOpts.color = handleOpts.color || 'rgba(255, 255, 255, 1.0)';
@@ -48,6 +49,7 @@ SelectionLayer.prototype.onInputDown = function(e) {
     this.activeRegion = hitRegion;
     this.setCursor(hitRegion);
     this.downBounds.copy(this.selection.bounds);
+    this.listeners.notify('start', this.selection.region);
   }
 };
 
@@ -72,15 +74,17 @@ SelectionLayer.prototype.onInputMove = function(e) {
 
     if (activeRegion === 'move') {
       selection.moveBy(e.dx, e.dy);
+      this.listeners.notify('move', this.selection.region);
     } else {
 
       var dir = activeRegion.substring(0, 2);
       var dx = dir[1] === 'w' ? -e.dx : e.dx;
       var dy = dir[0] === 'n' ? -e.dy : e.dy;
       selection.resizeBy(dx, dy, dir);
+      this.listeners.notify('resize', this.selection.region);
     }
 
-    this.listeners.notify('regionChange', this);
+    this.listeners.notify('change', this.selection.region);
   }
 };
 
@@ -88,7 +92,7 @@ SelectionLayer.prototype.onInputUpOrCancel = function(e) {
   e.source.preventDefault();
   this.activeRegion = null;
   this.resetCursor();
-  this.listeners.notify('dirty', this);
+  this.listeners.notify('end', this.selection.region);
 };
 
 SelectionLayer.prototype.findHitRegion = function(point) {
@@ -262,7 +266,8 @@ SelectionLayer.prototype.paintInside = function() {
   g.fillRect(bounds.right - depth, bounds.bottom - lengthHeight, depth, lengthHeight - depth);
 
   // Guides
-  g.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+  g.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+  g.setLineDash([2,3]);
   g.lineWidth = 1;
   g.beginPath();
   var bw3 = bounds.width / 3;
