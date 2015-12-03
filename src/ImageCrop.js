@@ -18,7 +18,6 @@ var ImageCrop = function(opts) {
   this.backgroundColor = opts.backgroundColor || '#fff';
   this.foregroundColor = opts.foregroundColor || '#f7f7f7';
   this.debounceResize = opts.debounceResize !== undefined ? opts.debounceResize : true;
-  this.image = null;
   this.listeners = Listeners.create();
 
   this.parent.appendChild(this.canvas);
@@ -97,6 +96,8 @@ var ImageCrop = function(opts) {
       debounce(this.revalidateAndPaint.bind(this), 100) :
       this.revalidateAndPaint.bind(this)
   );
+
+  this.setImage(opts.image);
 
   this.revalidateAndPaint();
 };
@@ -191,9 +192,9 @@ ImageCrop.prototype.resizeCanvas = function(width, height) {
   canvas.height = this.height * this.ratio;
 };
 
-ImageCrop.prototype.setImage = function(sourceImage) {
+ImageCrop.prototype.setImage = function(source) {
 
-  var image = Image.create(sourceImage)
+  var image = Image.create(source)
     .on(
       'load',
       function() {
