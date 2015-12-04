@@ -1,11 +1,5 @@
 # Crop
 
-JavaScript image cropper 
+JavaScript image cropper.
 
-## Support
-
-Supported in Chrome, Safari, Firefox and IE9 and above.
-
-## TODO
-
-* [ ] Do something
+See http://webseed.github.io/crop/ for examples and documentation.
