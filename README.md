@@ -1,2 +1,2 @@
-# react-image-crop
-React Image Crop
+# Crop
+JavaScript image cropper 
