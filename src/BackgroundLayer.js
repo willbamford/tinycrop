@@ -30,7 +30,7 @@ BackgroundLayer.prototype.paint = function() {
     var w = parent.width;
     var h = parent.height;
 
-    var cols = 16;
+    var cols = 32;
     var size = parent.width / cols;
     var rows = Math.ceil(h / size);
 

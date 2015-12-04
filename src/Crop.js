@@ -8,7 +8,7 @@ var Listeners = require('./Listeners.js');
 var DEFAULT_CANVAS_WIDTH = 400;
 var DEFAULT_CANVAS_HEIGHT = 300;
 
-var ImageCrop = function(opts) {
+var Crop = function(opts) {
 
   this.parent = opts.parent || null;
   this.canvas = document.createElement('canvas');
@@ -102,26 +102,26 @@ var ImageCrop = function(opts) {
   this.revalidateAndPaint();
 };
 
-ImageCrop.create = function(opts) {
-  return new ImageCrop(opts);
+Crop.create = function(opts) {
+  return new Crop(opts);
 };
 
-ImageCrop.prototype.on = function(type, fn) {
+Crop.prototype.on = function(type, fn) {
   this.listeners.on(type, fn);
   return this;
 };
 
-ImageCrop.prototype.off = function(type, fn) {
+Crop.prototype.off = function(type, fn) {
   this.listeners.off(type, fn);
   return this;
 };
 
-ImageCrop.prototype.revalidateAndPaint = function() {
+Crop.prototype.revalidateAndPaint = function() {
   this.revalidate();
   this.paint();
 };
 
-ImageCrop.prototype.revalidate = function() {
+Crop.prototype.revalidate = function() {
 
   var parent = this.parent;
   var canvas = this.canvas;
@@ -159,7 +159,7 @@ ImageCrop.prototype.revalidate = function() {
   this.selectionLayer.revalidate();
 };
 
-ImageCrop.prototype.paint = function() {
+Crop.prototype.paint = function() {
 
   var context = this.context;
 
@@ -176,7 +176,7 @@ ImageCrop.prototype.paint = function() {
   context.restore();
 };
 
-ImageCrop.prototype.resizeCanvas = function(width, height) {
+Crop.prototype.resizeCanvas = function(width, height) {
 
   var context = this.context;
   var canvas = this.canvas;
@@ -192,7 +192,7 @@ ImageCrop.prototype.resizeCanvas = function(width, height) {
   canvas.height = this.height * this.ratio;
 };
 
-ImageCrop.prototype.setImage = function(source) {
+Crop.prototype.setImage = function(source) {
 
   var image = Image.create(source)
     .on(
@@ -214,7 +214,7 @@ ImageCrop.prototype.setImage = function(source) {
   this.image = image;
 };
 
-ImageCrop.prototype.dispose = noop;
+Crop.prototype.dispose = noop;
 
 function noop() {};
 
@@ -244,4 +244,4 @@ function isInteger(v) {
   return typeof v == 'number' && Math.round(v) == v;
 }
 
-module.exports = ImageCrop;
+module.exports = Crop;

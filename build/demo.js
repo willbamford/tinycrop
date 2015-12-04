@@ -19049,7 +19049,7 @@ BackgroundLayer.prototype.paint = function() {
     var w = parent.width;
     var h = parent.height;
 
-    var cols = 16;
+    var cols = 32;
     var size = parent.width / cols;
     var rows = Math.ceil(h / size);
 
@@ -19071,79 +19071,6 @@ module.exports = BackgroundLayer;
 
 
 },{}],160:[function(require,module,exports){
-var loaded = require('./imageLoaded.js');
-
-var Listeners = require('./Listeners.js');
-
-var DOMImage = window.Image;
-
-var Image = function(source) {
-
-  this.width = 0;
-  this.height = 0;
-
-  this.hasLoaded = false;
-
-  this.listeners = Listeners.create();
-
-  if (!source)
-    return;
-
-  if (typeof source === 'string') {
-    var img = document.createElement('img');
-    img.src = source;
-    source = img;
-  }
-
-  this.source = source;
-
-  loaded(source, function(err) {
-
-    if (err) {
-      this.notify('error', err);
-    } else {
-      this.hasLoaded = true;
-      this.width = source.naturalWidth;
-      this.height = source.naturalHeight;
-      this.notify('load', this);
-    }
-
-  }.bind(this));
-};
-
-Image.create = function(source) {
-  return new Image(source);
-};
-
-Image.prototype.getAspectRatio = function() {
-
-  if (!this.hasLoaded)
-    return 1;
-
-  return this.width / this.height;
-};
-
-Image.prototype.notify = function(type, data) {
-  var listeners = this.listeners;
-  setTimeout(function() {
-    listeners.notify(type, data);
-  }, 0);
-};
-
-Image.prototype.on = function(type, fn) {
-  this.listeners.on(type, fn);
-  return this;
-};
-
-Image.prototype.off = function(type, fn) {
-  this.listeners.off(type, fn);
-  return this;
-};
-
-module.exports = Image;
-
-
-},{"./Listeners.js":164,"./imageLoaded.js":171}],161:[function(require,module,exports){
 var debounce = require('./debounce.js');
 var BackgroundLayer = require('./BackgroundLayer.js');
 var ImageLayer = require('./ImageLayer.js');
@@ -19154,7 +19081,7 @@ var Listeners = require('./Listeners.js');
 var DEFAULT_CANVAS_WIDTH = 400;
 var DEFAULT_CANVAS_HEIGHT = 300;
 
-var ImageCrop = function(opts) {
+var Crop = function(opts) {
 
   this.parent = opts.parent || null;
   this.canvas = document.createElement('canvas');
@@ -19248,26 +19175,26 @@ var ImageCrop = function(opts) {
   this.revalidateAndPaint();
 };
 
-ImageCrop.create = function(opts) {
-  return new ImageCrop(opts);
+Crop.create = function(opts) {
+  return new Crop(opts);
 };
 
-ImageCrop.prototype.on = function(type, fn) {
+Crop.prototype.on = function(type, fn) {
   this.listeners.on(type, fn);
   return this;
 };
 
-ImageCrop.prototype.off = function(type, fn) {
+Crop.prototype.off = function(type, fn) {
   this.listeners.off(type, fn);
   return this;
 };
 
-ImageCrop.prototype.revalidateAndPaint = function() {
+Crop.prototype.revalidateAndPaint = function() {
   this.revalidate();
   this.paint();
 };
 
-ImageCrop.prototype.revalidate = function() {
+Crop.prototype.revalidate = function() {
 
   var parent = this.parent;
   var canvas = this.canvas;
@@ -19305,7 +19232,7 @@ ImageCrop.prototype.revalidate = function() {
   this.selectionLayer.revalidate();
 };
 
-ImageCrop.prototype.paint = function() {
+Crop.prototype.paint = function() {
 
   var context = this.context;
 
@@ -19322,7 +19249,7 @@ ImageCrop.prototype.paint = function() {
   context.restore();
 };
 
-ImageCrop.prototype.resizeCanvas = function(width, height) {
+Crop.prototype.resizeCanvas = function(width, height) {
 
   var context = this.context;
   var canvas = this.canvas;
@@ -19338,7 +19265,7 @@ ImageCrop.prototype.resizeCanvas = function(width, height) {
   canvas.height = this.height * this.ratio;
 };
 
-ImageCrop.prototype.setImage = function(source) {
+Crop.prototype.setImage = function(source) {
 
   var image = Image.create(source)
     .on(
@@ -19360,7 +19287,7 @@ ImageCrop.prototype.setImage = function(source) {
   this.image = image;
 };
 
-ImageCrop.prototype.dispose = noop;
+Crop.prototype.dispose = noop;
 
 function noop() {};
 
@@ -19390,10 +19317,83 @@ function isInteger(v) {
   return typeof v == 'number' && Math.round(v) == v;
 }
 
-module.exports = ImageCrop;
+module.exports = Crop;
 
 
-},{"./BackgroundLayer.js":159,"./Image.js":160,"./ImageLayer.js":162,"./Listeners.js":164,"./SelectionLayer.js":168,"./debounce.js":169}],162:[function(require,module,exports){
+},{"./BackgroundLayer.js":159,"./Image.js":161,"./ImageLayer.js":162,"./Listeners.js":164,"./SelectionLayer.js":168,"./debounce.js":169}],161:[function(require,module,exports){
+var loaded = require('./imageLoaded.js');
+
+var Listeners = require('./Listeners.js');
+
+var DOMImage = window.Image;
+
+var Image = function(source) {
+
+  this.width = 0;
+  this.height = 0;
+
+  this.hasLoaded = false;
+
+  this.listeners = Listeners.create();
+
+  if (!source)
+    return;
+
+  if (typeof source === 'string') {
+    var img = document.createElement('img');
+    img.src = source;
+    source = img;
+  }
+
+  this.source = source;
+
+  loaded(source, function(err) {
+
+    if (err) {
+      this.notify('error', err);
+    } else {
+      this.hasLoaded = true;
+      this.width = source.naturalWidth;
+      this.height = source.naturalHeight;
+      this.notify('load', this);
+    }
+
+  }.bind(this));
+};
+
+Image.create = function(source) {
+  return new Image(source);
+};
+
+Image.prototype.getAspectRatio = function() {
+
+  if (!this.hasLoaded)
+    return 1;
+
+  return this.width / this.height;
+};
+
+Image.prototype.notify = function(type, data) {
+  var listeners = this.listeners;
+  setTimeout(function() {
+    listeners.notify(type, data);
+  }, 0);
+};
+
+Image.prototype.on = function(type, fn) {
+  this.listeners.on(type, fn);
+  return this;
+};
+
+Image.prototype.off = function(type, fn) {
+  this.listeners.off(type, fn);
+  return this;
+};
+
+module.exports = Image;
+
+
+},{"./Listeners.js":164,"./imageLoaded.js":171}],162:[function(require,module,exports){
 var Rectangle = require('./Rectangle.js');
 
 var ImageLayer = function(opts) {
@@ -19595,14 +19595,14 @@ module.exports = Listeners;
 
 },{}],165:[function(require,module,exports){
 var React = require('react');
-var ImageCrop = require('./ImageCrop.js');
+var Crop = require('./Crop.js');
 
-var ReactImageCrop = React.createClass({displayName: "ReactImageCrop",
+var ReactCrop = React.createClass({displayName: "ReactCrop",
 
   componentDidMount: function() {
 
-    console.log('ReactImageCrop componentDidMount()');
-    // this.imageCrop = ImageCrop.create({
+    console.log('ReactCrop componentDidMount()');
+    // this.Crop = Crop.create({
     //   parent: this.refs.parent,
     //   bounds: {
     //     width: '100%',
@@ -19619,7 +19619,7 @@ var ReactImageCrop = React.createClass({displayName: "ReactImageCrop",
     //   }
     // });
 
-    this.imageCrop = ImageCrop.create({
+    this.Crop = Crop.create({
       parent: this.refs.parent,
       image: 'http://www.hdwallpapers.in/walls/russell_boy_in_pixars_up-normal.jpg',
       bounds: {
@@ -19639,7 +19639,7 @@ var ReactImageCrop = React.createClass({displayName: "ReactImageCrop",
       }
     });
 
-    this.imageCrop
+    this.Crop
       .on('start', function(region) {
         console.log('Selection has started', region);
       })
@@ -19659,31 +19659,31 @@ var ReactImageCrop = React.createClass({displayName: "ReactImageCrop",
     // var image = document.createElement('img');
     // // image.src = 'images/landscape.jpg';
     // image.src = 'http://joombig.com/demo-extensions1/images/gallery_slider/Swan_large.jpg';
-    // this.imageCrop.setImage(image);
-    // this.imageCrop.setImage('http://joombig.com/demo-extensions1/images/gallery_slider/Swan_large.jpg');
+    // this.Crop.setImage(image);
+    // this.Crop.setImage('http://joombig.com/demo-extensions1/images/gallery_slider/Swan_large.jpg');
   },
 
   componentWillUnmount: function() {
-    console.log('ReactImageCrop componentWillUnmount()');
-    this.imageCrop.dispose();
+    console.log('ReactCrop componentWillUnmount()');
+    this.Crop.dispose();
   },
 
   componentDidUpdate: function() {
-    console.log('ReactImageCrop componentDidUpdate()');
+    console.log('ReactCrop componentDidUpdate()');
   },
 
   render: function() {
 
-    console.log('ReactImageCrop render()');
+    console.log('ReactCrop render()');
 
     return React.createElement("div", {ref: "parent", className: "image-crop"});
   }
 });
 
-module.exports = ReactImageCrop;
+module.exports = ReactCrop;
 
 
-},{"./ImageCrop.js":161,"react":158}],166:[function(require,module,exports){
+},{"./Crop.js":160,"react":158}],166:[function(require,module,exports){
 var Rectangle = function(x, y, width, height) {
 
   this._x = x;
@@ -20330,15 +20330,15 @@ module.exports = debounce;
 },{}],170:[function(require,module,exports){
 var React = require('react');
 var ReactDOM = require('react-dom');
-var ReactImageCrop = require('./ReactImageCrop.jsx');
+var ReactCrop = require('./ReactCrop.jsx');
 
 var node = document.createElement('div');
 document.body.appendChild(node);
 
-ReactDOM.render(React.createElement(ReactImageCrop, null), node);
+ReactDOM.render(React.createElement(ReactCrop, null), node);
 
 
-},{"./ReactImageCrop.jsx":165,"react":158,"react-dom":29}],171:[function(require,module,exports){
+},{"./ReactCrop.jsx":165,"react":158,"react-dom":29}],171:[function(require,module,exports){
 /*
  * Modified version of http://github.com/desandro/imagesloaded v2.1.1
  * MIT License.

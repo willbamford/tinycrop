@@ -1,12 +1,12 @@
 var React = require('react');
-var ImageCrop = require('./ImageCrop.js');
+var Crop = require('./Crop.js');
 
-var ReactImageCrop = React.createClass({
+var ReactCrop = React.createClass({
 
   componentDidMount: function() {
 
-    console.log('ReactImageCrop componentDidMount()');
-    // this.imageCrop = ImageCrop.create({
+    console.log('ReactCrop componentDidMount()');
+    // this.Crop = Crop.create({
     //   parent: this.refs.parent,
     //   bounds: {
     //     width: '100%',
@@ -23,7 +23,7 @@ var ReactImageCrop = React.createClass({
     //   }
     // });
 
-    this.imageCrop = ImageCrop.create({
+    this.Crop = Crop.create({
       parent: this.refs.parent,
       image: 'http://www.hdwallpapers.in/walls/russell_boy_in_pixars_up-normal.jpg',
       bounds: {
@@ -43,7 +43,7 @@ var ReactImageCrop = React.createClass({
       }
     });
 
-    this.imageCrop
+    this.Crop
       .on('start', function(region) {
         console.log('Selection has started', region);
       })
@@ -63,25 +63,25 @@ var ReactImageCrop = React.createClass({
     // var image = document.createElement('img');
     // // image.src = 'images/landscape.jpg';
     // image.src = 'http://joombig.com/demo-extensions1/images/gallery_slider/Swan_large.jpg';
-    // this.imageCrop.setImage(image);
-    // this.imageCrop.setImage('http://joombig.com/demo-extensions1/images/gallery_slider/Swan_large.jpg');
+    // this.Crop.setImage(image);
+    // this.Crop.setImage('http://joombig.com/demo-extensions1/images/gallery_slider/Swan_large.jpg');
   },
 
   componentWillUnmount: function() {
-    console.log('ReactImageCrop componentWillUnmount()');
-    this.imageCrop.dispose();
+    console.log('ReactCrop componentWillUnmount()');
+    this.Crop.dispose();
   },
 
   componentDidUpdate: function() {
-    console.log('ReactImageCrop componentDidUpdate()');
+    console.log('ReactCrop componentDidUpdate()');
   },
 
   render: function() {
 
-    console.log('ReactImageCrop render()');
+    console.log('ReactCrop render()');
 
     return <div ref="parent" className="image-crop"></div>;
   }
 });
 
-module.exports = ReactImageCrop;
+module.exports = ReactCrop;

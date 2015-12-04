@@ -1,29 +1,29 @@
 {
-  "name": "react-image-crop",
-  "version": "0.0.1",
-  "description": "React-based Image Cropping",
-  "main": "./src/ReactImageCrop.jsx",
+  "name": "Crop",
+  "version": "1.0.0",
+  "description": "JavaScript Image Cropping",
+  "main": "./src/Crop.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "watch": "watchify src/ReactImageCrop.jsx -t reactify -o build/ReactImageCrop.js",
+    "watch": "watchify src/Crop -o build/Crop.js",
     "watch-demo": "watchify src/demo.jsx -t reactify -o build/demo.js",
     "build": "echo \"Error: not implemented yet\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/WebSeed/react-image-crop.git"
+    "url": "https://github.com/WebSeed/crop.git"
   },
   "keywords": [
-    "react",
     "image",
-    "crop"
+    "crop",
+    "react"
   ],
   "author": "Will Bamford",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/WebSeed/react-image-crop/issues"
+    "url": "https://github.com/WebSeed/crop/issues"
   },
-  "homepage": "https://github.com/WebSeed/react-image-crop",
+  "homepage": "https://github.com/WebSeed/crop",
   "dependencies": {
     "es6-promise": "^3.0.2",
     "image-loaded": "0.0.2",
