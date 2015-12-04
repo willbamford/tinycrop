@@ -1,11 +1,9 @@
 # Crop
 
-JavaScript image cropper (client-side)
+JavaScript image cropper (client-side).
 
-## Examples
-
-See: http://webseed.github.io/crop/
+See http://webseed.github.io/crop/ for examples.
 
 ## Support
 
-Supported in Chrome, Safari, Firefox and IE9 and above.
+Supported in modern'ish web browsers (Chrome, Safari, Firefox, IE9 and above etc.).
