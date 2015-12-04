@@ -3,11 +3,13 @@
   <head>
     <title>Crop - JavaScript Image Cropper</title>
     <meta name="viewport" content="initial-scale=1.0">
+    <link rel="stylesheet" href="styles/normalize.css">
     <style>
 
       body {
         margin: 0;
         padding: 0;
+        font-family: sans-serif;
       }
 
       canvas {
@@ -16,11 +18,61 @@
         height: auto;
       }
 
+      .page {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 16px;
+      }
+
     </style>
+    <script src="build/Crop.min.js"></script>
   </head>
   <body>
 
-    <!-- <h1>Crop - JavaScript Image Cropper</h1> -->
-    <script src="build/demo.js"></script>
+    <div class="page">
+      <h1>Crop</h1>
+      <p>JavaScript Image Cropper</p>
+      <p><a href="https://github.com/WebSeed/crop">Visit Crop on GitHub</a></p>
+      <h2>Example</h2>
+      <div id="mount"></div>
+      <script>
+        var crop = Crop.create({
+          parent: '#mount',
+          image: 'http://www.hdwallpapers.in/walls/russell_boy_in_pixars_up-normal.jpg',
+          bounds: {
+            width: '100%',
+            height: '50%'
+          },
+          selection: {
+            // color: 'red',
+            // activeColor: 'blue',
+            aspectRatio: 4 / 3,
+            // minWidth: 200,
+            // minHeight: 300
+            // width: 400,
+            // height: 500,
+            // x: 100,
+            // y: 500
+          }
+        });
+        
+        crop
+          .on('start', function(region) {
+            console.log('Selection has started', region);
+          })
+          .on('move', function(region) {
+            console.log('Selection has moved', region);
+          })
+          .on('resize', function(region) {
+            console.log('Selection has resized', region);
+          })
+          .on('change', function(region) {
+            console.log('Selection has changed', region);
+          })
+          .on('end', function(region) {
+            console.log('Selection has ended', region);
+          });
+        
+      </script>
   </body>
 </html>

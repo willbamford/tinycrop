@@ -10,7 +10,8 @@ var DEFAULT_CANVAS_HEIGHT = 300;
 
 var Crop = function(opts) {
 
-  this.parent = opts.parent || null;
+  this.parent = typeof opts.parent === 'string' ? document.querySelector(opts.parent) : opts.parent;
+  
   this.canvas = document.createElement('canvas');
   this.context = this.canvas.getContext('2d');
   this.boundsOpts = opts.bounds || {width: '100%', height: 'auto'};
