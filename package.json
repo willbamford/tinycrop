@@ -1,0 +1,49 @@
+{
+  "name": "Crop",
+  "version": "1.0.0",
+  "description": "JavaScript Image Cropping",
+  "main": "./src/Crop.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "watch": "watchify src/Crop -o build/Crop.js",
+    "watch-demo": "watchify src/demo.jsx -t reactify -o build/demo.js",
+    "build": "echo \"Error: not implemented yet\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/WebSeed/crop.git"
+  },
+  "keywords": [
+    "image",
+    "crop",
+    "react"
+  ],
+  "author": "Will Bamford",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/WebSeed/crop/issues"
+  },
+  "homepage": "https://github.com/WebSeed/crop",
+  "dependencies": {
+    "es6-promise": "^3.0.2",
+    "image-loaded": "0.0.2",
+    "imagesloaded": "^3.2.0",
+    "react": "^0.14.3",
+    "react-dom": "^0.14.3"
+  },
+  "devDependencies": {
+    "browserify": "^12.0.1",
+    "reactify": "^1.1.1",
+    "watchify": "^3.6.1"
+  },
+  "browserify": {
+    "transform": [
+      [
+        "reactify",
+        {
+          "es6": true
+        }
+      ]
+    ]
+  }
+}

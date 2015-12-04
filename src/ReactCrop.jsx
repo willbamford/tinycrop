@@ -1,0 +1,69 @@
+var React = require('react');
+var Crop = require('./Crop.js');
+
+var ReactCrop = React.createClass({
+
+  componentDidMount: function() {
+
+    console.log('ReactCrop componentDidMount()');
+
+    this.crop = Crop.create({
+      parent: this.refs.parent,
+      image: 'http://www.hdwallpapers.in/walls/russell_boy_in_pixars_up-normal.jpg',
+      bounds: {
+        width: '100%',
+        height: '50%'
+      },
+      selection: {
+        // color: 'red',
+        // activeColor: 'blue',
+        // aspectRatio: 4 / 3,
+        // minWidth: 200,
+        // minHeight: 300
+        // width: 400,
+        // height: 500,
+        // x: 100,
+        // y: 500
+      }
+    });
+
+    this.crop
+      .on('start', function(region) {
+        console.log('Selection has started', region);
+      })
+      .on('move', function(region) {
+        console.log('Selection has moved', region);
+      })
+      .on('resize', function(region) {
+        console.log('Selection has resized', region);
+      })
+      .on('change', function(region) {
+        console.log('Selection has changed', region);
+      })
+      .on('end', function(region) {
+        console.log('Selection has ended', region);
+      });
+
+    // window.setTimeout(function() {
+    //   this.crop.setImage('images/portrait.jpg');
+    // }.bind(this), 4000);
+  },
+
+  componentWillUnmount: function() {
+    console.log('ReactCrop componentWillUnmount()');
+    this.crop.dispose();
+  },
+
+  componentDidUpdate: function() {
+    console.log('ReactCrop componentDidUpdate()');
+  },
+
+  render: function() {
+
+    console.log('ReactCrop render()');
+
+    return <div ref="parent" className="image-crop"></div>;
+  }
+});
+
+module.exports = ReactCrop;
