@@ -212,6 +212,7 @@ Crop.prototype.setImage = function(source) {
 
   this.imageLayer.setImage(image);
   this.image = image;
+  this.revalidateAndPaint();
 };
 
 Crop.prototype.dispose = noop;
