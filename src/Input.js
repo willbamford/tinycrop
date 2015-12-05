@@ -25,8 +25,8 @@ var Input = function(domElement) {
     var bounds = source.target.getBoundingClientRect();
     var touch = source.touches.length > 0 ? source.touches[0] : source.changedTouches[0];
 
-    var x = touch.pageX - bounds.left;
-    var y = touch.pageY - bounds.top;
+    var x = touch.clientX - bounds.left;
+    var y = touch.clientY - bounds.top;
 
     return {
       source: source,
