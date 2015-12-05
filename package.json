@@ -5,9 +5,10 @@
   "main": "./src/Crop.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "watch": "watchify src/Crop -o build/Crop.js",
-    "watch-demo": "watchify src/demo.jsx -t reactify -o build/demo.js",
-    "build": "echo \"Error: not implemented yet\" && exit 1"
+    "watch": "watchify src/Crop -o build/Crop.js -s Crop",
+    "build": "browserify src/Crop -o build/Crop.js -s Crop",
+    "build-min": "browserify src/Crop -t uglifyify -o build/Crop.min.js -s Crop",
+    "react-demo": "watchify src/react-demo.jsx -t reactify -o build/react-demo.js"
   },
   "repository": {
     "type": "git",
@@ -28,6 +29,7 @@
     "es6-promise": "^3.0.2",
     "image-loaded": "0.0.2",
     "imagesloaded": "^3.2.0",
+    "normalize.css": "^3.0.3",
     "react": "^0.14.3",
     "react-dom": "^0.14.3"
   },

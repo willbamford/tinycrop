@@ -10,6 +10,7 @@ var Image = function(source) {
   this.height = 0;
 
   this.hasLoaded = false;
+  this.src = null;
 
   this.listeners = Listeners.create();
 
@@ -17,9 +18,12 @@ var Image = function(source) {
     return;
 
   if (typeof source === 'string') {
+    this.src = source;
     var img = document.createElement('img');
-    img.src = source;
+    img.src = this.src;
     source = img;
+  } else {
+    this.src = source.src;
   }
 
   this.source = source;
