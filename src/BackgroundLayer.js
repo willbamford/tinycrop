@@ -2,8 +2,8 @@ var BackgroundLayer = function(opts) {
 
   opts = opts || {};
 
-  this.backgroundColor = opts.backgroundColor;
-  this.foregroundColor = opts.foregroundColor;
+  this.colors = opts.colors;
+  
   this.parent = opts.parent;
   this.context = opts.context;
   this.isDirty = true;
@@ -17,30 +17,41 @@ BackgroundLayer.prototype.revalidate = function() {
   this.isDirty = true;
 };
 
+BackgroundLayer.prototype.setColors = function(colors) {
+  this.colors = colors;
+};
+
 BackgroundLayer.prototype.paint = function() {
 
   if (this.isDirty) {
 
     var parent = this.parent;
-    var context = this.context;
+    var g = this.context;
 
-    context.fillStyle = this.backgroundColor;
-    context.fillRect(0, 0, parent.width, parent.height);
+    if (!this.colors || !this.colors.length) {
+      g.clearRect(0, 0, parent.width, parent.height);
+    } else {
+      g.fillStyle = this.colors[0];
+      g.fillRect(0, 0, parent.width, parent.height);  
+    }
 
-    var w = parent.width;
-    var h = parent.height;
+    if (this.colors && this.colors.length > 1) {
 
-    var cols = 32;
-    var size = parent.width / cols;
-    var rows = Math.ceil(h / size);
+      var w = parent.width;
+      var h = parent.height;
 
-    context.fillStyle = this.foregroundColor;
-    var count = 0;
-    for (var i = 0; i < cols; i += 1) {
-      for (var j = 0; j < rows; j += 1) {
-        if ((i + j) % 2 === 0)
-          context.fillRect(i * size, j * size, size, size);
-        count += 1;
+      var cols = 32;
+      var size = parent.width / cols;
+      var rows = Math.ceil(h / size);
+
+      g.fillStyle = this.colors[1];
+      var count = 0;
+      for (var i = 0; i < cols; i += 1) {
+        for (var j = 0; j < rows; j += 1) {
+          if ((i + j) % 2 === 0)
+            g.fillRect(i * size, j * size, size, size);
+          count += 1;
+        }
       }
     }
 

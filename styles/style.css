@@ -1,0 +1,105 @@
+html {
+  box-sizing: border-box;
+}
+
+*, *:before, *:after {
+  box-sizing: inherit;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: sans-serif;
+  color: #444;
+}
+
+canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+h1 {
+  text-align: center;
+}
+
+.header {
+  padding: 16px;
+  background: #38f;
+  text-align: center;
+  color: white;
+  margin-bottom: 16px;
+}
+
+.header a {
+  color: #cef;
+  text-decoration: none;
+}
+
+.container {
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.mount {
+  margin-bottom: 16px;
+}
+
+.info {
+  vertical-align: top;
+  padding: 0 16px;
+}
+
+.info button {
+  margin-bottom: 16px;
+  margin-right: 16px;
+  padding: 8px;
+  background: #38f;
+  border: none;
+  color: white;
+}
+
+.info button:hover, .info button:active {
+  background: #6af;
+}
+
+.field {
+  display: inline-block;
+  margin-bottom: 16px;
+}
+
+.field label {
+  display: inline-block;
+  width: 50px;
+}
+
+.field input {
+  width: 80px;
+  padding: 8px;
+  background: #f0f0f0;
+  border: 1px solid #ccc;
+  margin-right: 4px;
+  text-align: center;
+}
+
+.footer {
+  padding: 16px;
+  text-align: center;
+}
+
+@media all and (min-width: 800px) {
+
+  .header {
+    padding: 32px;
+  }
+
+  .mount {
+    display: inline-block;
+    width: 50%;
+  }
+  
+  .info {
+    display: inline-block;
+    width: 50%;
+  }
+}

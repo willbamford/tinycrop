@@ -42,12 +42,12 @@ ImageLayer.prototype.revalidate = function() {
 
 ImageLayer.prototype.paint = function() {
 
-  var context = this.context;
+  var g = this.context;
   var image = this.image;
   var bounds = this.bounds;
 
   if (image && image.hasLoaded)
-    context.drawImage(image.source, 0, 0, image.width, image.height, bounds.x, bounds.y, bounds.width, bounds.height);
+    g.drawImage(image.source, 0, 0, image.width, image.height, bounds.x, bounds.y, bounds.width, bounds.height);
 };
 
 module.exports = ImageLayer;

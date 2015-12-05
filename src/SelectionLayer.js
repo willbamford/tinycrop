@@ -190,7 +190,18 @@ SelectionLayer.prototype.getHandleRadius = function() {
 };
 
 SelectionLayer.prototype.onImageLoad = function() {
-  this.selection.onImageLoad();
+  this.autoSizeRegionAndNotify();
+};
+
+SelectionLayer.prototype.setAspectRatio = function(aspectRatio) {
+  this.selection.aspectRatio = aspectRatio;
+  this.autoSizeRegionAndNotify();
+};
+
+SelectionLayer.prototype.autoSizeRegionAndNotify = function() {
+  var hasChanged = this.selection.autoSizeRegion();
+  if (hasChanged)
+    this.listeners.notify('change', this.selection.region);
 };
 
 SelectionLayer.prototype.revalidate = function() {

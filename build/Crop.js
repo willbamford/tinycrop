@@ -3,8 +3,8 @@ var BackgroundLayer = function(opts) {
 
   opts = opts || {};
 
-  this.backgroundColor = opts.backgroundColor;
-  this.foregroundColor = opts.foregroundColor;
+  this.colors = opts.colors;
+  
   this.parent = opts.parent;
   this.context = opts.context;
   this.isDirty = true;
@@ -18,30 +18,41 @@ BackgroundLayer.prototype.revalidate = function() {
   this.isDirty = true;
 };
 
+BackgroundLayer.prototype.setColors = function(colors) {
+  this.colors = colors;
+};
+
 BackgroundLayer.prototype.paint = function() {
 
   if (this.isDirty) {
 
     var parent = this.parent;
-    var context = this.context;
+    var g = this.context;
 
-    context.fillStyle = this.backgroundColor;
-    context.fillRect(0, 0, parent.width, parent.height);
+    if (!this.colors || !this.colors.length) {
+      g.clearRect(0, 0, parent.width, parent.height);
+    } else {
+      g.fillStyle = this.colors[0];
+      g.fillRect(0, 0, parent.width, parent.height);  
+    }
 
-    var w = parent.width;
-    var h = parent.height;
+    if (this.colors && this.colors.length > 1) {
 
-    var cols = 32;
-    var size = parent.width / cols;
-    var rows = Math.ceil(h / size);
+      var w = parent.width;
+      var h = parent.height;
 
-    context.fillStyle = this.foregroundColor;
-    var count = 0;
-    for (var i = 0; i < cols; i += 1) {
-      for (var j = 0; j < rows; j += 1) {
-        if ((i + j) % 2 === 0)
-          context.fillRect(i * size, j * size, size, size);
-        count += 1;
+      var cols = 32;
+      var size = parent.width / cols;
+      var rows = Math.ceil(h / size);
+
+      g.fillStyle = this.colors[1];
+      var count = 0;
+      for (var i = 0; i < cols; i += 1) {
+        for (var j = 0; j < rows; j += 1) {
+          if ((i + j) % 2 === 0)
+            g.fillRect(i * size, j * size, size, size);
+          count += 1;
+        }
       }
     }
 
@@ -70,8 +81,6 @@ var Crop = function(opts) {
   this.context = this.canvas.getContext('2d');
   this.boundsOpts = opts.bounds || {width: '100%', height: 'auto'};
   opts.selection = opts.selection || {};
-  this.backgroundColor = opts.backgroundColor || '#fff';
-  this.foregroundColor = opts.foregroundColor || '#f7f7f7';
   this.debounceResize = opts.debounceResize !== undefined ? opts.debounceResize : true;
   this.listeners = Listeners.create();
 
@@ -80,8 +89,7 @@ var Crop = function(opts) {
   this.backgroundLayer = BackgroundLayer.create({
     parent: this,
     context: this.context,
-    backgroundColor: this.backgroundColor,
-    foregroundColor: this.foregroundColor
+    colors: opts.backgroundColors || ['#fff', '#f0f0f0']
   });
 
   this.imageLayer = ImageLayer.create({
@@ -216,10 +224,10 @@ Crop.prototype.revalidate = function() {
 
 Crop.prototype.paint = function() {
 
-  var context = this.context;
+  var g = this.context;
 
-  context.save();
-  context.scale(this.ratio, this.ratio);
+  g.save();
+  g.scale(this.ratio, this.ratio);
 
   this.backgroundLayer.paint();
 
@@ -228,7 +236,7 @@ Crop.prototype.paint = function() {
     this.selectionLayer.paint();
   }
 
-  context.restore();
+  g.restore();
 };
 
 Crop.prototype.resizeCanvas = function(width, height) {
@@ -267,6 +275,25 @@ Crop.prototype.setImage = function(source) {
 
   this.imageLayer.setImage(image);
   this.image = image;
+  this.revalidateAndPaint();
+};
+
+Crop.prototype.getImage = function() {
+  return this.image;
+};
+
+Crop.prototype.setAspectRatio = function(aspectRatio) {
+  this.selectionLayer.setAspectRatio(aspectRatio);
+  this.revalidateAndPaint();
+};
+
+Crop.prototype.setBounds = function(opts) {
+  this.boundsOpts = opts;
+  this.revalidateAndPaint();
+};
+
+Crop.prototype.setBackgroundColors = function(colors) {
+  this.backgroundLayer.setColors(colors);
   this.revalidateAndPaint();
 };
 
@@ -315,6 +342,7 @@ var Image = function(source) {
   this.height = 0;
 
   this.hasLoaded = false;
+  this.src = null;
 
   this.listeners = Listeners.create();
 
@@ -322,9 +350,12 @@ var Image = function(source) {
     return;
 
   if (typeof source === 'string') {
+    this.src = source;
     var img = document.createElement('img');
-    img.src = source;
+    img.src = this.src;
     source = img;
+  } else {
+    this.src = source.src;
   }
 
   this.source = source;
@@ -419,12 +450,12 @@ ImageLayer.prototype.revalidate = function() {
 
 ImageLayer.prototype.paint = function() {
 
-  var context = this.context;
+  var g = this.context;
   var image = this.image;
   var bounds = this.bounds;
 
   if (image && image.hasLoaded)
-    context.drawImage(image.source, 0, 0, image.width, image.height, bounds.x, bounds.y, bounds.width, bounds.height);
+    g.drawImage(image.source, 0, 0, image.width, image.height, bounds.x, bounds.y, bounds.width, bounds.height);
 };
 
 module.exports = ImageLayer;
@@ -815,13 +846,19 @@ Selection.prototype.resizeBy = function(dx, dy, p) {
   return this.updateRegionFromBounds();
 };
 
-Selection.prototype.onImageLoad = function() {
+Selection.prototype.autoSizeRegion = function() {
 
   var target = this.target;
   var region = this.region;
   var bounds = this.bounds;
   var aspectRatio = this.aspectRatio;
   var initialOpts = this.initialOpts;
+
+  var hasChanged = false;
+  var beforeX = region.x;
+  var beforeY = region.y;
+  var beforeWidth = region.width;
+  var beforeHeight = region.height;
 
   region.x = initialOpts.x !== undefined ? initialOpts.x : 0;
   region.y = initialOpts.y !== undefined ? initialOpts.y : 0;
@@ -845,6 +882,11 @@ Selection.prototype.onImageLoad = function() {
   region.round();
 
   this.updateBoundsFromRegion();
+  
+  return region.x !== beforeX ||
+    region.y !== beforeY ||
+    region.width !== beforeWidth ||
+    region.height !== beforeHeight;
 };
 
 Selection.prototype.updateRegionFromBounds = function() {
@@ -1092,7 +1134,18 @@ SelectionLayer.prototype.getHandleRadius = function() {
 };
 
 SelectionLayer.prototype.onImageLoad = function() {
-  this.selection.onImageLoad();
+  this.autoSizeRegionAndNotify();
+};
+
+SelectionLayer.prototype.setAspectRatio = function(aspectRatio) {
+  this.selection.aspectRatio = aspectRatio;
+  this.autoSizeRegionAndNotify();
+};
+
+SelectionLayer.prototype.autoSizeRegionAndNotify = function() {
+  var hasChanged = this.selection.autoSizeRegion();
+  if (hasChanged)
+    this.listeners.notify('change', this.selection.region);
 };
 
 SelectionLayer.prototype.revalidate = function() {

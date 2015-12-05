@@ -139,13 +139,19 @@ Selection.prototype.resizeBy = function(dx, dy, p) {
   return this.updateRegionFromBounds();
 };
 
-Selection.prototype.onImageLoad = function() {
+Selection.prototype.autoSizeRegion = function() {
 
   var target = this.target;
   var region = this.region;
   var bounds = this.bounds;
   var aspectRatio = this.aspectRatio;
   var initialOpts = this.initialOpts;
+
+  var hasChanged = false;
+  var beforeX = region.x;
+  var beforeY = region.y;
+  var beforeWidth = region.width;
+  var beforeHeight = region.height;
 
   region.x = initialOpts.x !== undefined ? initialOpts.x : 0;
   region.y = initialOpts.y !== undefined ? initialOpts.y : 0;
@@ -169,6 +175,11 @@ Selection.prototype.onImageLoad = function() {
   region.round();
 
   this.updateBoundsFromRegion();
+  
+  return region.x !== beforeX ||
+    region.y !== beforeY ||
+    region.width !== beforeWidth ||
+    region.height !== beforeHeight;
 };
 
 Selection.prototype.updateRegionFromBounds = function() {

@@ -16,8 +16,6 @@ var Crop = function(opts) {
   this.context = this.canvas.getContext('2d');
   this.boundsOpts = opts.bounds || {width: '100%', height: 'auto'};
   opts.selection = opts.selection || {};
-  this.backgroundColor = opts.backgroundColor || '#fff';
-  this.foregroundColor = opts.foregroundColor || '#f7f7f7';
   this.debounceResize = opts.debounceResize !== undefined ? opts.debounceResize : true;
   this.listeners = Listeners.create();
 
@@ -26,8 +24,7 @@ var Crop = function(opts) {
   this.backgroundLayer = BackgroundLayer.create({
     parent: this,
     context: this.context,
-    backgroundColor: this.backgroundColor,
-    foregroundColor: this.foregroundColor
+    colors: opts.backgroundColors || ['#fff', '#f0f0f0']
   });
 
   this.imageLayer = ImageLayer.create({
@@ -162,10 +159,10 @@ Crop.prototype.revalidate = function() {
 
 Crop.prototype.paint = function() {
 
-  var context = this.context;
+  var g = this.context;
 
-  context.save();
-  context.scale(this.ratio, this.ratio);
+  g.save();
+  g.scale(this.ratio, this.ratio);
 
   this.backgroundLayer.paint();
 
@@ -174,7 +171,7 @@ Crop.prototype.paint = function() {
     this.selectionLayer.paint();
   }
 
-  context.restore();
+  g.restore();
 };
 
 Crop.prototype.resizeCanvas = function(width, height) {
@@ -213,6 +210,25 @@ Crop.prototype.setImage = function(source) {
 
   this.imageLayer.setImage(image);
   this.image = image;
+  this.revalidateAndPaint();
+};
+
+Crop.prototype.getImage = function() {
+  return this.image;
+};
+
+Crop.prototype.setAspectRatio = function(aspectRatio) {
+  this.selectionLayer.setAspectRatio(aspectRatio);
+  this.revalidateAndPaint();
+};
+
+Crop.prototype.setBounds = function(opts) {
+  this.boundsOpts = opts;
+  this.revalidateAndPaint();
+};
+
+Crop.prototype.setBackgroundColors = function(colors) {
+  this.backgroundLayer.setColors(colors);
   this.revalidateAndPaint();
 };
 
