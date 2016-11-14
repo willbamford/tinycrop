@@ -1,6 +1,25 @@
-# Crop
+# crop
 
-JavaScript image cropper.
+<a href="https://circleci.com/gh/WebSeed/crop">
+  <img
+    src="https://circleci.com/gh/WebSeed/crop.svg?style=shield"
+    alt="Build status" />
+</a>
+<a href="https://npmjs.org/package/jscrop">
+  <img
+    src="https://img.shields.io/npm/v/jscrop.svg?style=flat-square"
+    alt="NPM version" />
+</a>
+<a href="https://standardjs.com">
+  <img
+    src="https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat-square"
+    alt="Standard" />
+</a>
+<a href="https://unpkg.com/jscrop/dist/Crop.min.js">
+   <img
+    src="https://badge-size.herokuapp.com/WebSeed/jscrop/master/dist/Crop.min.js.svg?compression=gzip"
+    alt="File size" />
+</a>
 
 ## Install
 
@@ -14,7 +33,7 @@ Or [Yarn](https://yarnpkg.com):
 yarn add jscrop
 ```
 
-## Instantiate
+## Create
 
 ```js
 var Crop = require('jscrop')
@@ -41,7 +60,7 @@ var crop = Crop.create({
 });
 ```
 
-## Event Handling
+## Events
 
 ```js
 crop
