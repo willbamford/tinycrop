@@ -1,10 +1,9 @@
-var React = require('react');
-var Crop = require('./Crop.js');
+var React = require('react')
+var Crop = require('./Crop.js')
 
 var ReactCrop = React.createClass({
 
-  componentDidMount: function() {
-
+  componentDidMount: function () {
     this.crop = Crop.create({
       parent: this.refs.parent,
       image: 'http://www.hdwallpapers.in/walls/russell_boy_in_pixars_up-normal.jpg',
@@ -23,36 +22,36 @@ var ReactCrop = React.createClass({
         x: 100,
         y: 500
       }
-    });
+    })
 
     this.crop
-      .on('start', function(region) {
-        console.log('Selection has started', region);
+      .on('start', function (region) {
+        console.log('Selection has started', region)
       })
-      .on('move', function(region) {
-        console.log('Selection has moved', region);
+      .on('move', function (region) {
+        console.log('Selection has moved', region)
       })
-      .on('resize', function(region) {
-        console.log('Selection has resized', region);
+      .on('resize', function (region) {
+        console.log('Selection has resized', region)
       })
-      .on('change', function(region) {
-        console.log('Selection has changed', region);
+      .on('change', function (region) {
+        console.log('Selection has changed', region)
       })
-      .on('end', function(region) {
-        console.log('Selection has ended', region);
-      });
+      .on('end', function (region) {
+        console.log('Selection has ended', region)
+      })
   },
 
-  componentWillUnmount: function() {
-    this.crop.dispose();
+  componentWillUnmount: function () {
+    this.crop.dispose()
   },
 
-  componentDidUpdate: function() {
+  componentDidUpdate: function () {
   },
 
-  render: function() {
-    return <div ref="parent" className="image-crop"></div>;
+  render: function () {
+    return <div ref='parent' className='image-crop' />
   }
-});
+})
 
-module.exports = ReactCrop;
+module.exports = ReactCrop

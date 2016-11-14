@@ -1,74 +1,69 @@
-var loaded = require('./imageLoaded.js');
+var loaded = require('./imageLoaded.js')
+var Listeners = require('./Listeners.js')
 
-var Listeners = require('./Listeners.js');
+var Image = function (source) {
+  this.width = 0
+  this.height = 0
 
-var DOMImage = window.Image;
+  this.hasLoaded = false
+  this.src = null
 
-var Image = function(source) {
+  this.listeners = Listeners.create()
 
-  this.width = 0;
-  this.height = 0;
-
-  this.hasLoaded = false;
-  this.src = null;
-
-  this.listeners = Listeners.create();
-
-  if (!source)
-    return;
-
-  if (typeof source === 'string') {
-    this.src = source;
-    var img = document.createElement('img');
-    img.src = this.src;
-    source = img;
-  } else {
-    this.src = source.src;
+  if (!source) {
+    return
   }
 
-  this.source = source;
+  if (typeof source === 'string') {
+    this.src = source
+    var img = document.createElement('img')
+    img.src = this.src
+    source = img
+  } else {
+    this.src = source.src
+  }
 
-  loaded(source, function(err) {
+  this.source = source
 
+  loaded(source, function (err) {
     if (err) {
-      this.notify('error', err);
+      this.notify('error', err)
     } else {
-      this.hasLoaded = true;
-      this.width = source.naturalWidth;
-      this.height = source.naturalHeight;
-      this.notify('load', this);
+      this.hasLoaded = true
+      this.width = source.naturalWidth
+      this.height = source.naturalHeight
+      this.notify('load', this)
     }
+  }.bind(this))
+}
 
-  }.bind(this));
-};
+Image.create = function (source) {
+  return new Image(source)
+}
 
-Image.create = function(source) {
-  return new Image(source);
-};
+Image.prototype.getAspectRatio = function () {
+  if (!this.hasLoaded) {
+    return 1
+  }
 
-Image.prototype.getAspectRatio = function() {
+  return this.width / this.height
+}
 
-  if (!this.hasLoaded)
-    return 1;
+Image.prototype.notify = function (type, data) {
+  var listeners = this.listeners
+  setTimeout(function () {
+    listeners.notify(type, data)
+  }, 0)
+}
 
-  return this.width / this.height;
-};
+Image.prototype.on = function (type, fn) {
+  this.listeners.on(type, fn)
+  return this
+}
 
-Image.prototype.notify = function(type, data) {
-  var listeners = this.listeners;
-  setTimeout(function() {
-    listeners.notify(type, data);
-  }, 0);
-};
+Image.prototype.off = function (type, fn) {
+  this.listeners.off(type, fn)
+  return this
+}
 
-Image.prototype.on = function(type, fn) {
-  this.listeners.on(type, fn);
-  return this;
-};
-
-Image.prototype.off = function(type, fn) {
-  this.listeners.off(type, fn);
-  return this;
-};
-
-module.exports = Image;
+module.exports = Image
