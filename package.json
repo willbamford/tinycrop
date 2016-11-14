@@ -7,10 +7,13 @@
     "test": "standard",
     "lint": "standard",
     "fix": "standard --fix",
-    "build": "BABEL_ENV=development babel src -d lib",
-    "watch": "watchify src/Crop -o build/Crop.js -s Crop",
-    "build-min": "browserify src/Crop -t uglifyify -o build/Crop.min.js -s Crop",
-    "react-demo": "watchify src/react-demo.jsx -t reactify -o build/react-demo.js"
+    "xxxbuild": "BABEL_ENV=development babel src -d lib",
+    "build": "BABEL_ENV=development browserify src/Crop.js -s Crop -o dist/Crop.js -d",
+    "build-min": "BABEL_ENV=production NODE_ENV=production browserify src/Crop.js -s Crop | uglifyjs -c > dist/Crop.min.js",
+
+    "xxxwatch": "watchify src/Crop -o build/Crop.js -s Crop",
+    "xxxbuild-min": "browserify src/Crop -t uglifyify -o build/Crop.min.js -s Crop",
+    "xxxreact-demo": "watchify src/react-demo.jsx -t reactify -o build/react-demo.js"
   },
   "browserify": {
     "transform": [
@@ -24,7 +27,7 @@
   },
   "standard": {
     "ignore": [
-      "/build/",
+      "/dist/",
       "/lib/"
     ]
   },
@@ -51,6 +54,7 @@
   "devDependencies": {
     "babel-cli": "^6.14.0",
     "babel-preset-es2015": "^6.18.0",
+    "babel-preset-stage-0": "^6.16.0",
     "babel-preset-react": "^6.16.0",
     "babelify": "^7.3.0",
     "browserify": "^13.1.1",
