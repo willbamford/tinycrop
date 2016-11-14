@@ -36,7 +36,7 @@
     "react"
   ],
   "author": "Will Bamford",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/WebSeed/crop/issues"
   },
