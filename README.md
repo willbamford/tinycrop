@@ -17,7 +17,7 @@
 </a>
 <a href="https://unpkg.com/jscrop/dist/Crop.min.js">
    <img
-    src="https://badge-size.herokuapp.com/WebSeed/jscrop/master/dist/Crop.min.js.svg?compression=gzip"
+    src="https://badge-size.herokuapp.com/WebSeed/crop/master/dist/Crop.min.js.svg?compression=gzip"
     alt="File size" />
 </a>
 
