@@ -1,45 +1,44 @@
-var Listeners = function(opts) {
-  this.events = {};
-};
+var Listeners = function (opts) {
+  this.events = {}
+}
 
-Listeners.create = function(opts) {
-  return new Listeners(opts);
-};
+Listeners.create = function (opts) {
+  return new Listeners(opts)
+}
 
-Listeners.prototype.on = function(type, fn) {
-
-  if (!this.events[type])
-    this.events[type] = [];
-
-  if (this.events[type].indexOf(fn) === -1)
-      this.events[type].push(fn);
-
-  return this;
-};
-
-Listeners.prototype.off = function(type, fn) {
-
-  if (this.events[type]) {
-
-    var i = this.events[type].indexOf(fn);
-    if (i !== -1)
-      this.events[type].splice(i, 1);
+Listeners.prototype.on = function (type, fn) {
+  if (!this.events[type]) {
+    this.events[type] = []
   }
 
-  return this;
-};
-
-Listeners.prototype.notify = function(type, data) {
-
-  if (this.events[type]) {
-    this.events[type].forEach(function(fn) {
-      fn.call(this, data);
-    }.bind(this));
+  if (this.events[type].indexOf(fn) === -1) {
+    this.events[type].push(fn)
   }
-};
 
-Listeners.prototype.clearAll = function() {
-  this.events = {};
-};
+  return this
+}
 
-module.exports = Listeners;
+Listeners.prototype.off = function (type, fn) {
+  if (this.events[type]) {
+    var i = this.events[type].indexOf(fn)
+    if (i !== -1) {
+      this.events[type].splice(i, 1)
+    }
+  }
+
+  return this
+}
+
+Listeners.prototype.notify = function (type, data) {
+  if (this.events[type]) {
+    this.events[type].forEach(function (fn) {
+      fn.call(this, data)
+    }.bind(this))
+  }
+}
+
+Listeners.prototype.clearAll = function () {
+  this.events = {}
+}
+
+module.exports = Listeners
