@@ -4,7 +4,7 @@
   "description": "JavaScript Image Cropping",
   "main": "./src/Crop.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "standard",
     "lint": "standard",
     "fix": "standard --fix",
     "watch": "watchify src/Crop -o build/Crop.js -s Crop",
@@ -33,17 +33,15 @@
   },
   "homepage": "https://github.com/WebSeed/crop",
   "dependencies": {
-    "es6-promise": "^3.0.2",
-    "image-loaded": "0.0.2",
-    "imagesloaded": "^3.2.0",
     "normalize.css": "^3.0.3",
     "react": "^0.14.3",
-    "react-dom": "^0.14.3",
-    "standard": "^8.5.0"
+    "react-dom": "^0.14.3"
   },
   "devDependencies": {
     "browserify": "^12.0.1",
     "reactify": "^1.1.1",
+    "standard": "^8.5.0",
+    "uglifyify": "^3.0.4",
     "watchify": "^3.6.1"
   },
   "browserify": {
