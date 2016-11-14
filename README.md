@@ -21,6 +21,8 @@
     alt="File size" />
 </a>
 
+Pure JavaScript image crop library. Also [plays nicely with React](http://webseed.github.io/crop/react-example).
+
 ## Install
 
 Using NPM:

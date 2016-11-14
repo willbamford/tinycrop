@@ -31,8 +31,11 @@
     "url": "https://github.com/WebSeed/crop.git"
   },
   "keywords": [
-    "image",
     "crop",
+    "resize",
+    "selection",
+    "image",
+    "thumbnail",
     "react"
   ],
   "author": "Will Bamford",
