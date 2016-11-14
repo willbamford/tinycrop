@@ -45,21 +45,11 @@ var crop = Crop.create({
 
 ```js
 crop
-  .on('start', function (region) {
-    console.log('Start', region)
-  })
-  .on('move', function (region) {
-    console.log('Move', region)
-  })
-  .on('resize', function (region) {
-    console.log('Resize', region)
-  })
-  .on('change', function (region) {
-    console.log('Change', region)
-  })
-  .on('end', function (region) {
-    console.log('End', region)
-  });
+  .on('start', function (region) { console.log('Start', region) })
+  .on('move', function (region) { console.log('Move', region) })
+  .on('resize', function (region) { console.log('Resize', region) })
+  .on('change', function (region) { console.log('Change', region) })
+  .on('end', function (region) { console.log('End', region) })
 ```
 
 ## Demo
