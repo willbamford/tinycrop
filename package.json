@@ -10,7 +10,8 @@
     "build": "BABEL_ENV=development browserify src/Crop.js -s Crop -o dist/Crop.js -d",
     "min": "BABEL_ENV=production NODE_ENV=production browserify src/Crop.js -s Crop | uglifyjs -c > dist/Crop.min.js",
     "watch": "BABEL_ENV=development watchify src/Crop.js -s Crop -o dist/Crop.js -d -v",
-    "react-example": "BABEL_ENV=production NODE_ENV=production browserify src/react-example.jsx | uglifyjs -c > dist/react-example.min.js"
+    "react-example-watch": "BABEL_ENV=development watchify src/react-example.jsx -o dist/react-example.js -d -v",
+    "react-example-min": "BABEL_ENV=production NODE_ENV=production browserify src/react-example.jsx | uglifyjs -c > dist/react-example.min.js"
   },
   "browserify": {
     "transform": [
