@@ -46,19 +46,19 @@ var crop = Crop.create({
 ```js
 crop
   .on('start', function (region) {
-    
+    console.log('Start', region)
   })
   .on('move', function (region) {
-    setInputsFromRegion(region);
+    console.log('Move', region)
   })
   .on('resize', function (region) {
-    setInputsFromRegion(region);
+    console.log('Resize', region)
   })
   .on('change', function (region) {
-    setInputsFromRegion(region);
+    console.log('Change', region)
   })
   .on('end', function (region) {
-    setInputsFromRegion(region);
+    console.log('End', region)
   });
 ```
 
