@@ -1,0 +1,1 @@
+console.error("Error: Cannot find module '/Users/will.bamford/Code/crop/src/react-demo.jsx' from '/Users/will.bamford/Code/crop'");

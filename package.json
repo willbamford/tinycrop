@@ -7,21 +7,15 @@
     "test": "standard",
     "lint": "standard",
     "fix": "standard --fix",
-    "xxxbuild": "BABEL_ENV=development babel src -d lib",
     "build": "BABEL_ENV=development browserify src/Crop.js -s Crop -o dist/Crop.js -d",
-    "build-min": "BABEL_ENV=production NODE_ENV=production browserify src/Crop.js -s Crop | uglifyjs -c > dist/Crop.min.js",
-
-    "xxxwatch": "watchify src/Crop -o build/Crop.js -s Crop",
-    "xxxbuild-min": "browserify src/Crop -t uglifyify -o build/Crop.min.js -s Crop",
-    "xxxreact-demo": "watchify src/react-demo.jsx -t reactify -o build/react-demo.js"
+    "min": "BABEL_ENV=production NODE_ENV=production browserify src/Crop.js -s Crop | uglifyjs -c > dist/Crop.min.js",
+    "watch": "BABEL_ENV=development watchify src/Crop.js -s Crop -o dist/Crop.js -d -v",
+    "react-example": "BABEL_ENV=production NODE_ENV=production browserify src/react-example.jsx | uglifyjs -c > dist/react-example.min.js"
   },
   "browserify": {
     "transform": [
       [
-        "reactify",
-        {
-          "es6": true
-        }
+        "babelify"
       ]
     ]
   },
