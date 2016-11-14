@@ -2,4 +2,66 @@
 
 JavaScript image cropper.
 
-See http://webseed.github.io/crop/ for a demo.
+## Install
+
+Using NPM:
+```
+npm i jscrop -S
+```
+
+Or [Yarn](https://yarnpkg.com):
+```
+yarn add jscrop
+```
+
+## Instantiate
+
+```js
+var Crop = require('jscrop')
+
+var crop = Crop.create({
+  parent: '#mount',
+  image: 'images/portrait.jpg',
+  bounds: {
+    width: '100%',
+    height: '50%'
+  },
+  backgroundColors: ['#fff', '#f0f0f0'],
+  selection: {
+    color: 'red',
+    activeColor: 'blue',
+    aspectRatio: 4 / 3,
+    minWidth: 200,
+    minHeight: 300
+    width: 400,
+    height: 500,
+    x: 100,
+    y: 500
+  }
+});
+```
+
+## Event Handling
+
+```js
+crop
+  .on('start', function (region) {
+    
+  })
+  .on('move', function (region) {
+    setInputsFromRegion(region);
+  })
+  .on('resize', function (region) {
+    setInputsFromRegion(region);
+  })
+  .on('change', function (region) {
+    setInputsFromRegion(region);
+  })
+  .on('end', function (region) {
+    setInputsFromRegion(region);
+  });
+```
+
+## Demo
+
+http://webseed.github.io/crop/
