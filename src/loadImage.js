@@ -5,7 +5,7 @@
 
 var BLANK = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw=='
 
-function imageLoaded (image, callback) {
+function loadImage (image, callback) {
   if (!image.nodeName || image.nodeName.toLowerCase() !== 'img') {
     return callback(new Error('First argument must an image element'))
   }
@@ -29,4 +29,4 @@ function imageLoaded (image, callback) {
   }
 }
 
-module.exports = imageLoaded
+module.exports = loadImage

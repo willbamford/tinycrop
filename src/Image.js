@@ -1,4 +1,4 @@
-var loaded = require('./imageLoaded.js')
+var loaded = require('./loadImage.js')
 var Listeners = require('./Listeners.js')
 
 var Image = function (source) {
