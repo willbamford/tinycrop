@@ -1,13 +1,13 @@
-# crop
+# tinycrop
 
-<a href="https://circleci.com/gh/WebSeed/crop">
+<a href="https://circleci.com/gh/WebSeed/tinycrop">
   <img
-    src="https://circleci.com/gh/WebSeed/crop.svg?style=shield"
+    src="https://circleci.com/gh/WebSeed/tinycrop.svg?style=shield"
     alt="Build status" />
 </a>
-<a href="https://npmjs.org/package/jscrop">
+<a href="https://npmjs.org/package/tinycrop">
   <img
-    src="https://img.shields.io/npm/v/jscrop.svg?style=flat-square"
+    src="https://img.shields.io/npm/v/tinycrop.svg?style=flat-square"
     alt="NPM version" />
 </a>
 <a href="https://standardjs.com">
@@ -15,30 +15,30 @@
     src="https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat-square"
     alt="Standard" />
 </a>
-<a href="https://unpkg.com/jscrop/dist/Crop.min.js">
+<a href="https://unpkg.com/tinycrop/dist/Crop.min.js">
    <img
-    src="https://badge-size.herokuapp.com/WebSeed/crop/master/dist/Crop.min.js.svg?compression=gzip"
+    src="https://badge-size.herokuapp.com/WebSeed/tinycrop/master/dist/Crop.min.js.svg?compression=gzip"
     alt="File size" />
 </a>
 
-Pure JavaScript image crop library. Also [plays nicely with React](http://webseed.github.io/crop/react-example).
+A lightweight pure JavaScript image crop library. [Plays nicely with React](http://webseed.github.io/crop/react-example).
 
 ## Install
 
 Using NPM:
 ```
-npm i jscrop -S
+npm i tinycrop -S
 ```
 
 Or [Yarn](https://yarnpkg.com):
 ```
-yarn add jscrop
+yarn add tinycrop
 ```
 
 ## Create
 
 ```js
-var Crop = require('jscrop')
+var Crop = require('tinycrop')
 
 var crop = Crop.create({
   parent: '#mount',

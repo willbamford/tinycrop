@@ -1,17 +1,17 @@
 {
-  "name": "jscrop",
+  "name": "tinycrop",
   "version": "1.3.1",
-  "description": "JavaScript Image Cropping",
-  "main": "./lib/Crop.js",
+  "description": "A lightweight, pure JavaScript image crop library",
+  "main": "lib",
   "scripts": {
     "test": "standard",
     "lint": "standard",
     "fix": "standard --fix",
-    "build": "BABEL_ENV=development browserify src/Crop.js -s Crop -o dist/Crop.js -d",
-    "min": "BABEL_ENV=production NODE_ENV=production browserify src/Crop.js -s Crop | uglifyjs -c > dist/Crop.min.js",
-    "watch": "BABEL_ENV=development watchify src/Crop.js -s Crop -o dist/Crop.js -d -v",
-    "react-example-watch": "BABEL_ENV=development watchify src/react-example.jsx -o dist/react-example.js -d -v",
-    "react-example-min": "BABEL_ENV=production NODE_ENV=production browserify src/react-example.jsx | uglifyjs -c > dist/react-example.min.js"
+    "build": "BABEL_ENV=development browserify src/index.js -s tinycrop -o dist/tinycrop.js -d",
+    "min": "BABEL_ENV=production NODE_ENV=production browserify src/index.js -s tinycrop | uglifyjs -c > dist/tinycrop.min.js",
+    "watch": "BABEL_ENV=development watchify src/index.js -s tinycrop -o dist/tinycrop.js -d -v",
+    "react-example-watch": "BABEL_ENV=development watchify examples/react/index.jsx -o examples/react/bundle.js -d -v",
+    "react-example-min": "BABEL_ENV=production NODE_ENV=production browserify examples/react/index.jsx | uglifyjs -c > examples/react/bundle.min.js"
   },
   "browserify": {
     "transform": [
@@ -28,7 +28,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/WebSeed/crop.git"
+    "url": "https://github.com/WebSeed/tinycrop.git"
   },
   "keywords": [
     "crop",
@@ -36,14 +36,16 @@
     "selection",
     "image",
     "thumbnail",
-    "react"
+    "react",
+    "lightweight",
+    "pure"
   ],
   "author": "Will Bamford",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/WebSeed/crop/issues"
+    "url": "https://github.com/WebSeed/tinycrop/issues"
   },
-  "homepage": "https://github.com/WebSeed/crop",
+  "homepage": "https://github.com/WebSeed/tinycrop",
   "dependencies": {
     "normalize.css": "^5.0.0",
     "react": "^15.3.2",
