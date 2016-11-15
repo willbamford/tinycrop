@@ -15,13 +15,13 @@
     src="https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat-square"
     alt="Standard" />
 </a>
-<a href="https://unpkg.com/tinycrop/dist/Crop.min.js">
+<a href="https://unpkg.com/tinycrop/dist/tinycrop.min.js">
    <img
-    src="https://badge-size.herokuapp.com/WebSeed/tinycrop/master/dist/Crop.min.js.svg?compression=gzip"
+    src="https://badge-size.herokuapp.com/WebSeed/tinycrop/master/dist/tinycrop.min.js.svg?compression=gzip"
     alt="File size" />
 </a>
 
-Lightweight pure JavaScript image crop library. [Plays nicely with React](http://webseed.github.io/crop/react-example).
+Lightweight pure JavaScript image crop library. [Plays nicely with React](http://webseed.github.io/crop/examples/react).
 
 ## Install
 
