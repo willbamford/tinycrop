@@ -47,7 +47,7 @@ var crop = Crop.create({
     width: '100%',
     height: '50%'
   },
-  backgroundColors: ['#fff', '#f0f0f0'],
+  backgroundColors: ['#fff', '#f3f3f3'],
   selection: {
     color: 'red',
     activeColor: 'blue',
