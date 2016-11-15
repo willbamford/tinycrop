@@ -1,8 +1,6 @@
 var BackgroundLayer = function (opts) {
   opts = opts || {}
-
   this.colors = opts.colors
-
   this.parent = opts.parent
   this.context = opts.context
   this.isDirty = true

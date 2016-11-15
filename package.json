@@ -1,8 +1,8 @@
 {
   "name": "tinycrop",
   "version": "1.3.1",
-  "description": "A lightweight, pure JavaScript image crop library",
-  "main": "lib",
+  "description": "Lightweight pure JavaScript image crop",
+  "main": "src",
   "scripts": {
     "test": "standard",
     "lint": "standard",

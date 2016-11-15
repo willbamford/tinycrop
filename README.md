@@ -21,7 +21,7 @@
     alt="File size" />
 </a>
 
-A lightweight pure JavaScript image crop library. [Plays nicely with React](http://webseed.github.io/crop/react-example).
+Lightweight pure JavaScript image crop library. [Plays nicely with React](http://webseed.github.io/crop/react-example).
 
 ## Install
 
