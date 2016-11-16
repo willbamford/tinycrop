@@ -75,4 +75,4 @@ crop
 
 ## Demo
 
-http://webseed.github.io/crop/
+http://webseed.github.io/tinycrop/
