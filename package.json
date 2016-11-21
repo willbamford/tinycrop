@@ -2,24 +2,18 @@
   "name": "tinycrop",
   "version": "1.4.0",
   "description": "Lightweight pure JavaScript image crop",
-  "main": "lib",
+  "main": "lib/index.js",
+  "module": "es/index.js",
+  "jsnext:main": "es/index.js",
   "scripts": {
     "test": "standard",
     "lint": "standard",
     "fix": "standard --fix",
-    "lib": "BABEL_ENV=production babel src -d lib",
-    "build": "BABEL_ENV=development browserify src/index.js -s tinycrop -o dist/tinycrop.js -d",
-    "min": "BABEL_ENV=production NODE_ENV=production browserify src/index.js -s tinycrop | uglifyjs -c > dist/tinycrop.min.js",
-    "watch": "BABEL_ENV=development watchify src/index.js -s tinycrop -o dist/tinycrop.js -d -v",
-    "react-example-watch": "BABEL_ENV=development watchify examples/react/index.jsx -o examples/react/bundle.js -d -v",
-    "react-example-min": "BABEL_ENV=production NODE_ENV=production browserify examples/react/index.jsx | uglifyjs -c > examples/react/bundle.min.js"
-  },
-  "browserify": {
-    "transform": [
-      [
-        "babelify"
-      ]
-    ]
+    "build:commonjs": "BABEL_ENV=commonjs babel src --out-dir lib",
+    "build:es": "BABEL_ENV=es babel src --out-dir es",
+    "build:umd": "BABEL_ENV=commonjs NODE_ENV=development webpack src/index.js dist/tinycrop.js",
+    "build:umd:min": "BABEL_ENV=commonjs NODE_ENV=production webpack src/index.js dist/tinycrop.min.js",
+    "build:react-example": "webpack --config react-example/webpack.config.js react-example/index.jsx react-example/bundle.js"
   },
   "standard": {
     "ignore": [
@@ -50,17 +44,21 @@
   "dependencies": {
     "normalize.css": "^5.0.0",
     "react": "^15.3.2",
-    "react-dom": "^15.3.2"
+    "react-dom": "^15.3.2",
+    "webpack": "^1.13.3"
   },
   "devDependencies": {
     "babel-cli": "^6.14.0",
+    "babel-core": "^6.18.2",
+    "babel-loader": "^6.2.8",
+    "babel-plugin-transform-es2015-modules-commonjs": "^6.18.0",
     "babel-preset-es2015": "^6.18.0",
     "babel-preset-react": "^6.16.0",
     "babel-preset-stage-0": "^6.16.0",
-    "babelify": "^7.3.0",
-    "browserify": "^13.1.1",
-    "standard": "^8.5.0",
-    "uglifyify": "^3.0.4",
-    "watchify": "^3.6.1"
+    "babel-register": "^6.18.0",
+    "eslint": "^3.10.2",
+    "eslint-config-standard-react": "^4.2.0",
+    "eslint-plugin-react": "^6.7.1",
+    "standard": "^8.5.0"
   }
 }

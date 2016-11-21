@@ -3,7 +3,7 @@
  * MIT License.
  */
 
-var BLANK = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw=='
+const BLANK = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw=='
 
 function loadImage (image, callback) {
   if (!image.nodeName || image.nodeName.toLowerCase() !== 'img') {
@@ -14,19 +14,19 @@ function loadImage (image, callback) {
     return callback(null, true)
   }
 
-  image.addEventListener('load', function () {
+  image.addEventListener('load', () => {
     callback(null, false)
   })
 
-  image.addEventListener('error', function (e) {
-    callback(new Error('Failed to load image \'' + (image.src || '') + '\''))
+  image.addEventListener('error', e => {
+    callback(new Error(`Failed to load image '${image.src || ''}'`))
   })
 
   if (image.complete) {
-    var src = image.src
+    const src = image.src
     image.src = BLANK
     image.src = src
   }
 }
 
-module.exports = loadImage
+export default loadImage
