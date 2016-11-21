@@ -1,91 +1,91 @@
-var Listeners = require('./Listeners.js')
+import Listeners from './Listeners.js'
 
-var Input = function (domElement) {
-  var listeners = Listeners.create()
-  var downEvent = null
-  this.listeners = listeners
+class Input {
+  constructor (domElement) {
+    const listeners = Listeners.create()
+    let downEvent = null
+    this.listeners = listeners
 
-  function createEventForMouse (source) {
-    var x = source.offsetX
-    var y = source.offsetY
+    function createEventForMouse (source) {
+      const x = source.offsetX
+      const y = source.offsetY
 
-    return {
-      source: source,
-      x: x,
-      y: y,
-      dx: downEvent ? x - downEvent.x : 0,
-      dy: downEvent ? y - downEvent.y : 0,
-      type: 'Mouse'
+      return {
+        source,
+        x,
+        y,
+        dx: downEvent ? x - downEvent.x : 0,
+        dy: downEvent ? y - downEvent.y : 0,
+        type: 'Mouse'
+      }
     }
+
+    function createEventForTouch (source) {
+      const bounds = source.target.getBoundingClientRect()
+      const touch = source.touches.length > 0 ? source.touches[0] : source.changedTouches[0]
+
+      const x = touch.clientX - bounds.left
+      const y = touch.clientY - bounds.top
+
+      return {
+        source,
+        x,
+        y,
+        dx: downEvent ? x - downEvent.x : 0,
+        dy: downEvent ? y - downEvent.y : 0,
+        type: 'Touch'
+      }
+    }
+
+    domElement.addEventListener('mousedown', source => {
+      downEvent = createEventForMouse(source)
+      listeners.notify('down', downEvent)
+    })
+
+    domElement.addEventListener('touchstart', source => {
+      downEvent = createEventForTouch(source)
+      listeners.notify('down', downEvent)
+    })
+
+    domElement.addEventListener('mousemove', source => {
+      listeners.notify('move', createEventForMouse(source))
+    })
+
+    domElement.addEventListener('touchmove', source => {
+      listeners.notify('move', createEventForTouch(source))
+    })
+
+    domElement.addEventListener('mouseup', source => {
+      listeners.notify('up', createEventForMouse(source))
+    })
+
+    domElement.addEventListener('touchend', source => {
+      listeners.notify('up', createEventForTouch(source))
+      downEvent = null
+    })
+
+    domElement.addEventListener('mouseout', source => {
+      listeners.notify('cancel', createEventForMouse(source))
+      downEvent = null
+    })
+
+    domElement.addEventListener('touchcancel', source => {
+      listeners.notify('cancel', createEventForTouch(source))
+      downEvent = null
+    })
   }
 
-  function createEventForTouch (source) {
-    var bounds = source.target.getBoundingClientRect()
-    var touch = source.touches.length > 0 ? source.touches[0] : source.changedTouches[0]
-
-    var x = touch.clientX - bounds.left
-    var y = touch.clientY - bounds.top
-
-    return {
-      source: source,
-      x: x,
-      y: y,
-      dx: downEvent ? x - downEvent.x : 0,
-      dy: downEvent ? y - downEvent.y : 0,
-      type: 'Touch'
-    }
+  on (type, fn) {
+    this.listeners.on(type, fn)
+    return this
   }
 
-  domElement.addEventListener('mousedown', function (source) {
-    downEvent = createEventForMouse(source)
-    listeners.notify('down', downEvent)
-  })
-
-  domElement.addEventListener('touchstart', function (source) {
-    downEvent = createEventForTouch(source)
-    listeners.notify('down', downEvent)
-  })
-
-  domElement.addEventListener('mousemove', function (source) {
-    listeners.notify('move', createEventForMouse(source))
-  })
-
-  domElement.addEventListener('touchmove', function (source) {
-    listeners.notify('move', createEventForTouch(source))
-  })
-
-  domElement.addEventListener('mouseup', function (source) {
-    listeners.notify('up', createEventForMouse(source))
-  })
-
-  domElement.addEventListener('touchend', function (source) {
-    listeners.notify('up', createEventForTouch(source))
-    downEvent = null
-  })
-
-  domElement.addEventListener('mouseout', function (source) {
-    listeners.notify('cancel', createEventForMouse(source))
-    downEvent = null
-  })
-
-  domElement.addEventListener('touchcancel', function (source) {
-    listeners.notify('cancel', createEventForTouch(source))
-    downEvent = null
-  })
+  off (type, fn) {
+    this.listeners.off(type, fn)
+    return this
+  }
 }
 
-Input.create = function (domElement) {
-  return new Input(domElement)
-}
+Input.create = domElement => new Input(domElement)
 
-Input.prototype.on = function (type, fn) {
-  this.listeners.on(type, fn)
-  return this
-}
-
-Input.prototype.off = function (type, fn) {
-  this.listeners.off(type, fn)
-  return this
-}
-
-module.exports = Input
+export default Input

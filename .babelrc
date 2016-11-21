@@ -5,10 +5,15 @@
     "react"
   ],
   "env": {
-    "development": {
-      "sourceMaps": "inline"
+    "commonjs": {
+      "plugins": [
+        ["transform-es2015-modules-commonjs", { "loose": true }]
+      ]
     },
-    "production": {
+    "es": {
+      "plugins": [
+        "./build/use-lodash-es"
+      ]
     }
   }
 }
