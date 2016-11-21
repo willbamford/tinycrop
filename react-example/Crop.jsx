@@ -1,5 +1,5 @@
 var React = require('react')
-var Crop = require('../../src')
+var Crop = require('../src')
 
 module.exports = React.createClass({
 

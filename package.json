@@ -13,7 +13,7 @@
     "build:es": "BABEL_ENV=es babel src --out-dir es",
     "build:umd": "BABEL_ENV=commonjs NODE_ENV=development webpack src/index.js dist/tinycrop.js",
     "build:umd:min": "BABEL_ENV=commonjs NODE_ENV=production webpack src/index.js dist/tinycrop.min.js",
-    "___TODO___ example:min": "BABEL_ENV=production NODE_ENV=production browserify examples/react/index.jsx | uglifyjs -c > examples/react/bundle.min.js"
+    "build:react-example": "webpack --config react-example/webpack.config.js react-example/index.jsx react-example/bundle.js"
   },
   "standard": {
     "ignore": [
