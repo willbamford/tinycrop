@@ -4,7 +4,11 @@ var env = process.env.NODE_ENV
 var config = {
   module: {
     loaders: [
-      { test: /\.js$/, loaders: ['babel-loader'], exclude: /node_modules/ }
+      {
+        test: /\.js$/,
+        exclude: /node_modules/,
+        loader: 'babel'
+      }
     ]
   },
   output: {

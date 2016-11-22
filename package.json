@@ -10,10 +10,9 @@
     "lint": "standard",
     "fix": "standard --fix",
     "build:commonjs": "BABEL_ENV=commonjs babel src --out-dir lib",
-    "build:es": "BABEL_ENV=es babel src --out-dir es",
     "build:umd": "BABEL_ENV=commonjs NODE_ENV=development webpack src/index.js dist/tinycrop.js",
     "build:umd:min": "BABEL_ENV=commonjs NODE_ENV=production webpack src/index.js dist/tinycrop.min.js",
-    "build:react-example": "webpack --config react-example/webpack.config.js react-example/index.jsx react-example/bundle.js"
+    "build:react": "webpack --config react-example/webpack.config.js react-example/index.jsx react-example/bundle.js"
   },
   "standard": {
     "ignore": [
@@ -41,12 +40,6 @@
     "url": "https://github.com/WebSeed/tinycrop/issues"
   },
   "homepage": "https://github.com/WebSeed/tinycrop",
-  "dependencies": {
-    "normalize.css": "^5.0.0",
-    "react": "^15.3.2",
-    "react-dom": "^15.3.2",
-    "webpack": "^1.13.3"
-  },
   "devDependencies": {
     "babel-cli": "^6.14.0",
     "babel-core": "^6.18.2",
@@ -59,6 +52,12 @@
     "eslint": "^3.10.2",
     "eslint-config-standard-react": "^4.2.0",
     "eslint-plugin-react": "^6.7.1",
-    "standard": "^8.5.0"
+    "standard": "^8.5.0",
+    "webpack": "^1.13.3"
+  },
+  "dependencies": {
+    "normalize.css": "^5.0.0",
+    "react": "^15.3.2",
+    "react-dom": "^15.3.2"
   }
 }
