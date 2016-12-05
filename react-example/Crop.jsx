@@ -6,8 +6,7 @@ module.exports = React.createClass({
   componentDidMount: function () {
     this.crop = Crop.create({
       parent: this.refs.parent,
-      // image: 'http://www.hdwallpapers.in/walls/russell_boy_in_pixars_up-normal.jpg',
-      image: 'http://localhost:8080/images/landscape3.jpg',
+      image: 'http://www.hdwallpapers.in/walls/russell_boy_in_pixars_up-normal.jpg',
       bounds: {
         width: '100%',
         height: '100%'

@@ -1,6 +1,6 @@
 {
   "name": "tinycrop",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "Lightweight pure JavaScript image crop",
   "main": "lib/index.js",
   "module": "es/index.js",
@@ -9,10 +9,10 @@
     "test": "standard",
     "lint": "standard",
     "fix": "standard --fix",
-    "build:commonjs": "BABEL_ENV=commonjs babel src --out-dir lib",
-    "build:umd": "BABEL_ENV=commonjs NODE_ENV=development webpack src/index.js dist/tinycrop.js",
-    "build:umd:min": "BABEL_ENV=commonjs NODE_ENV=production webpack src/index.js dist/tinycrop.min.js",
-    "build:react": "webpack --config react-example/webpack.config.js react-example/index.jsx react-example/bundle.js"
+    "commonjs:build": "BABEL_ENV=commonjs babel src --out-dir lib",
+    "umd:build": "BABEL_ENV=commonjs NODE_ENV=development webpack src/index.js dist/tinycrop.js",
+    "umd:min": "BABEL_ENV=commonjs NODE_ENV=production webpack src/index.js dist/tinycrop.min.js",
+    "react": "webpack --config react-example/webpack.config.js react-example/index.jsx react-example/bundle.js"
   },
   "standard": {
     "ignore": [
