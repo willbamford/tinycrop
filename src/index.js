@@ -16,7 +16,7 @@ class Crop {
 
     this.canvas = document.createElement('canvas')
     this.context = this.canvas.getContext('2d')
-    this.boundsOpts = opts.bounds || {width: '100%', height: 'auto'}
+    this.boundsOpts = opts.bounds || { width: '100%', height: 'auto' }
     opts.selection = opts.selection || {}
     this.debounceResize = opts.debounceResize !== undefined
       ? opts.debounceResize
@@ -208,6 +208,10 @@ class Crop {
 
   getImage () {
     return this.image
+  }
+
+  setSelection (bounds) {
+    this.selectionLayer.setBounds(bounds)
   }
 
   setAspectRatio (aspectRatio) {
