@@ -210,10 +210,6 @@ class Crop {
     return this.image
   }
 
-  setSelection (bounds) {
-    this.selectionLayer.setBounds(bounds)
-  }
-
   setAspectRatio (aspectRatio) {
     this.selectionLayer.setAspectRatio(aspectRatio)
     this.revalidateAndPaint()
