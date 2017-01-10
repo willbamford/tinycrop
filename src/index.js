@@ -170,17 +170,10 @@ class Crop {
   }
 
   resizeCanvas (width, height) {
-    const context = this.context
     const canvas = this.canvas
-    this.ratio = 1
-
-    if (!context.webkitBackingStorePixelRatio) {
-      this.ratio = window.devicePixelRatio || 1
-    }
-
+    this.ratio = window.devicePixelRatio || 1
     this.width = width
     this.height = height
-
     canvas.width = this.width * this.ratio
     canvas.height = this.height * this.ratio
   }
