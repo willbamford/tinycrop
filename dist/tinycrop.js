@@ -58,7 +58,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-	var _debounce = __webpack_require__(9);
+	var _debounce = __webpack_require__(8);
 
 	var _debounce2 = _interopRequireDefault(_debounce);
 
@@ -70,7 +70,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _ImageLayer2 = _interopRequireDefault(_ImageLayer);
 
-	var _SelectionLayer = __webpack_require__(8);
+	var _SelectionLayer = __webpack_require__(7);
 
 	var _SelectionLayer2 = _interopRequireDefault(_SelectionLayer);
 
@@ -637,7 +637,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-	var _loadImage = __webpack_require__(10);
+	var _loadImage = __webpack_require__(9);
 
 	var _loadImage2 = _interopRequireDefault(_loadImage);
 
@@ -811,124 +811,6 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ },
 /* 6 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	exports.__esModule = true;
-
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-	var _Listeners = __webpack_require__(1);
-
-	var _Listeners2 = _interopRequireDefault(_Listeners);
-
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-	var Input = function () {
-	  function Input(domElement) {
-	    _classCallCheck(this, Input);
-
-	    var listeners = _Listeners2.default.create();
-	    var downEvent = null;
-	    this.listeners = listeners;
-
-	    function createEventForMouse(source) {
-	      var x = source.offsetX;
-	      var y = source.offsetY;
-
-	      return {
-	        source: source,
-	        x: x,
-	        y: y,
-	        dx: downEvent ? x - downEvent.x : 0,
-	        dy: downEvent ? y - downEvent.y : 0,
-	        type: 'Mouse'
-	      };
-	    }
-
-	    function createEventForTouch(source) {
-	      var bounds = source.target.getBoundingClientRect();
-	      var touch = source.touches.length > 0 ? source.touches[0] : source.changedTouches[0];
-
-	      var x = touch.clientX - bounds.left;
-	      var y = touch.clientY - bounds.top;
-
-	      return {
-	        source: source,
-	        x: x,
-	        y: y,
-	        dx: downEvent ? x - downEvent.x : 0,
-	        dy: downEvent ? y - downEvent.y : 0,
-	        type: 'Touch'
-	      };
-	    }
-
-	    domElement.addEventListener('mousedown', function (source) {
-	      downEvent = createEventForMouse(source);
-	      listeners.notify('down', downEvent);
-	    });
-
-	    domElement.addEventListener('touchstart', function (source) {
-	      downEvent = createEventForTouch(source);
-	      listeners.notify('down', downEvent);
-	    });
-
-	    domElement.addEventListener('mousemove', function (source) {
-	      listeners.notify('move', createEventForMouse(source));
-	    });
-
-	    domElement.addEventListener('touchmove', function (source) {
-	      listeners.notify('move', createEventForTouch(source));
-	    });
-
-	    domElement.addEventListener('mouseup', function (source) {
-	      listeners.notify('up', createEventForMouse(source));
-	    });
-
-	    domElement.addEventListener('touchend', function (source) {
-	      listeners.notify('up', createEventForTouch(source));
-	      downEvent = null;
-	    });
-
-	    domElement.addEventListener('mouseout', function (source) {
-	      listeners.notify('cancel', createEventForMouse(source));
-	      downEvent = null;
-	    });
-
-	    domElement.addEventListener('touchcancel', function (source) {
-	      listeners.notify('cancel', createEventForTouch(source));
-	      downEvent = null;
-	    });
-	  }
-
-	  _createClass(Input, [{
-	    key: 'on',
-	    value: function on(type, fn) {
-	      this.listeners.on(type, fn);
-	      return this;
-	    }
-	  }, {
-	    key: 'off',
-	    value: function off(type, fn) {
-	      this.listeners.off(type, fn);
-	      return this;
-	    }
-	  }]);
-
-	  return Input;
-	}();
-
-	Input.create = function (domElement) {
-	  return new Input(domElement);
-	};
-
-	exports.default = Input;
-
-/***/ },
-/* 7 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1215,7 +1097,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.default = Selection;
 
 /***/ },
-/* 8 */
+/* 7 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1224,15 +1106,15 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-	var _Input = __webpack_require__(6);
+	var _tinytouch = __webpack_require__(10);
 
-	var _Input2 = _interopRequireDefault(_Input);
+	var _tinytouch2 = _interopRequireDefault(_tinytouch);
 
 	var _Listeners = __webpack_require__(1);
 
 	var _Listeners2 = _interopRequireDefault(_Listeners);
 
-	var _Selection = __webpack_require__(7);
+	var _Selection = __webpack_require__(6);
 
 	var _Selection2 = _interopRequireDefault(_Selection);
 
@@ -1267,7 +1149,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    this.listeners = _Listeners2.default.create();
 
-	    this.input = _Input2.default.create(this.parent.canvas);
+	    this.input = (0, _tinytouch2.default)(this.parent.canvas);
 
 	    this.activeRegion = null;
 	    this.downBounds = _Rectangle2.default.create(0, 0, 0, 0);
@@ -1569,7 +1451,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.default = SelectionLayer;
 
 /***/ },
-/* 9 */
+/* 8 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -1592,7 +1474,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.default = debounce;
 
 /***/ },
-/* 10 */
+/* 9 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -1630,6 +1512,207 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 	exports.default = loadImage;
+
+/***/ },
+/* 10 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.CANCEL = exports.UP = exports.MOVE = exports.DOWN = undefined;
+
+	var _tinyEmitter = __webpack_require__(11);
+
+	var _tinyEmitter2 = _interopRequireDefault(_tinyEmitter);
+
+	function _interopRequireDefault(obj) {
+	  return obj && obj.__esModule ? obj : { default: obj };
+	}
+
+	var createListen = function createListen(element) {
+	  return function (name, cb) {
+	    element.addEventListener(name, cb);
+	  };
+	};
+
+	var create = function create() {
+	  var domElement = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : window;
+
+	  var emitter = new _tinyEmitter2.default();
+	  var instance = {};
+	  var listen = createListen(domElement);
+	  var downEvent = null;
+
+	  var on = function on(name, fn) {
+	    emitter.on(name, fn);
+	    return instance;
+	  };
+
+	  var once = function once(name, fn) {
+	    emitter.once(name, fn);
+	    return instance;
+	  };
+
+	  var off = function off(name, fn) {
+	    emitter.off(name, fn);
+	    return instance;
+	  };
+
+	  var createEventForMouse = function createEventForMouse(source) {
+	    var x = source.offsetX;
+	    var y = source.offsetY;
+
+	    return {
+	      source: source,
+	      x: x,
+	      y: y,
+	      dx: downEvent ? x - downEvent.x : 0,
+	      dy: downEvent ? y - downEvent.y : 0,
+	      type: 'Mouse'
+	    };
+	  };
+
+	  var createEventForTouch = function createEventForTouch(source) {
+	    var bounds = source.target.getBoundingClientRect();
+	    var touch = source.touches.length > 0 ? source.touches[0] : source.changedTouches[0];
+
+	    var x = touch.clientX - bounds.left;
+	    var y = touch.clientY - bounds.top;
+
+	    return {
+	      source: source,
+	      x: x,
+	      y: y,
+	      dx: downEvent ? x - downEvent.x : 0,
+	      dy: downEvent ? y - downEvent.y : 0,
+	      type: 'Touch'
+	    };
+	  };
+
+	  listen('mousedown', function (source) {
+	    downEvent = createEventForMouse(source);
+	    emitter.emit(DOWN, downEvent);
+	  });
+
+	  listen('touchstart', function (source) {
+	    downEvent = createEventForTouch(source);
+	    emitter.emit(DOWN, downEvent);
+	  });
+
+	  listen('mousemove', function (source) {
+	    emitter.emit(MOVE, createEventForMouse(source));
+	  });
+
+	  listen('touchmove', function (source) {
+	    emitter.emit(MOVE, createEventForTouch(source));
+	  });
+
+	  listen('mouseup', function (source) {
+	    emitter.emit(UP, createEventForMouse(source));
+	  });
+
+	  listen('touchend', function (source) {
+	    emitter.emit(UP, createEventForTouch(source));
+	    downEvent = null;
+	  });
+
+	  listen('mouseout', function (source) {
+	    emitter.emit(CANCEL, createEventForMouse(source));
+	    downEvent = null;
+	  });
+
+	  listen('touchcancel', function (source) {
+	    emitter.emit(CANCEL, createEventForTouch(source));
+	    downEvent = null;
+	  });
+
+	  instance.on = on;
+	  instance.once = once;
+	  instance.off = off;
+
+	  return instance;
+	};
+
+	exports.default = create;
+	var DOWN = exports.DOWN = 'down';
+	var MOVE = exports.MOVE = 'move';
+	var UP = exports.UP = 'up';
+	var CANCEL = exports.CANCEL = 'cancel';
+
+/***/ },
+/* 11 */
+/***/ function(module, exports) {
+
+	function E () {
+	  // Keep this empty so it's easier to inherit from
+	  // (via https://github.com/lipsmack from https://github.com/scottcorgan/tiny-emitter/issues/3)
+	}
+
+	E.prototype = {
+	  on: function (name, callback, ctx) {
+	    var e = this.e || (this.e = {});
+
+	    (e[name] || (e[name] = [])).push({
+	      fn: callback,
+	      ctx: ctx
+	    });
+
+	    return this;
+	  },
+
+	  once: function (name, callback, ctx) {
+	    var self = this;
+	    function listener () {
+	      self.off(name, listener);
+	      callback.apply(ctx, arguments);
+	    };
+
+	    listener._ = callback
+	    return this.on(name, listener, ctx);
+	  },
+
+	  emit: function (name) {
+	    var data = [].slice.call(arguments, 1);
+	    var evtArr = ((this.e || (this.e = {}))[name] || []).slice();
+	    var i = 0;
+	    var len = evtArr.length;
+
+	    for (i; i < len; i++) {
+	      evtArr[i].fn.apply(evtArr[i].ctx, data);
+	    }
+
+	    return this;
+	  },
+
+	  off: function (name, callback) {
+	    var e = this.e || (this.e = {});
+	    var evts = e[name];
+	    var liveEvents = [];
+
+	    if (evts && callback) {
+	      for (var i = 0, len = evts.length; i < len; i++) {
+	        if (evts[i].fn !== callback && evts[i].fn._ !== callback)
+	          liveEvents.push(evts[i]);
+	      }
+	    }
+
+	    // Remove event from queue to prevent memory leak
+	    // Suggested by https://github.com/lazd
+	    // Ref: https://github.com/scottcorgan/tiny-emitter/commit/c6ebfaa9bc973b33d110a84a307742b7cf94c953#commitcomment-5024910
+
+	    (liveEvents.length)
+	      ? e[name] = liveEvents
+	      : delete e[name];
+
+	    return this;
+	  }
+	};
+
+	module.exports = E;
+
 
 /***/ }
 /******/ ])

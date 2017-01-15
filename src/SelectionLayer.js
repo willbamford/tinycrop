@@ -1,4 +1,4 @@
-import Input from './Input.js'
+import createInput from 'tinytouch'
 import Listeners from './Listeners.js'
 import Selection from './Selection.js'
 import Rectangle from './Rectangle.js'
@@ -22,7 +22,7 @@ class SelectionLayer {
 
     this.listeners = Listeners.create()
 
-    this.input = Input.create(this.parent.canvas)
+    this.input = createInput(this.parent.canvas)
 
     this.activeRegion = null
     this.downBounds = Rectangle.create(0, 0, 0, 0)
