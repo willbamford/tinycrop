@@ -58,6 +58,6 @@
     "normalize.css": "^5.0.0",
     "react": "^15.3.2",
     "react-dom": "^15.3.2",
-    "tinytouch": "^1.3.0"
+    "tinytouch": "^1.4.0"
   }
 }
