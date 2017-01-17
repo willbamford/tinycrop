@@ -1,4 +1,4 @@
-import createInput from 'tinytouch'
+import createTouch from 'tinytouch'
 import Listeners from './Listeners.js'
 import Selection from './Selection.js'
 import Rectangle from './Rectangle.js'
@@ -22,14 +22,14 @@ class SelectionLayer {
 
     this.listeners = Listeners.create()
 
-    this.input = createInput(this.parent.canvas)
+    this.touch = createTouch(this.parent.canvas)
 
     this.activeRegion = null
     this.downBounds = Rectangle.create(0, 0, 0, 0)
 
-    this.input.on('down', this.onInputDown.bind(this))
-    this.input.on('move', this.onInputMove.bind(this))
-    this.input
+    this.touch
+      .on('down', this.onInputDown.bind(this))
+      .on('move', this.onInputMove.bind(this))
       .on('up', this.onInputUpOrCancel.bind(this))
       .on('cancel', this.onInputUpOrCancel.bind(this))
   }
@@ -65,14 +65,14 @@ class SelectionLayer {
       selection.bounds.copy(this.downBounds)
 
       if (activeRegion === 'move') {
-        hasChanged = selection.moveBy(e.dx, e.dy)
+        hasChanged = selection.moveBy(e.tx, e.ty)
         if (hasChanged) {
           this.listeners.notify('move', this.selection.region)
         }
       } else {
         const dir = activeRegion.substring(0, 2)
-        const dx = dir[1] === 'w' ? -e.dx : e.dx
-        const dy = dir[0] === 'n' ? -e.dy : e.dy
+        const dx = dir[1] === 'w' ? -e.tx : e.tx
+        const dy = dir[0] === 'n' ? -e.ty : e.ty
         hasChanged = selection.resizeBy(dx, dy, dir)
         if (hasChanged) {
           this.listeners.notify('resize', this.selection.region)

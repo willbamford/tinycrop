@@ -11769,14 +11769,12 @@
 
 	    this.listeners = _Listeners2.default.create();
 
-	    this.input = (0, _tinytouch2.default)(this.parent.canvas);
+	    this.touch = (0, _tinytouch2.default)(this.parent.canvas);
 
 	    this.activeRegion = null;
 	    this.downBounds = _Rectangle2.default.create(0, 0, 0, 0);
 
-	    this.input.on('down', this.onInputDown.bind(this));
-	    this.input.on('move', this.onInputMove.bind(this));
-	    this.input.on('up', this.onInputUpOrCancel.bind(this)).on('cancel', this.onInputUpOrCancel.bind(this));
+	    this.touch.on('down', this.onInputDown.bind(this)).on('move', this.onInputMove.bind(this)).on('up', this.onInputUpOrCancel.bind(this)).on('cancel', this.onInputUpOrCancel.bind(this));
 	  }
 
 	  _createClass(SelectionLayer, [{
@@ -11813,14 +11811,14 @@
 	        selection.bounds.copy(this.downBounds);
 
 	        if (activeRegion === 'move') {
-	          hasChanged = selection.moveBy(e.dx, e.dy);
+	          hasChanged = selection.moveBy(e.tx, e.ty);
 	          if (hasChanged) {
 	            this.listeners.notify('move', this.selection.region);
 	          }
 	        } else {
 	          var dir = activeRegion.substring(0, 2);
-	          var dx = dir[1] === 'w' ? -e.dx : e.dx;
-	          var dy = dir[0] === 'n' ? -e.dy : e.dy;
+	          var dx = dir[1] === 'w' ? -e.tx : e.tx;
+	          var dy = dir[0] === 'n' ? -e.ty : e.ty;
 	          hasChanged = selection.resizeBy(dx, dy, dir);
 	          if (hasChanged) {
 	            this.listeners.notify('resize', this.selection.region);
@@ -12418,7 +12416,7 @@
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
-	exports.CANCEL = exports.UP = exports.MOVE = exports.DOWN = undefined;
+	exports.CANCEL = exports.UP = exports.DOWN_MOVE = exports.MOVE = exports.DOWN = undefined;
 
 	var _tinyEmitter = __webpack_require__(184);
 
@@ -12441,6 +12439,7 @@
 	  var instance = {};
 	  var listen = createListen(domElement);
 	  var downEvent = null;
+	  var moveEvent = null;
 
 	  var on = function on(name, fn) {
 	    emitter.on(name, fn);
@@ -12457,72 +12456,89 @@
 	    return instance;
 	  };
 
-	  var createEventForMouse = function createEventForMouse(source) {
-	    var x = source.offsetX;
-	    var y = source.offsetY;
+	  var isDown = function isDown() {
+	    return !!downEvent;
+	  };
 
+	  var createEvent = function createEvent(source, x, y, type) {
+	    var prevEvent = moveEvent || downEvent;
 	    return {
 	      source: source,
 	      x: x,
 	      y: y,
-	      dx: downEvent ? x - downEvent.x : 0,
-	      dy: downEvent ? y - downEvent.y : 0,
-	      type: 'Mouse'
+	      dx: prevEvent ? x - prevEvent.x : 0,
+	      dy: prevEvent ? y - prevEvent.y : 0,
+	      tx: downEvent ? x - downEvent.x : 0,
+	      ty: downEvent ? y - downEvent.y : 0,
+	      type: type
 	    };
+	  };
+
+	  var createEventForMouse = function createEventForMouse(source) {
+	    var x = source.offsetX;
+	    var y = source.offsetY;
+	    return createEvent(source, x, y, 'Mouse');
 	  };
 
 	  var createEventForTouch = function createEventForTouch(source) {
 	    var bounds = source.target.getBoundingClientRect();
 	    var touch = source.touches.length > 0 ? source.touches[0] : source.changedTouches[0];
-
 	    var x = touch.clientX - bounds.left;
 	    var y = touch.clientY - bounds.top;
+	    return createEvent(source, x, y, 'Touch');
+	  };
 
-	    return {
-	      source: source,
-	      x: x,
-	      y: y,
-	      dx: downEvent ? x - downEvent.x : 0,
-	      dy: downEvent ? y - downEvent.y : 0,
-	      type: 'Touch'
-	    };
+	  var handleDown = function handleDown(event) {
+	    downEvent = event;
+	    emitter.emit(DOWN, event);
+	  };
+
+	  var handleMove = function handleMove(event) {
+	    moveEvent = event;
+	    emitter.emit(MOVE, event);
+	    if (isDown()) {
+	      emitter.emit(DOWN_MOVE, event);
+	    }
+	  };
+
+	  var handleUp = function handleUp(event) {
+	    emitter.emit(UP, event);
+	    downEvent = null;
+	    moveEvent = null;
+	  };
+
+	  var handleCancel = function handleCancel(event) {
+	    emitter.emit(CANCEL, event);
+	    downEvent = null;
+	    moveEvent = null;
 	  };
 
 	  listen('mousedown', function (source) {
-	    downEvent = createEventForMouse(source);
-	    emitter.emit(DOWN, downEvent);
+	    return handleDown(createEventForMouse(source));
 	  });
-
 	  listen('touchstart', function (source) {
-	    downEvent = createEventForTouch(source);
-	    emitter.emit(DOWN, downEvent);
+	    return handleDown(createEventForTouch(source));
 	  });
 
 	  listen('mousemove', function (source) {
-	    emitter.emit(MOVE, createEventForMouse(source));
+	    return handleMove(createEventForMouse(source));
 	  });
-
 	  listen('touchmove', function (source) {
-	    emitter.emit(MOVE, createEventForTouch(source));
+	    return handleMove(createEventForTouch(source));
 	  });
 
 	  listen('mouseup', function (source) {
-	    emitter.emit(UP, createEventForMouse(source));
+	    return handleUp(createEventForMouse(source));
 	  });
-
 	  listen('touchend', function (source) {
-	    emitter.emit(UP, createEventForTouch(source));
-	    downEvent = null;
+	    return handleUp(createEventForTouch(source));
 	  });
 
 	  listen('mouseout', function (source) {
-	    emitter.emit(CANCEL, createEventForMouse(source));
-	    downEvent = null;
+	    return handleCancel(createEventForMouse(source));
 	  });
-
 	  listen('touchcancel', function (source) {
-	    emitter.emit(CANCEL, createEventForTouch(source));
-	    downEvent = null;
+	    return handleCancel(createEventForTouch(source));
 	  });
 
 	  instance.on = on;
@@ -12535,6 +12551,7 @@
 	exports.default = create;
 	var DOWN = exports.DOWN = 'down';
 	var MOVE = exports.MOVE = 'move';
+	var DOWN_MOVE = exports.DOWN_MOVE = 'downMove';
 	var UP = exports.UP = 'up';
 	var CANCEL = exports.CANCEL = 'cancel';
 

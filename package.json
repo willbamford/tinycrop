@@ -1,6 +1,6 @@
 {
   "name": "tinycrop",
-  "version": "1.5.1",
+  "version": "1.5.2",
   "description": "Lightweight pure JavaScript image crop",
   "main": "lib/index.js",
   "scripts": {
@@ -58,6 +58,6 @@
     "normalize.css": "^5.0.0",
     "react": "^15.3.2",
     "react-dom": "^15.3.2",
-    "tinytouch": "^1.0.1"
+    "tinytouch": "^1.3.0"
   }
 }
