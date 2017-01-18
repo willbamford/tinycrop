@@ -99,7 +99,7 @@ class Crop {
         : this.revalidateAndPaint.bind(this)
     )
 
-    this.setImage(opts.image)
+    this.setImage(opts.image, opts.onInit)
 
     this.revalidateAndPaint()
   }
@@ -178,13 +178,14 @@ class Crop {
     canvas.height = this.height * this.ratio
   }
 
-  setImage (source) {
+  setImage (source, onLoad) {
     const image = Image.create(source)
       .on(
         'load',
         () => {
           this.selectionLayer.onImageLoad()
           this.revalidateAndPaint()
+          onLoad && onLoad()
         }
       )
       .on(

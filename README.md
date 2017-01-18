@@ -58,7 +58,8 @@ var crop = Crop.create({
     height: 500,
     x: 100,
     y: 500
-  }
+  },
+  onInit: () => { console.log('Initialised') }
 });
 ```
 

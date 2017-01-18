@@ -153,7 +153,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    window.addEventListener('resize', this.debounceResize ? (0, _debounce2.default)(this.revalidateAndPaint.bind(this), 100) : this.revalidateAndPaint.bind(this));
 
-	    this.setImage(opts.image);
+	    this.setImage(opts.image, opts.onInit);
 
 	    this.revalidateAndPaint();
 	  }
@@ -240,12 +240,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	  }, {
 	    key: 'setImage',
-	    value: function setImage(source) {
+	    value: function setImage(source, onLoad) {
 	      var _this = this;
 
 	      var image = _Image2.default.create(source).on('load', function () {
 	        _this.selectionLayer.onImageLoad();
 	        _this.revalidateAndPaint();
+	        onLoad && onLoad();
 	      }).on('error', function (e) {
 	        console.error(e);
 	      });
@@ -1520,7 +1521,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
-	exports.CANCEL = exports.UP = exports.DOWN_MOVE = exports.MOVE = exports.DOWN = undefined;
+	exports.CANCEL = exports.UP = exports.DRAG = exports.MOVE = exports.DOWN = undefined;
 
 	var _tinyEmitter = __webpack_require__(11);
 
@@ -1601,7 +1602,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    moveEvent = event;
 	    emitter.emit(MOVE, event);
 	    if (isDown()) {
-	      emitter.emit(DOWN_MOVE, event);
+	      emitter.emit(DRAG, event);
 	    }
 	  };
 
@@ -1655,7 +1656,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.default = create;
 	var DOWN = exports.DOWN = 'down';
 	var MOVE = exports.MOVE = 'move';
-	var DOWN_MOVE = exports.DOWN_MOVE = 'downMove';
+	var DRAG = exports.DRAG = 'drag';
 	var UP = exports.UP = 'up';
 	var CANCEL = exports.CANCEL = 'cancel';
 
