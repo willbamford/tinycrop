@@ -12476,8 +12476,10 @@
 	  };
 
 	  var createEventForMouse = function createEventForMouse(source) {
-	    var x = source.offsetX;
-	    var y = source.offsetY;
+	    var target = source.target || source.srcElement;
+	    var bounds = target.getBoundingClientRect();
+	    var x = source.clientX - bounds.left;
+	    var y = source.clientY - bounds.top;
 	    return createEvent(source, x, y, 'Mouse');
 	  };
 
