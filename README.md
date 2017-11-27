@@ -53,7 +53,7 @@ var crop = Crop.create({
     activeColor: 'blue',
     aspectRatio: 4 / 3,
     minWidth: 200,
-    minHeight: 300
+    minHeight: 300,
     width: 400,
     height: 500,
     x: 100,
@@ -71,7 +71,7 @@ crop
   .on('move', function (region) { console.log('Move', region) })
   .on('resize', function (region) { console.log('Resize', region) })
   .on('change', function (region) { console.log('Change', region) })
-  .on('end', function (region) { console.log('End', region) })
+  .on('end', function (region) { console.log('End', region) });
 ```
 
 ## Demo
