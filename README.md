@@ -59,6 +59,7 @@ var crop = Crop.create({
     x: 100,
     y: 500
   },
+  ignoreDevicePixelRatio: false,
   onInit: () => { console.log('Initialised') }
 });
 ```

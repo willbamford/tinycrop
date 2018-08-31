@@ -133,6 +133,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	      }
 	    });
 
+	    this.ignoreDevicePixelRatio = opts.ignoreDevicePixelRatio || false;
+
 	    var listeners = this.listeners;
 	    var paint = this.paint.bind(this);
 
@@ -232,7 +234,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    key: 'resizeCanvas',
 	    value: function resizeCanvas(width, height) {
 	      var canvas = this.canvas;
-	      this.ratio = window.devicePixelRatio || 1;
+	      this.ratio = !this.ignoreDevicePixelRatio && window.devicePixelRatio ? window.devicePixelRatio : 1;
 	      this.width = width;
 	      this.height = height;
 	      canvas.width = this.width * this.ratio;
@@ -1107,7 +1109,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-	var _tinytouch = __webpack_require__(10);
+	var _tinytouch = __webpack_require__(11);
 
 	var _tinytouch2 = _interopRequireDefault(_tinytouch);
 
@@ -1514,6 +1516,78 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ },
 /* 10 */
+/***/ function(module, exports) {
+
+	function E () {
+	  // Keep this empty so it's easier to inherit from
+	  // (via https://github.com/lipsmack from https://github.com/scottcorgan/tiny-emitter/issues/3)
+	}
+
+	E.prototype = {
+	  on: function (name, callback, ctx) {
+	    var e = this.e || (this.e = {});
+
+	    (e[name] || (e[name] = [])).push({
+	      fn: callback,
+	      ctx: ctx
+	    });
+
+	    return this;
+	  },
+
+	  once: function (name, callback, ctx) {
+	    var self = this;
+	    function listener () {
+	      self.off(name, listener);
+	      callback.apply(ctx, arguments);
+	    };
+
+	    listener._ = callback
+	    return this.on(name, listener, ctx);
+	  },
+
+	  emit: function (name) {
+	    var data = [].slice.call(arguments, 1);
+	    var evtArr = ((this.e || (this.e = {}))[name] || []).slice();
+	    var i = 0;
+	    var len = evtArr.length;
+
+	    for (i; i < len; i++) {
+	      evtArr[i].fn.apply(evtArr[i].ctx, data);
+	    }
+
+	    return this;
+	  },
+
+	  off: function (name, callback) {
+	    var e = this.e || (this.e = {});
+	    var evts = e[name];
+	    var liveEvents = [];
+
+	    if (evts && callback) {
+	      for (var i = 0, len = evts.length; i < len; i++) {
+	        if (evts[i].fn !== callback && evts[i].fn._ !== callback)
+	          liveEvents.push(evts[i]);
+	      }
+	    }
+
+	    // Remove event from queue to prevent memory leak
+	    // Suggested by https://github.com/lazd
+	    // Ref: https://github.com/scottcorgan/tiny-emitter/commit/c6ebfaa9bc973b33d110a84a307742b7cf94c953#commitcomment-5024910
+
+	    (liveEvents.length)
+	      ? e[name] = liveEvents
+	      : delete e[name];
+
+	    return this;
+	  }
+	};
+
+	module.exports = E;
+
+
+/***/ },
+/* 11 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1523,13 +1597,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	});
 	exports.CANCEL = exports.UP = exports.DRAG = exports.MOVE = exports.DOWN = undefined;
 
-	var _tinyEmitter = __webpack_require__(11);
+	var _tinyEmitter = __webpack_require__(10);
 
 	var _tinyEmitter2 = _interopRequireDefault(_tinyEmitter);
 
-	function _interopRequireDefault(obj) {
-	  return obj && obj.__esModule ? obj : { default: obj };
-	}
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	var createListen = function createListen(element) {
 	  return function (name, cb) {
@@ -1661,78 +1733,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	var DRAG = exports.DRAG = 'drag';
 	var UP = exports.UP = 'up';
 	var CANCEL = exports.CANCEL = 'cancel';
-
-/***/ },
-/* 11 */
-/***/ function(module, exports) {
-
-	function E () {
-	  // Keep this empty so it's easier to inherit from
-	  // (via https://github.com/lipsmack from https://github.com/scottcorgan/tiny-emitter/issues/3)
-	}
-
-	E.prototype = {
-	  on: function (name, callback, ctx) {
-	    var e = this.e || (this.e = {});
-
-	    (e[name] || (e[name] = [])).push({
-	      fn: callback,
-	      ctx: ctx
-	    });
-
-	    return this;
-	  },
-
-	  once: function (name, callback, ctx) {
-	    var self = this;
-	    function listener () {
-	      self.off(name, listener);
-	      callback.apply(ctx, arguments);
-	    };
-
-	    listener._ = callback
-	    return this.on(name, listener, ctx);
-	  },
-
-	  emit: function (name) {
-	    var data = [].slice.call(arguments, 1);
-	    var evtArr = ((this.e || (this.e = {}))[name] || []).slice();
-	    var i = 0;
-	    var len = evtArr.length;
-
-	    for (i; i < len; i++) {
-	      evtArr[i].fn.apply(evtArr[i].ctx, data);
-	    }
-
-	    return this;
-	  },
-
-	  off: function (name, callback) {
-	    var e = this.e || (this.e = {});
-	    var evts = e[name];
-	    var liveEvents = [];
-
-	    if (evts && callback) {
-	      for (var i = 0, len = evts.length; i < len; i++) {
-	        if (evts[i].fn !== callback && evts[i].fn._ !== callback)
-	          liveEvents.push(evts[i]);
-	      }
-	    }
-
-	    // Remove event from queue to prevent memory leak
-	    // Suggested by https://github.com/lazd
-	    // Ref: https://github.com/scottcorgan/tiny-emitter/commit/c6ebfaa9bc973b33d110a84a307742b7cf94c953#commitcomment-5024910
-
-	    (liveEvents.length)
-	      ? e[name] = liveEvents
-	      : delete e[name];
-
-	    return this;
-	  }
-	};
-
-	module.exports = E;
-
 
 /***/ }
 /******/ ])

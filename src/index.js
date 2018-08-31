@@ -54,6 +54,8 @@ class Crop {
       }
     })
 
+    this.ignoreDevicePixelRatio = opts.ignoreDevicePixelRatio || false;
+
     const listeners = this.listeners
     const paint = this.paint.bind(this)
 
@@ -171,7 +173,7 @@ class Crop {
 
   resizeCanvas (width, height) {
     const canvas = this.canvas
-    this.ratio = window.devicePixelRatio || 1
+    this.ratio = (!this.ignoreDevicePixelRatio && window.devicePixelRatio) ? window.devicePixelRatio : 1
     this.width = width
     this.height = height
     canvas.width = this.width * this.ratio
