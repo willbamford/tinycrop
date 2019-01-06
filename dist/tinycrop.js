@@ -198,7 +198,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      if (isInteger(boundsHeight)) {
 	        height = boundsHeight;
 	      } else if (isPercent(boundsHeight)) {
-	        height = Math.round(width * getPercent(boundsHeight) / 100);
+	        height = Math.round(parent.clientHeight * getPercent(boundsHeight) / 100);
 	      } else if (image && image.hasLoaded && isAuto(boundsHeight)) {
 	        height = Math.floor(width / image.getAspectRatio());
 	      } else {
