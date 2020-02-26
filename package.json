@@ -22,7 +22,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/WebSeed/tinycrop.git"
+    "url": "https://github.com/willbamford/tinycrop.git"
   },
   "keywords": [
     "crop",
@@ -37,9 +37,9 @@
   "author": "Will Bamford",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/WebSeed/tinycrop/issues"
+    "url": "https://github.com/willbamford/tinycrop/issues"
   },
-  "homepage": "https://github.com/WebSeed/tinycrop",
+  "homepage": "https://github.com/willbamford/tinycrop",
   "devDependencies": {
     "babel-cli": "^6.14.0",
     "babel-core": "^6.18.2",

@@ -1,8 +1,8 @@
 # tinycrop
 
-<a href="https://circleci.com/gh/WebSeed/tinycrop">
+<a href="https://circleci.com/gh/willbamford/tinycrop">
   <img
-    src="https://circleci.com/gh/WebSeed/tinycrop.svg?style=shield"
+    src="https://circleci.com/gh/willbamford/tinycrop.svg?style=shield"
     alt="Build status" />
 </a>
 <a href="https://npmjs.org/package/tinycrop">
@@ -17,11 +17,11 @@
 </a>
 <a href="https://unpkg.com/tinycrop/dist/tinycrop.min.js">
    <img
-    src="https://badge-size.herokuapp.com/WebSeed/tinycrop/master/dist/tinycrop.min.js.svg?compression=gzip"
+    src="https://badge-size.herokuapp.com/willbamford/tinycrop/master/dist/tinycrop.min.js.svg?compression=gzip"
     alt="File size" />
 </a>
 
-Lightweight pure JavaScript image crop library. [Plays nicely with React](http://webseed.github.io/tinycrop/react-example).
+Lightweight pure JavaScript image crop library. [Plays nicely with React](http://willbamford.github.io/tinycrop/react-example).
 
 ## Install
 
@@ -76,4 +76,4 @@ crop
 
 ## Demo
 
-http://webseed.github.io/tinycrop/
+http://willbamford.github.io/tinycrop/
