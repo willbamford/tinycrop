@@ -1,6 +1,6 @@
 {
   "name": "tinycrop",
-  "version": "1.7.0",
+  "version": "1.8.0",
   "description": "Lightweight pure JavaScript image crop",
   "main": "lib/index.js",
   "scripts": {
