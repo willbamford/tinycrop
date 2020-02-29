@@ -4,14 +4,14 @@
   "description": "Lightweight pure JavaScript image crop",
   "main": "lib/index.js",
   "scripts": {
-    "start": "BABEL_ENV=cjs NODE_ENV=production webpack --watch src/index.js dist/tinycrop.min.js",
+    "start": "cross-env BABEL_ENV=cjs NODE_ENV=production webpack --watch src/index.js dist/tinycrop.min.js",
     "test": "standard",
     "lint": "standard",
     "fix": "standard --fix",
     "build": "yarn cjs && yarn umd && yarn min && yarn react",
-    "cjs": "BABEL_ENV=cjs babel src --out-dir lib",
-    "umd": "BABEL_ENV=cjs NODE_ENV=development webpack src/index.js dist/tinycrop.js",
-    "min": "BABEL_ENV=cjs NODE_ENV=production webpack src/index.js dist/tinycrop.min.js",
+    "cjs": "cross-env BABEL_ENV=cjs babel src --out-dir lib",
+    "umd": "cross-env BABEL_ENV=cjs NODE_ENV=development webpack src/index.js dist/tinycrop.js",
+    "min": "cross-env BABEL_ENV=cjs NODE_ENV=production webpack src/index.js dist/tinycrop.min.js",
     "react": "webpack --config react-example/webpack.config.js react-example/index.jsx react-example/bundle.js"
   },
   "standard": {
@@ -56,6 +56,7 @@
     "webpack": "^1.15.0"
   },
   "dependencies": {
+    "cross-env": "^7.0.0",
     "normalize.css": "^5.0.0",
     "react": "^15.6.2",
     "react-dom": "^15.6.2",
