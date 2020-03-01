@@ -17,7 +17,9 @@ class SelectionLayer {
     handleOpts.depth = handleOpts.depth || 3
     handleOpts.size = handleOpts.size || handleOpts.length * 2
     handleOpts.color = handleOpts.color || 'rgba(255, 255, 255, 1.0)'
+    handleOpts.borderColor = handleOpts.borderColor || handleOpts.color
     handleOpts.activeColor = handleOpts.activeColor || 'rgba(255, 0, 160, 1.0)'
+    handleOpts.activeBorderColor = handleOpts.activeBorderColor || handleOpts.activeColor
     this.handleOpts = handleOpts
 
     this.listeners = Listeners.create()
@@ -70,8 +72,10 @@ class SelectionLayer {
           this.listeners.notify('move', this.selection.region)
         }
       } else {
-        const dir = activeRegion.substring(0, 2)
-        const dx = dir[1] === 'w' ? -e.tx : e.tx
+        const dir = activeRegion.substring(0, 2).replace( '-', '' )
+        // dir is direction; if corner point then will be two characters like ne or sw
+        // otherwise for cross point will be single character like n or w or e or s
+        const dx = (dir.indexOf('w') > -1) ? -e.tx : e.tx
         const dy = dir[0] === 'n' ? -e.ty : e.ty
         hasChanged = selection.resizeBy(dx, dy, dir)
         if (hasChanged) {
@@ -98,7 +102,31 @@ class SelectionLayer {
     let hitRegion = null
     let closest = Number.MAX_VALUE
 
-    let d = this.isWithinNorthWestHandle(point)
+    let d = this.isWithinNorthHandle(point)
+    if (d !== false && d < closest) {
+      closest = d
+      hitRegion = 'n-resize'
+    }
+
+    d = this.isWithinSouthHandle(point)
+    if (d !== false && d < closest) {
+      closest = d
+      hitRegion = 's-resize'
+    }
+
+    d = this.isWithinEastHandle(point)
+    if (d !== false && d < closest) {
+      closest = d
+      hitRegion = 'e-resize'
+    }
+
+    d = this.isWithinWestHandle(point)
+    if (d !== false && d < closest) {
+      closest = d
+      hitRegion = 'w-resize'
+    }
+
+    d = this.isWithinNorthWestHandle(point)
     if (d !== false && d < closest) {
       closest = d
       hitRegion = 'nw-resize'
@@ -159,27 +187,55 @@ class SelectionLayer {
     return (dsq < tsq) ? dsq : false
   }
 
+  isWithinNorthHandle (point) {
+    const halfSelWidth = this.selection.width / 2
+    const handleX = halfSelWidth + this.selection.left
+    return this.isWithinRadius(point.x, point.y, handleX, this.selection.top, this.getCrossHandleRadius())
+  }
+
+  isWithinSouthHandle (point) {
+    const halfSelWidth = this.selection.width / 2
+    const handleX = halfSelWidth + this.selection.left
+    return this.isWithinRadius(point.x, point.y, handleX, this.selection.bottom, this.getCrossHandleRadius())
+  }
+
+  isWithinEastHandle (point) {
+    const halfSelHeight = this.selection.height / 2
+    const handleY = halfSelHeight + this.selection.top
+    return this.isWithinRadius(point.x, point.y, this.selection.right, handleY, this.getCrossHandleRadius())
+  }
+
+  isWithinWestHandle (point) {
+    const halfSelHeight = this.selection.height / 2
+    const handleY = halfSelHeight + this.selection.top
+    return this.isWithinRadius(point.x, point.y, this.selection.left, handleY, this.getCrossHandleRadius())
+  }
+
   isWithinNorthWestHandle (point) {
-    return this.isWithinRadius(point.x, point.y, this.selection.left, this.selection.top, this.getHandleRadius())
+    return this.isWithinRadius(point.x, point.y, this.selection.left, this.selection.top, this.getCornerHandleRadius())
   }
 
   isWithinNorthEastHandle (point) {
-    return this.isWithinRadius(point.x, point.y, this.selection.right, this.selection.top, this.getHandleRadius())
+    return this.isWithinRadius(point.x, point.y, this.selection.right, this.selection.top, this.getCornerHandleRadius())
   }
 
   isWithinSouthWestHandle (point) {
-    return this.isWithinRadius(point.x, point.y, this.selection.left, this.selection.bottom, this.getHandleRadius())
+    return this.isWithinRadius(point.x, point.y, this.selection.left, this.selection.bottom, this.getCornerHandleRadius())
   }
 
   isWithinSouthEastHandle (point) {
-    return this.isWithinRadius(point.x, point.y, this.selection.right, this.selection.bottom, this.getHandleRadius())
+    return this.isWithinRadius(point.x, point.y, this.selection.right, this.selection.bottom, this.getCornerHandleRadius())
   }
 
   isWithinBounds (point) {
     return this.selection.isInside(point)
   }
 
-  getHandleRadius () {
+  getCrossHandleRadius () {
+    return this.handleOpts.size / 4
+  }
+
+  getCornerHandleRadius () {
     return this.handleOpts.size / 2
   }
 
@@ -244,7 +300,9 @@ class SelectionLayer {
     const lengthHeight = Math.min(opts.length, bounds.height * 0.5)
     const depth = opts.depth
     const color = opts.color
+    const borderColor = opts.borderColor
     const activeColor = opts.activeColor
+    const activeBorderColor = opts.activeBorderColor
     const length = 0 // TODO: CHECK
 
     // Sides
@@ -257,21 +315,50 @@ class SelectionLayer {
     // Handles
     const isMoveRegion = activeRegion === 'move'
 
-    g.fillStyle = isMoveRegion || activeRegion === 'nw-resize' ? activeColor : color
-    g.fillRect(bounds.x, bounds.y, lengthWidth, depth)
-    g.fillRect(bounds.x, bounds.y + depth, depth, lengthHeight - depth)
+    const halfBoundWidth = bounds.width / 2
+    const halfBoundHeight = bounds.height / 2
+    const halfHandleWidth = lengthWidth / 2
+    const nsX = (halfBoundWidth - halfHandleWidth + bounds.x)
+    const ewY = (halfBoundHeight - halfHandleWidth + bounds.y)
 
-    g.fillStyle = isMoveRegion || activeRegion === 'ne-resize' ? activeColor : color
-    g.fillRect(bounds.right - lengthWidth, bounds.y, lengthWidth, depth)
-    g.fillRect(bounds.right - depth, bounds.y + depth, depth, lengthHeight - depth)
+    let handleOptions = {
+      "borderSize" : opts.borderSize,
+      "activeRegion" : activeRegion,
+      "isMoveRegion" : isMoveRegion,
+      "borderColor" : borderColor,
+      "activeBorderColor" : activeBorderColor,
+      "color" : color,
+      "borderColor" : borderColor,
+      "activeColor" : activeColor,
+      "activeBorderColor" : activeBorderColor,
+      "width" : lengthWidth,
+      "height" : lengthHeight,
+      "depth" : opts.depth
+    }
 
-    g.fillStyle = isMoveRegion || activeRegion === 'sw-resize' ? activeColor : color
-    g.fillRect(bounds.x, bounds.bottom - depth, lengthWidth, depth)
-    g.fillRect(bounds.x, bounds.bottom - lengthHeight, depth, lengthHeight - depth)
+    // Draw N handle
+    this.renderCrossHandle("n-resize", nsX, bounds.y, handleOptions)
 
-    g.fillStyle = isMoveRegion || activeRegion === 'se-resize' ? activeColor : color
-    g.fillRect(bounds.right - lengthWidth, bounds.bottom - depth, lengthWidth, depth)
-    g.fillRect(bounds.right - depth, bounds.bottom - lengthHeight, depth, lengthHeight - depth)
+    // Draw S handle
+    this.renderCrossHandle("s-resize", nsX, bounds.bottom - depth, handleOptions)
+
+    // Draw E handle
+    this.renderCrossHandle("e-resize", bounds.right - depth, ewY, handleOptions)
+
+    // Draw W handle
+    this.renderCrossHandle("w-resize", bounds.x, ewY, handleOptions)
+
+    // Draw NW handle
+    this.renderCornerHandle("nw-resize", bounds, handleOptions)
+
+    // Draw NE handle
+    this.renderCornerHandle("ne-resize", bounds, handleOptions)
+
+    // Draw SW handle
+    this.renderCornerHandle("sw-resize", bounds, handleOptions)
+
+    // Draw SE handle
+    this.renderCornerHandle("se-resize", bounds, handleOptions)
 
     // Guides
     g.strokeStyle = 'rgba(255, 255, 255, 0.6)'
@@ -290,6 +377,73 @@ class SelectionLayer {
     g.lineTo(bounds.x + bounds.width, bounds.y + 2 * bh3)
     g.stroke()
     g.closePath()
+  }
+
+  renderCrossHandle (handleName, x, y, handleOptions) {
+    const g = this.context
+
+    let w = null
+    let h = null
+
+    if (handleName[0] == "n" || handleName[0] == "s") {
+      w = handleOptions.width
+      h = handleOptions.depth
+    } else if (handleName[0] == "e" || handleName[0] == "w") {
+      w = handleOptions.depth
+      h = handleOptions.height
+    }
+
+    // Draw handle border
+    g.fillStyle = handleOptions.isMoveRegion || handleOptions.activeRegion === handleName ? handleOptions.activeBorderColor : handleOptions.borderColor
+    g.fillRect(x, y, w, h)
+
+    // Draw handle as inset of border box
+    g.fillStyle = handleOptions.isMoveRegion || handleOptions.activeRegion === handleName ? handleOptions.activeColor : handleOptions.color
+    g.fillRect(x + handleOptions.borderSize, y + handleOptions.borderSize, w - (2 * handleOptions.borderSize), h - (2 * handleOptions.borderSize))
+  }
+
+  renderCornerHandle (handleName, bounds, handleOptions) {
+    const g = this.context
+
+    const wH = handleOptions.width
+    const hH = handleOptions.depth
+
+    const wV = handleOptions.depth
+    const hV = handleOptions.height - handleOptions.depth
+
+    let xH = null
+    let yH = null
+    let xV = null
+    let yV = null
+    let borderGapY = null
+
+    if (handleName[0] == "n") {
+      yH = bounds.y
+      yV = bounds.y + handleOptions.depth
+      borderGapY = yV - handleOptions.borderSize
+    } else if (handleName[0] == "s") {
+      yH = bounds.bottom - handleOptions.depth
+      yV = bounds.bottom - handleOptions.height
+      borderGapY = yV + handleOptions.borderSize
+    }
+
+    if (handleName[1] == "e") {
+      xH = bounds.right - handleOptions.width
+      xV = bounds.right - handleOptions.depth
+    } else if (handleName[1] == "w") {
+      xH = bounds.x
+      xV = bounds.x
+    }
+
+    // Draw border boxes
+    g.fillStyle = handleOptions.isMoveRegion || handleOptions.activeRegion === handleName ? handleOptions.activeBorderColor : handleOptions.borderColor
+    g.fillRect(xH, yH, wH, hH) // Horizontal
+    g.fillRect(xV, yV, wV, hV) // Vertical
+
+    // Draw handle
+    g.fillStyle = handleOptions.isMoveRegion || handleOptions.activeRegion === handleName ? handleOptions.activeColor : handleOptions.color
+    g.fillRect(xH + handleOptions.borderSize, yH + handleOptions.borderSize, wH - (2 * handleOptions.borderSize), hH - (2 * handleOptions.borderSize)) // Horizontal
+    g.fillRect(xV + handleOptions.borderSize, borderGapY, wV - (2 * handleOptions.borderSize), hV) // Vertical
   }
 }
 

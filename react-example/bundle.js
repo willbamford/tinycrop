@@ -10003,7 +10003,16 @@
 	      var bounds = this.bounds;
 
 	      if (image && image.hasLoaded) {
+	        var degToRadMultiplier = Math.PI / 180;
+	        var radianRotation = this.parent.rotation * degToRadMultiplier;
+
+	        g.clearRect(0, 0, image.width, image.height);
+	        g.save();
+	        g.translate(image.width * 0.5, image.height * 0.5);
+	        g.rotate(radianRotation);
+	        g.translate(-image.width * 0.5, -image.height * 0.5);
 	        g.drawImage(image.source, 0, 0, image.width, image.height, bounds.x, bounds.y, bounds.width, bounds.height);
+	        g.restore();
 	      }
 	    }
 	  }]);
@@ -10116,15 +10125,29 @@
 	        dy = Math.min(dy, target.bounds.bottom - this.bottom);
 	      }
 
-	      if (p[1] === 'w') {
+	      // p is direction; if corner point then will be two characters like ne or sw
+	      // otherwise for cross point will be single character like n or w or e or s
+	      if (p.indexOf('w') > -1) {
 	        dx = Math.min(dx, this.left - target.bounds.left);
-	      } else if (p[1] === 'e') {
+	      } else if (p.indexOf('e') > -1) {
 	        dx = Math.min(dx, target.bounds.right - this.right);
 	      }
 
 	      delta = calculateDelta(dx, dy);
 
 	      switch (p) {
+	        case 'n':
+	          this.top -= delta.height;
+	          break;
+	        case 's':
+	          this.bottom += delta.height;
+	          break;
+	        case 'e':
+	          this.right += delta.width;
+	          break;
+	        case 'w':
+	          this.left -= delta.width;
+	          break;
 	        case 'nw':
 	          this.left -= delta.width;
 	          this.top -= delta.height;
@@ -10336,6 +10359,8 @@
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+	function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 	var SelectionLayer = function () {
@@ -10356,7 +10381,9 @@
 	    handleOpts.depth = handleOpts.depth || 3;
 	    handleOpts.size = handleOpts.size || handleOpts.length * 2;
 	    handleOpts.color = handleOpts.color || 'rgba(255, 255, 255, 1.0)';
+	    handleOpts.borderColor = handleOpts.borderColor || handleOpts.color;
 	    handleOpts.activeColor = handleOpts.activeColor || 'rgba(255, 0, 160, 1.0)';
+	    handleOpts.activeBorderColor = handleOpts.activeBorderColor || handleOpts.activeColor;
 	    this.handleOpts = handleOpts;
 
 	    this.listeners = _Listeners2.default.create();
@@ -10408,8 +10435,10 @@
 	            this.listeners.notify('move', this.selection.region);
 	          }
 	        } else {
-	          var dir = activeRegion.substring(0, 2);
-	          var dx = dir[1] === 'w' ? -e.tx : e.tx;
+	          var dir = activeRegion.substring(0, 2).replace('-', '');
+	          // dir is direction; if corner point then will be two characters like ne or sw
+	          // otherwise for cross point will be single character like n or w or e or s
+	          var dx = dir.indexOf('w') > -1 ? -e.tx : e.tx;
 	          var dy = dir[0] === 'n' ? -e.ty : e.ty;
 	          hasChanged = selection.resizeBy(dx, dy, dir);
 	          if (hasChanged) {
@@ -10438,7 +10467,31 @@
 	      var hitRegion = null;
 	      var closest = Number.MAX_VALUE;
 
-	      var d = this.isWithinNorthWestHandle(point);
+	      var d = this.isWithinNorthHandle(point);
+	      if (d !== false && d < closest) {
+	        closest = d;
+	        hitRegion = 'n-resize';
+	      }
+
+	      d = this.isWithinSouthHandle(point);
+	      if (d !== false && d < closest) {
+	        closest = d;
+	        hitRegion = 's-resize';
+	      }
+
+	      d = this.isWithinEastHandle(point);
+	      if (d !== false && d < closest) {
+	        closest = d;
+	        hitRegion = 'e-resize';
+	      }
+
+	      d = this.isWithinWestHandle(point);
+	      if (d !== false && d < closest) {
+	        closest = d;
+	        hitRegion = 'w-resize';
+	      }
+
+	      d = this.isWithinNorthWestHandle(point);
 	      if (d !== false && d < closest) {
 	        closest = d;
 	        hitRegion = 'nw-resize';
@@ -10504,24 +10557,52 @@
 	      return dsq < tsq ? dsq : false;
 	    }
 	  }, {
+	    key: 'isWithinNorthHandle',
+	    value: function isWithinNorthHandle(point) {
+	      var halfSelWidth = this.selection.width / 2;
+	      var handleX = halfSelWidth + this.selection.left;
+	      return this.isWithinRadius(point.x, point.y, handleX, this.selection.top, this.getCrossHandleRadius());
+	    }
+	  }, {
+	    key: 'isWithinSouthHandle',
+	    value: function isWithinSouthHandle(point) {
+	      var halfSelWidth = this.selection.width / 2;
+	      var handleX = halfSelWidth + this.selection.left;
+	      return this.isWithinRadius(point.x, point.y, handleX, this.selection.bottom, this.getCrossHandleRadius());
+	    }
+	  }, {
+	    key: 'isWithinEastHandle',
+	    value: function isWithinEastHandle(point) {
+	      var halfSelHeight = this.selection.height / 2;
+	      var handleY = halfSelHeight + this.selection.top;
+	      return this.isWithinRadius(point.x, point.y, this.selection.right, handleY, this.getCrossHandleRadius());
+	    }
+	  }, {
+	    key: 'isWithinWestHandle',
+	    value: function isWithinWestHandle(point) {
+	      var halfSelHeight = this.selection.height / 2;
+	      var handleY = halfSelHeight + this.selection.top;
+	      return this.isWithinRadius(point.x, point.y, this.selection.left, handleY, this.getCrossHandleRadius());
+	    }
+	  }, {
 	    key: 'isWithinNorthWestHandle',
 	    value: function isWithinNorthWestHandle(point) {
-	      return this.isWithinRadius(point.x, point.y, this.selection.left, this.selection.top, this.getHandleRadius());
+	      return this.isWithinRadius(point.x, point.y, this.selection.left, this.selection.top, this.getCornerHandleRadius());
 	    }
 	  }, {
 	    key: 'isWithinNorthEastHandle',
 	    value: function isWithinNorthEastHandle(point) {
-	      return this.isWithinRadius(point.x, point.y, this.selection.right, this.selection.top, this.getHandleRadius());
+	      return this.isWithinRadius(point.x, point.y, this.selection.right, this.selection.top, this.getCornerHandleRadius());
 	    }
 	  }, {
 	    key: 'isWithinSouthWestHandle',
 	    value: function isWithinSouthWestHandle(point) {
-	      return this.isWithinRadius(point.x, point.y, this.selection.left, this.selection.bottom, this.getHandleRadius());
+	      return this.isWithinRadius(point.x, point.y, this.selection.left, this.selection.bottom, this.getCornerHandleRadius());
 	    }
 	  }, {
 	    key: 'isWithinSouthEastHandle',
 	    value: function isWithinSouthEastHandle(point) {
-	      return this.isWithinRadius(point.x, point.y, this.selection.right, this.selection.bottom, this.getHandleRadius());
+	      return this.isWithinRadius(point.x, point.y, this.selection.right, this.selection.bottom, this.getCornerHandleRadius());
 	    }
 	  }, {
 	    key: 'isWithinBounds',
@@ -10529,8 +10610,13 @@
 	      return this.selection.isInside(point);
 	    }
 	  }, {
-	    key: 'getHandleRadius',
-	    value: function getHandleRadius() {
+	    key: 'getCrossHandleRadius',
+	    value: function getCrossHandleRadius() {
+	      return this.handleOpts.size / 4;
+	    }
+	  }, {
+	    key: 'getCornerHandleRadius',
+	    value: function getCornerHandleRadius() {
 	      return this.handleOpts.size / 2;
 	    }
 	  }, {
@@ -10593,6 +10679,8 @@
 	  }, {
 	    key: 'paintInside',
 	    value: function paintInside() {
+	      var _handleOptions;
+
 	      var g = this.context;
 	      var bounds = this.selection.boundsPx;
 	      var activeRegion = this.activeRegion;
@@ -10602,7 +10690,9 @@
 	      var lengthHeight = Math.min(opts.length, bounds.height * 0.5);
 	      var depth = opts.depth;
 	      var color = opts.color;
+	      var borderColor = opts.borderColor;
 	      var activeColor = opts.activeColor;
+	      var activeBorderColor = opts.activeBorderColor;
 	      var length = 0; // TODO: CHECK
 
 	      // Sides
@@ -10615,21 +10705,44 @@
 	      // Handles
 	      var isMoveRegion = activeRegion === 'move';
 
-	      g.fillStyle = isMoveRegion || activeRegion === 'nw-resize' ? activeColor : color;
-	      g.fillRect(bounds.x, bounds.y, lengthWidth, depth);
-	      g.fillRect(bounds.x, bounds.y + depth, depth, lengthHeight - depth);
+	      var halfBoundWidth = bounds.width / 2;
+	      var halfBoundHeight = bounds.height / 2;
+	      var halfHandleWidth = lengthWidth / 2;
+	      var nsX = halfBoundWidth - halfHandleWidth + bounds.x;
+	      var ewY = halfBoundHeight - halfHandleWidth + bounds.y;
 
-	      g.fillStyle = isMoveRegion || activeRegion === 'ne-resize' ? activeColor : color;
-	      g.fillRect(bounds.right - lengthWidth, bounds.y, lengthWidth, depth);
-	      g.fillRect(bounds.right - depth, bounds.y + depth, depth, lengthHeight - depth);
+	      var handleOptions = (_handleOptions = {
+	        "borderSize": opts.borderSize,
+	        "activeRegion": activeRegion,
+	        "isMoveRegion": isMoveRegion,
+	        "borderColor": borderColor,
+	        "activeBorderColor": activeBorderColor,
+	        "color": color
+	      }, _defineProperty(_handleOptions, 'borderColor', borderColor), _defineProperty(_handleOptions, "activeColor", activeColor), _defineProperty(_handleOptions, 'activeBorderColor', activeBorderColor), _defineProperty(_handleOptions, "width", lengthWidth), _defineProperty(_handleOptions, "height", lengthHeight), _defineProperty(_handleOptions, "depth", opts.depth), _handleOptions);
 
-	      g.fillStyle = isMoveRegion || activeRegion === 'sw-resize' ? activeColor : color;
-	      g.fillRect(bounds.x, bounds.bottom - depth, lengthWidth, depth);
-	      g.fillRect(bounds.x, bounds.bottom - lengthHeight, depth, lengthHeight - depth);
+	      // Draw N handle
+	      this.renderCrossHandle("n-resize", nsX, bounds.y, handleOptions);
 
-	      g.fillStyle = isMoveRegion || activeRegion === 'se-resize' ? activeColor : color;
-	      g.fillRect(bounds.right - lengthWidth, bounds.bottom - depth, lengthWidth, depth);
-	      g.fillRect(bounds.right - depth, bounds.bottom - lengthHeight, depth, lengthHeight - depth);
+	      // Draw S handle
+	      this.renderCrossHandle("s-resize", nsX, bounds.bottom - depth, handleOptions);
+
+	      // Draw E handle
+	      this.renderCrossHandle("e-resize", bounds.right - depth, ewY, handleOptions);
+
+	      // Draw W handle
+	      this.renderCrossHandle("w-resize", bounds.x, ewY, handleOptions);
+
+	      // Draw NW handle
+	      this.renderCornerHandle("nw-resize", bounds, handleOptions);
+
+	      // Draw NE handle
+	      this.renderCornerHandle("ne-resize", bounds, handleOptions);
+
+	      // Draw SW handle
+	      this.renderCornerHandle("sw-resize", bounds, handleOptions);
+
+	      // Draw SE handle
+	      this.renderCornerHandle("se-resize", bounds, handleOptions);
 
 	      // Guides
 	      g.strokeStyle = 'rgba(255, 255, 255, 0.6)';
@@ -10648,6 +10761,75 @@
 	      g.lineTo(bounds.x + bounds.width, bounds.y + 2 * bh3);
 	      g.stroke();
 	      g.closePath();
+	    }
+	  }, {
+	    key: 'renderCrossHandle',
+	    value: function renderCrossHandle(handleName, x, y, handleOptions) {
+	      var g = this.context;
+
+	      var w = null;
+	      var h = null;
+
+	      if (handleName[0] == "n" || handleName[0] == "s") {
+	        w = handleOptions.width;
+	        h = handleOptions.depth;
+	      } else if (handleName[0] == "e" || handleName[0] == "w") {
+	        w = handleOptions.depth;
+	        h = handleOptions.height;
+	      }
+
+	      // Draw handle border
+	      g.fillStyle = handleOptions.isMoveRegion || handleOptions.activeRegion === handleName ? handleOptions.activeBorderColor : handleOptions.borderColor;
+	      g.fillRect(x, y, w, h);
+
+	      // Draw handle as inset of border box
+	      g.fillStyle = handleOptions.isMoveRegion || handleOptions.activeRegion === handleName ? handleOptions.activeColor : handleOptions.color;
+	      g.fillRect(x + handleOptions.borderSize, y + handleOptions.borderSize, w - 2 * handleOptions.borderSize, h - 2 * handleOptions.borderSize);
+	    }
+	  }, {
+	    key: 'renderCornerHandle',
+	    value: function renderCornerHandle(handleName, bounds, handleOptions) {
+	      var g = this.context;
+
+	      var wH = handleOptions.width;
+	      var hH = handleOptions.depth;
+
+	      var wV = handleOptions.depth;
+	      var hV = handleOptions.height - handleOptions.depth;
+
+	      var xH = null;
+	      var yH = null;
+	      var xV = null;
+	      var yV = null;
+	      var borderGapY = null;
+
+	      if (handleName[0] == "n") {
+	        yH = bounds.y;
+	        yV = bounds.y + handleOptions.depth;
+	        borderGapY = yV - handleOptions.borderSize;
+	      } else if (handleName[0] == "s") {
+	        yH = bounds.bottom - handleOptions.depth;
+	        yV = bounds.bottom - handleOptions.height;
+	        borderGapY = yV + handleOptions.borderSize;
+	      }
+
+	      if (handleName[1] == "e") {
+	        xH = bounds.right - handleOptions.width;
+	        xV = bounds.right - handleOptions.depth;
+	      } else if (handleName[1] == "w") {
+	        xH = bounds.x;
+	        xV = bounds.x;
+	      }
+
+	      // Draw border boxes
+	      g.fillStyle = handleOptions.isMoveRegion || handleOptions.activeRegion === handleName ? handleOptions.activeBorderColor : handleOptions.borderColor;
+	      g.fillRect(xH, yH, wH, hH); // Horizontal
+	      g.fillRect(xV, yV, wV, hV); // Vertical
+
+	      // Draw handle
+	      g.fillStyle = handleOptions.isMoveRegion || handleOptions.activeRegion === handleName ? handleOptions.activeColor : handleOptions.color;
+	      g.fillRect(xH + handleOptions.borderSize, yH + handleOptions.borderSize, wH - 2 * handleOptions.borderSize, hH - 2 * handleOptions.borderSize); // Horizontal
+	      g.fillRect(xV + handleOptions.borderSize, borderGapY, wV - 2 * handleOptions.borderSize, hV); // Vertical
 	    }
 	  }]);
 
@@ -10734,6 +10916,8 @@
 	    this.context = this.canvas.getContext('2d');
 	    this.boundsOpts = opts.bounds || { width: '100%', height: 'auto' };
 	    opts.selection = opts.selection || {};
+	    opts.selection.borderSize = opts.selection.borderSize || 1;
+	    this.rotation = opts.rotation || 0;
 	    this.debounceResize = opts.debounceResize !== undefined ? opts.debounceResize : true;
 	    this.listeners = _Listeners2.default.create();
 
@@ -10763,8 +10947,11 @@
 	      width: opts.selection.width,
 	      height: opts.selection.height,
 	      handle: {
+	        borderSize: opts.selection.borderSize,
 	        color: opts.selection.color,
-	        activeColor: opts.selection.activeColor
+	        borderColor: opts.selection.borderColor,
+	        activeColor: opts.selection.activeColor,
+	        activeBorderColor: opts.selection.activeBorderColor
 	      }
 	    });
 
@@ -10872,6 +11059,12 @@
 	      this.height = height;
 	      canvas.width = this.width * this.ratio;
 	      canvas.height = this.height * this.ratio;
+	    }
+	  }, {
+	    key: 'rotate',
+	    value: function rotate(rotation) {
+	      this.rotation = rotation;
+	      this.paint();
 	    }
 	  }, {
 	    key: 'setImage',

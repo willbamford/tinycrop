@@ -35,6 +35,12 @@
             <input type="text" id="input-height" value="0"/>
             <label for="input-x">Height</label>
           </div>
+        </div><!--
+        --><div class="field-pair">
+          <div class="field">
+            <input type="number" id="input-rotation" value="0"/>
+            <label for="input-rotation">Rotation</label>
+          </div>
         </div>
 
         <button id="swap-image">Swap image</button><!--
@@ -60,8 +66,10 @@
         },
         // backgroundColors: ['#fff', '#f0f0f0'],
         selection: {
-          // color: 'red',
-          // activeColor: 'blue',
+          color: 'yellow',
+          activeColor: 'red',
+          borderColor: 'blue',
+          activeBorderColor: 'black',
           // aspectRatio: 4 / 3,
           // minWidth: 200,
           // minHeight: 300
@@ -126,6 +134,11 @@
       buttonContainer2By1.addEventListener('click', function (e) {
         e.preventDefault()
         crop.setBounds({width: '100%', height: '50%'})
+      })
+
+      var inputRotationFld = getId('input-rotation');
+      inputRotationFld.addEventListener('input', function(e) {
+        crop.rotate(inputRotationFld.value)
       })
 
       var backgroundColorPreset = 0
