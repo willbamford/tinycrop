@@ -23,7 +23,7 @@
 
 Lightweight pure JavaScript image crop library. [Plays nicely with React](http://willbamford.github.io/tinycrop/react-example).
 
-## Install
+## Install from repository
 
 Using NPM:
 ```
@@ -35,7 +35,19 @@ Or [Yarn](https://yarnpkg.com):
 yarn add tinycrop
 ```
 
-## Create
+## Build from source
+1. Install nodejs
+1. Clone this repository
+1.
+    ```bash
+    npm install
+    ```
+1. 
+    ```bash
+    npm run build
+    ```
+
+## Create new cropper
 
 ```js
 var Crop = require('tinycrop')
