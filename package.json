@@ -1,17 +1,17 @@
 {
   "name": "tinycrop",
-  "version": "1.7.0",
+  "version": "1.8.0",
   "description": "Lightweight pure JavaScript image crop",
   "main": "lib/index.js",
   "scripts": {
-    "start": "BABEL_ENV=cjs NODE_ENV=production webpack --watch src/index.js dist/tinycrop.min.js",
+    "start": "cross-env BABEL_ENV=cjs NODE_ENV=production webpack --watch src/index.js dist/tinycrop.min.js",
     "test": "standard",
     "lint": "standard",
     "fix": "standard --fix",
     "build": "yarn cjs && yarn umd && yarn min && yarn react",
-    "cjs": "BABEL_ENV=cjs babel src --out-dir lib",
-    "umd": "BABEL_ENV=cjs NODE_ENV=development webpack src/index.js dist/tinycrop.js",
-    "min": "BABEL_ENV=cjs NODE_ENV=production webpack src/index.js dist/tinycrop.min.js",
+    "cjs": "cross-env BABEL_ENV=cjs babel src --out-dir lib",
+    "umd": "cross-env BABEL_ENV=cjs NODE_ENV=development webpack src/index.js dist/tinycrop.js",
+    "min": "cross-env BABEL_ENV=cjs NODE_ENV=production webpack src/index.js dist/tinycrop.min.js",
     "react": "webpack --config react-example/webpack.config.js react-example/index.jsx react-example/bundle.js"
   },
   "standard": {
@@ -22,7 +22,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/WebSeed/tinycrop.git"
+    "url": "https://github.com/willbamford/tinycrop.git"
   },
   "keywords": [
     "crop",
@@ -37,28 +37,30 @@
   "author": "Will Bamford",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/WebSeed/tinycrop/issues"
+    "url": "https://github.com/willbamford/tinycrop/issues"
   },
-  "homepage": "https://github.com/WebSeed/tinycrop",
+  "homepage": "https://github.com/willbamford/tinycrop",
   "devDependencies": {
-    "babel-cli": "^6.14.0",
+    "babel-cli": "^6.26.0",
     "babel-core": "^6.18.2",
-    "babel-loader": "^6.2.8",
+    "babel-loader": "^6.4.1",
     "babel-plugin-transform-es2015-modules-commonjs": "^6.18.0",
-    "babel-preset-es2015": "^6.18.0",
-    "babel-preset-react": "^6.16.0",
-    "babel-preset-stage-3": "^6.16.0",
+    "babel-preset-es2015": "^6.24.1",
+    "babel-preset-react": "^6.24.1",
+    "babel-preset-stage-3": "^6.24.1",
     "babel-register": "^6.18.0",
     "eslint": "^3.10.2",
     "eslint-config-standard-react": "^4.2.0",
     "eslint-plugin-react": "^6.7.1",
     "standard": "^8.5.0",
-    "webpack": "^1.13.3"
+    "webpack": "^1.15.0"
   },
   "dependencies": {
+    "cross-env": "^7.0.0",
     "normalize.css": "^5.0.0",
-    "react": "^15.3.2",
-    "react-dom": "^15.3.2",
-    "tinytouch": "^1.5.1"
+    "react": "^15.6.2",
+    "react-dom": "^15.6.2",
+    "tinytouch": "^1.5.1",
+    "yarn": "^1.22.0"
   }
 }

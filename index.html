@@ -10,7 +10,7 @@
   <body>
     <header class="header">
       <h1>tinycrop <img src="images/icon.svg"/></h1>
-      <p><a href="https://github.com/WebSeed/tinycrop">Lightweight pure JavaScript image crop</a></p>
+      <p><a href="https://github.com/willbamford/tinycrop">Lightweight pure JavaScript image crop</a></p>
     </header>
     <div class="container">
       <div id="mount" class="mount"></div><!--
@@ -35,6 +35,12 @@
             <input type="text" id="input-height" value="0"/>
             <label for="input-x">Height</label>
           </div>
+        </div><!--
+        --><div class="field-pair">
+          <div class="field">
+            <input type="number" id="input-rotation" value="0"/>
+            <label for="input-rotation">Rotation</label>
+          </div>
         </div>
 
         <button id="swap-image">Swap image</button><!--
@@ -47,7 +53,7 @@
         --><button id="change-background-colors">Change background colors</button>
       </div>
 
-      <footer class="footer">Visit the <a href="https://github.com/WebSeed/tinycrop">GitHub project</a> page.</footer>
+      <footer class="footer">Visit the <a href="https://github.com/willbamford/tinycrop">GitHub project</a> page.</footer>
     </div>
 
     <script>
@@ -60,8 +66,10 @@
         },
         // backgroundColors: ['#fff', '#f0f0f0'],
         selection: {
-          // color: 'red',
-          // activeColor: 'blue',
+          color: 'yellow',
+          activeColor: 'red',
+          borderColor: 'blue',
+          activeBorderColor: 'black',
           // aspectRatio: 4 / 3,
           // minWidth: 200,
           // minHeight: 300
@@ -126,6 +134,11 @@
       buttonContainer2By1.addEventListener('click', function (e) {
         e.preventDefault()
         crop.setBounds({width: '100%', height: '50%'})
+      })
+
+      var inputRotationFld = getId('input-rotation');
+      inputRotationFld.addEventListener('input', function(e) {
+        crop.rotate(inputRotationFld.value)
       })
 
       var backgroundColorPreset = 0

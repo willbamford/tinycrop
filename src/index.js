@@ -18,6 +18,8 @@ class Crop {
     this.context = this.canvas.getContext('2d')
     this.boundsOpts = opts.bounds || { width: '100%', height: 'auto' }
     opts.selection = opts.selection || {}
+    opts.selection.borderSize = opts.selection.borderSize || 1
+    this.rotation = opts.rotation || 0
     this.debounceResize = opts.debounceResize !== undefined
       ? opts.debounceResize
       : true
@@ -49,8 +51,11 @@ class Crop {
       width: opts.selection.width,
       height: opts.selection.height,
       handle: {
+        borderSize: opts.selection.borderSize,
         color: opts.selection.color,
-        activeColor: opts.selection.activeColor
+        borderColor: opts.selection.borderColor,
+        activeColor: opts.selection.activeColor,
+        activeBorderColor: opts.selection.activeBorderColor
       }
     })
 
@@ -176,6 +181,11 @@ class Crop {
     this.height = height
     canvas.width = this.width * this.ratio
     canvas.height = this.height * this.ratio
+  }
+
+  rotate (rotation) {
+    this.rotation = rotation
+    this.paint()
   }
 
   setImage (source, onLoad) {
