@@ -1,3 +1,5 @@
+# 🚨 Sorry this repo is no longer maintained
+
 # tinycrop
 
 <a href="https://circleci.com/gh/willbamford/tinycrop">
